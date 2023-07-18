@@ -1,0 +1,32 @@
+name: prof-correctness
+on:
+  push:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  ddprof:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: ddprof.*
+    secrets: inherit
+  php:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: php.*
+    secrets: inherit
+  ruby:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: ruby.*
+    secrets: inherit
+  node:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: node.*
+    secrets: inherit
+  python:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: python.*
+    secrets: inherit
+ 

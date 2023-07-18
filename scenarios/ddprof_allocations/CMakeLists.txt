@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.13)
+set(CMAKE_CXX_STANDARD 20)
+project(simple_malloc LANGUAGES CXX)
+set(CMAKE_VERBOSE_MAKEFILE on)
+find_package(Threads REQUIRED)
+add_executable(simple_malloc simple_malloc.cc)
+target_include_directories(simple_malloc PRIVATE CLI)
+target_link_libraries(simple_malloc PRIVATE Threads::Threads)

@@ -1,0 +1,40 @@
+name: Docker scenarios
+run-name: Docker scenarios
+
+on: 
+  workflow_call:
+    inputs:
+      test_scenarios:
+        description: 'A regexp to select what docker scenarios should be run'
+        required: false
+        type: string
+        default: '.*'
+
+jobs:
+  docker-scenarios:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19.1
+    # Perf event paranoid setting: Not useful to everyone
+    - name: Update perf_event_paranoid settings
+      run: sudo sysctl kernel.perf_event_paranoid=1
+    - name: Run Docker scenarios
+      run: go test -v -run TestScenarios
+      env: 
+        TEST_SCENARIOS: ${{ inputs.test_scenarios }}
+    - name: Upload test files
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: docker_scenario_test_data
+        path: data
+    - name: Notify Slack
+      if: failure() && github.ref == 'refs/heads/main'
+      run: |
+        curl -X POST "${{ secrets.SLACK_WEBHOOK }}" \
+             -H 'Content-Type: application/json' \
+             -d "{'scenarios': '${{ inputs.test_scenarios }}', 'failed_run_url': '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'}"

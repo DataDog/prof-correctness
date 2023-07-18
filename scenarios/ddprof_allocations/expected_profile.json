@@ -1,0 +1,26 @@
+{
+    "test_name": "ddprof_allocations",
+    "stacks": [
+        {
+            "profile-type": "alloc-space",
+            "stack-content": [
+                {
+                    "regular_expression": ";_start;__libc_start_main.*;main;wrapper;recursive_call;do_lot_of_allocations.*",
+                    "percent": 100,
+                    "_comment": "In CI we catch allocations from the linker. so allocations can be either 100% or 85%",
+                    "error_margin": 20,
+                    "labels": [
+                        {
+                          "key": "process_id",
+                          "values": ["1"]
+                        },
+                        {
+                          "key": "thread id",
+                          "values": ["1"]
+                        }
+                    ]            
+                }
+            ]
+        }
+    ]
+}

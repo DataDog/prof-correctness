@@ -1,0 +1,16 @@
+{
+  "test_name": "ddprof_live_heap",
+  "stacks": [
+    {
+      "profile-type": "alloc-samples",
+      "stack-content": [
+        {
+          
+          "regular_expression": ".*leak_function\\(int\\)",
+          "percent": 90,
+          "error_margin": 10
+        }
+      ]
+    }
+  ]
+}

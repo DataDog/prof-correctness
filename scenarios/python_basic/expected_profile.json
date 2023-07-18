@@ -1,0 +1,75 @@
+{
+  "test_name": "python_basic",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;wait;wait",
+          "percent": 12,
+          "error_margin": 3,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "ddtrace.profiling.scheduler:Scheduler"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;wait;wait",
+          "percent": 12,
+          "error_margin": 3,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "ddtrace.profiling.collector.memalloc:MemoryCollector"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;periodic",
+          "percent": 12,
+          "error_margin": 3,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "ddtrace.profiling.collector.stack:StackCollector"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "\u003cmodule\u003e;target",
+          "percent": 11,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;target",
+          "percent": 5,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Thread-2 (target)"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

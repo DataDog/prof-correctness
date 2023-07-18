@@ -1,0 +1,16 @@
+{
+    "test_name": "ddprof_graal_vm",
+    "stacks": [
+        {
+            "profile-type": "cpu-time",
+            "stack-content": [
+                {
+                    
+                    "regular_expression": ".*;DummyApp_fibonacci.*;.*",
+                    "percent": 100,
+                    "error_margin": 5
+                }
+            ]
+        }
+    ]
+}

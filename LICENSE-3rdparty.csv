@@ -1,0 +1,3 @@
+Component,Origin,License,Copyright
+pprof,github.com/google/pprof,Apache-2.0,google
+golang,https://github.com/golang/go,BSD-3-Clause,google

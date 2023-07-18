@@ -1,0 +1,20 @@
+{
+  "test_name": "julia_basic",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*true_main.*julia_a_.*",
+          "percent": 31,
+          "error_margin": 10
+        },
+        {
+          "regular_expression": ".*true_main.*julia_b_.*",
+          "percent": 63,
+          "error_margin": 10
+        }
+      ]
+    }
+  ]
+}

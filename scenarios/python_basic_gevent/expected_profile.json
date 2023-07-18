@@ -1,0 +1,106 @@
+{
+  "test_name": "python_basic",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;wait;wait",
+          "percent": 11,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "ddtrace.profiling.scheduler:Scheduler"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;wait;wait",
+          "percent": 11,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "ddtrace.profiling.collector.memalloc:MemoryCollector"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;periodic",
+          "percent": 11,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "ddtrace.profiling.collector.stack:StackCollector"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "run",
+          "percent": 9,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "class name",
+              "values": [
+                "Hub"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "\u003cmodule\u003e;target;sleep",
+          "percent": 9,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;target;sleep",
+          "percent": 4,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "Thread-1 (target)"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

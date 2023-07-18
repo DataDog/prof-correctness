@@ -1,0 +1,22 @@
+{
+  "test_name": "node_wall_basic",
+  "stacks": [
+    {
+      "profile-type": "wall",
+      "stack-content": [
+        {
+          "regular_expression": "callbackTrampoline;processImmediate;work;b",
+          "percent": 66,
+          "value": 666666666,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": "callbackTrampoline;processImmediate;work;a",
+          "percent": 33,
+          "value": 333333333,
+          "error_margin": 5
+        }
+      ]
+    }
+  ]
+}

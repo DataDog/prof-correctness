@@ -1,0 +1,15 @@
+{
+  "test_name": "node_heap_basic",
+  "stacks": [
+    {
+      "profile-type": "space",
+      "stack-content": [
+        {
+          "regular_expression": "processTimers;listOnTimeout;\\(anonymous\\);foo",
+          "percent": 97,
+          "error_margin": 3
+        }
+      ]
+    }
+  ]
+}

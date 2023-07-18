@@ -1,0 +1,12 @@
+{
+  "name": "correctness",
+  "version": "1.0.0",
+  "main": "main.js",
+  "license": "MIT",
+  "dependencies": {
+    "dd-trace": "DataDog/dd-trace-js#master"
+  },
+  "overrides": {
+    "@datadog/pprof": "dev"
+  }
+}
