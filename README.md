@@ -18,6 +18,24 @@ go test -v -run TestScenarios # Run all scenarios
 TEST_SCENARIOS="ddprof.*"  go test -v -run TestScenarios # Run ddprof scenarios
 ```
 
+### Using as a GitHub Action
+
+You may use this repo to run the analyzer on your profiler emitted pprof files.
+You can do so by adding a GitHub Action Workflow to your repo, where you build
+your profiler and run it on an example program. After you did this, you can add
+a step to analyze your results and match it against your expectation:
+
+```yaml
+      - name: Check profiler correctness for allocations
+        uses: Datadog/prof-correctness
+        with:
+          expected_json: profiling/tests/correctness/allocations.json
+          pprof_path: profiling/tests/correctness/allocations/
+```
+
+You need to provide a JSON file with your expectations and a path to where to
+find the pprof files.
+
 ## Creating new tests 
 
 ### Define the dockerfile 

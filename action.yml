@@ -1,0 +1,18 @@
+name: Prof Correctness
+description: "Run profiler correctness tests"
+
+inputs:
+  expected_json:
+    description: 'Path to a JSON file with the expected output'
+    required: false 
+    type: string
+    default: 'expected.json'
+  pprof_path:
+    description: 'Path to pprof files'
+    required: false
+    type: string
+    default: 'pprof/'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile.action'

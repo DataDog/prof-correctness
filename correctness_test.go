@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -101,7 +102,13 @@ func buildTestApp(t *testing.T, config DockerTestConfig) string {
 	// we could use the docker client, though that makes it harder to do command lines manually
 	now_time := time.Now()
 	// Following arg helps forces to rerun steps after the arg (allows reinstallation of recent profiler) --build-arg CACHE_DATE=$(date +%Y-%m-%d_%H:%M:%S)
-	cmd := exec.Command("docker", "build", "-f", config.dockerfilePath, "--build-arg", now_time.Format("2006-01-02_15:04:05"), "-t", "test-app", ".")
+	args := []string{"docker", "build", "-f", config.dockerfilePath, "--build-arg", now_time.Format("2006-01-02_15:04:05"), "-t", "test-app", "."}
+	commit_sha, exists := os.LookupEnv("COMMIT_SHA")
+	if exists && commit_sha != "" {
+		args = append(args, "--build-arg", "COMMIT_SHA=" + commit_sha);
+	}
+	t.Log("Building docker container with: ", args)
+	cmd := exec.Command(args[0], args[1:]...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Logf("%s", err)
@@ -175,6 +182,16 @@ func testScenarios(t *testing.T, scenarioRegexp string) {
 		pprof_folder := runTestApp(t, tag, config.folder)
 		AnalyzeResults(t, config.jsonFilePath, pprof_folder)
 	}
+}
+
+var (
+	expectedJson = flag.String("expectedJson", "default.json", "Path to the expected JSON file")
+	pprofPath = flag.String("pprofPath", "./", "Path to the directory with the pprof")
+)
+
+func TestAnalyze(t *testing.T) {
+	flag.Parse()
+	AnalyzeResults(t, *expectedJson, *pprofPath)
 }
 
 func TestDDProfScenarios(t *testing.T) {
