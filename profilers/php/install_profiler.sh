@@ -77,6 +77,5 @@ get_circleci_artifact() {
 }
 
 get_circleci_artifact "gh/DataDog/dd-trace-php" "build_packages" "package extension" "datadog-setup.php"
-BINARIES_TRACER_N=$(ls -1 dd-library-php*.tar.gz)
 php ./datadog-setup.php --php-bin php --enable-profiling
 php -v
