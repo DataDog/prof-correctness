@@ -27,7 +27,7 @@ a step to analyze your results and match it against your expectation:
 
 ```yaml
       - name: Check profiler correctness for allocations
-        uses: Datadog/prof-correctness
+        uses: Datadog/prof-correctness/analyze
         with:
           expected_json: profiling/tests/correctness/allocations.json
           pprof_path: profiling/tests/correctness/allocations/
