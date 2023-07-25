@@ -1,0 +1,9 @@
+FROM golang:1.20
+
+# Copy the entire directory into the container
+COPY . /app/
+
+# Make your script executable
+RUN chmod +x /app/analyze/entrypoint.sh
+
+ENTRYPOINT ["/app/analyze/entrypoint.sh"]
