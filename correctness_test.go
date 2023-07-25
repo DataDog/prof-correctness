@@ -36,7 +36,7 @@ func init() {
 }
 
 type DockerTestConfig struct {
-	folder	     string
+	folder         string
 	jsonFilePath   string
 	dockerfilePath string
 }
