@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -175,6 +176,16 @@ func testScenarios(t *testing.T, scenarioRegexp string) {
 		pprof_folder := runTestApp(t, tag, config.folder)
 		AnalyzeResults(t, config.jsonFilePath, pprof_folder)
 	}
+}
+
+var (
+	expectedJson = flag.String("expectedJson", "default.json", "Path to the expected JSON file")
+	pprofPath = flag.String("pprofPath", "./", "Path to the directory with the pprof")
+)
+
+func TestAnalyze(t *testing.T) {
+	flag.Parse()
+	AnalyzeResults(t, *expectedJson, *pprofPath)
 }
 
 func TestDDProfScenarios(t *testing.T) {
