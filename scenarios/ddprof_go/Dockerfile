@@ -8,6 +8,14 @@ COPY ./scenarios/ddprof_go/ .
 
 RUN go build main.go
 
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    xz-utils \
+    jq \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install native profiling
 ARG CACHE_DATE=2023-03-01_09:58:27
 COPY ./binaries/ /app/binaries/
