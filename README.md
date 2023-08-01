@@ -98,20 +98,6 @@ The tests results are written to the data folder. You can periodically clean tha
 
 ## Troubleshooting 
 
-### Retrieving the gitlab image
-
-You do not need this image to run the tests. If you want to debug the gitlab runs using this image:
-
-Retrieve AWS secret to a file.
-
-```
-export ROLE=build-stable-developer ACCOUNT_ID=*********
-aws-vault exec $ROLE -- aws ecr get-login-password --region us-east-1 > secret.docker
-cat ./secret.docker | docker login -u AWS --password-stdin https://$ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
-```
-
-This will update the following file `~/.docker/config.json`
-
 ### Export profiles through the agent
 
 If you have an agent setup locally, you can run the command line with `NETWORK_HOST=YES`. Using network host will allow the docker instance to target the agent running locally. Example:
