@@ -216,7 +216,7 @@ int main(int argc, char *argv[]) {
     app.add_option<std::chrono::seconds, int64_t>(
            "--timeout", opts.timeout_duration, "Timeout after N seconds")
         ->default_val(0)
-        ->envname("EXECUTION_TIME")
+        ->envname("EXECUTION_TIME_SEC")
         ->check(CLI::NonNegativeNumber);
     app.add_option<std::chrono::microseconds, int64_t>(
            "--spin", opts.spin_duration_per_loop,

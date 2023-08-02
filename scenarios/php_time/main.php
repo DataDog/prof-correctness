@@ -19,7 +19,7 @@ function b() {
 }
 
 function main() {
-        $duration = $_ENV["EXECUTION_TIME"];
+        $duration = $_ENV["EXECUTION_TIME_SEC"];
         $end = microtime(true) + ($duration / 2);
         while (microtime(true) < $end) {
                 a();

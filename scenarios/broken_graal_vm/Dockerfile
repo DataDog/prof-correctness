@@ -23,7 +23,7 @@ RUN ./install_profiler.sh /usr/local/bin
 
 ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
 ENV DD_PROFILING_NATIVE_LOG_MODE="/app/data/ddprof_log"
-# If upload period is > EXECUTION_TIME, it can cause issues when shutting down containers 
+# If upload period is > EXECUTION_TIME_SEC, it can cause issues when shutting down containers 
 ENV DD_PROFILING_UPLOAD_PERIOD="10"
 
 CMD ddprof -l notice /app/DummyApp 11

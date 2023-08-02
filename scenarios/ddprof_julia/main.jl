@@ -3,7 +3,7 @@ include("b.jl")
 
 
 test_duration = 60
-exec_time_env = ENV["EXECUTION_TIME"]
+exec_time_env = ENV["EXECUTION_TIME_SEC"]
 if exec_time_env != nothing
     test_duration = parse(Int, exec_time_env)
     if test_duration == 0

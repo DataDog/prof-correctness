@@ -52,5 +52,5 @@ async function foo(nsecs) {
   setImmediate(work);
 }
 
-const executionTime = process.argv[2] || process.env.EXECUTION_TIME || 2
+const executionTime = process.argv[2] || process.env.EXECUTION_TIME_SEC || 2
 setTimeout(() => foo(executionTime), 100)

@@ -12,7 +12,7 @@ function b()
 
 function main()
 {
-    $duration = $_ENV["EXECUTION_TIME"] ?? 10;
+    $duration = $_ENV["EXECUTION_TIME_SEC"] ?? 10;
     $end = microtime(true) + $duration;
     while (microtime(true) < $end) {
         $start = microtime(true);

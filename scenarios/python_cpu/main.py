@@ -6,8 +6,8 @@ i = 0
 
 def main():
     global x, i
-    execution_time = int(os.getenv("EXECUTION_TIME", "10")) # defaults to 10 if not set
-    end = time() + execution_time
+    EXECUTION_TIME_SEC = int(os.getenv("EXECUTION_TIME_SEC", "10")) # defaults to 10 if not set
+    end = time() + EXECUTION_TIME_SEC
     while time() < end:
         a()
         b()

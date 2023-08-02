@@ -28,7 +28,7 @@ COPY ./binaries/ /app/binaries/
 ADD ./profilers/ddprof/install_profiler.sh .
 RUN ./install_profiler.sh /usr/local/bin
 
-ENV EXECUTION_TIME="11"
+ENV EXECUTION_TIME_SEC="11"
 # Default is that test data is dropped in the data folder
 ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
 ENV DD_PROFILING_UPLOAD_PERIOD="10"
