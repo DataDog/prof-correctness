@@ -23,7 +23,7 @@ void b() {
 
 int main(int argc, char *argv[]) {
     int test_duration = 60;
-    const char *exec_time_env = getenv("EXECUTION_TIME");
+    const char *exec_time_env = getenv("EXECUTION_TIME_SEC");
     if (exec_time_env) {
         test_duration = atoi(exec_time_env);
         if (test_duration == 0) {

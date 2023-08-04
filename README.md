@@ -43,14 +43,14 @@ find the pprof files.
 Create a test scenario and prefix the folders with something relevant like `php`, `ddprof`, `go`...
 The dockerfile specifies how to install the profiler and run the test app.
 The dockerfile needs to follow rules
-- set variable `EXECUTION_TIME` (which defines how long the tests runs for)
+- set variable `EXECUTION_TIME_SEC` (which defines how long the tests runs for)
 - output pprof data to the `/app/data/` folder
   The /app/data mirrors the data folder in this repository.
 ```
 # Define OS / Install App...
 # Install profiler...
 # Run things
-ENV EXECUTION_TIME="60"
+ENV EXECUTION_TIME_SEC="60"
 # Default is that test data is dropped in the data folder
 ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
 CMD ["ddprof", "-l", "notice", "/app/build/some_app" ]

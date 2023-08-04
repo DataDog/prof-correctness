@@ -8,11 +8,11 @@ def target(n):
 
 
 if __name__ == "__main__":
-    execution_time = int(os.environ.get("EXECUTION_TIME", "2"))
+    EXECUTION_TIME_SEC = int(os.environ.get("EXECUTION_TIME_SEC", "2"))
 
-    t = Thread(target=target, args=(execution_time / 2,))
+    t = Thread(target=target, args=(EXECUTION_TIME_SEC / 2,))
     t.start()
 
-    target(execution_time)
+    target(EXECUTION_TIME_SEC)
 
     t.join()

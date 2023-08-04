@@ -32,7 +32,7 @@ def b
 end
 
 test_duration = 50
-exec_time_env = ENV['EXECUTION_TIME']
+exec_time_env = ENV['EXECUTION_TIME_SEC']
 if exec_time_env
   test_duration = exec_time_env.to_i
   if test_duration == 0

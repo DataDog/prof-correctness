@@ -111,7 +111,7 @@ func buildTestApp(t *testing.T, config DockerTestConfig) string {
 	return string("test-app")
 }
 
-// docker run -v ${PWD}/data:/app/data:rw -e EXECUTION_TIME=60 -u $(id -u ${USER}):$(id -g ${USER}) --security-opt seccomp=unconfined test-app:latest
+// docker run -v ${PWD}/data:/app/data:rw -e EXECUTION_TIME_SEC=60 -u $(id -u ${USER}):$(id -g ${USER}) --security-opt seccomp=unconfined test-app:latest
 
 func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	currentPath, err := os.Getwd()
@@ -135,7 +135,7 @@ func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	t.Log(strings.Join(cmdSlice, " "))
 	args := []string{"run", "-v", mountOption, "-u", userOption, "--security-opt", "seccomp=unconfined"}
 	if DURATION_SET {
-		args = append(args, "-e", "EXECUTION_TIME="+fmt.Sprint(RUN_SECS))
+		args = append(args, "-e", "EXECUTION_TIME_SEC="+fmt.Sprint(RUN_SECS))
 	}
 	if NETWORK_HOST {
 		args = append(args, "--network=host")
@@ -180,7 +180,7 @@ func testScenarios(t *testing.T, scenarioRegexp string) {
 
 var (
 	expectedJson = flag.String("expectedJson", "default.json", "Path to the expected JSON file")
-	pprofPath = flag.String("pprofPath", "./", "Path to the directory with the pprof")
+	pprofPath    = flag.String("pprofPath", "./", "Path to the directory with the pprof")
 )
 
 func TestAnalyze(t *testing.T) {

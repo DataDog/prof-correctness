@@ -1,0 +1,36 @@
+{
+  "test_name": "python_cpu",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": "\u003cmodule\u003e;main;b",
+          "percent": 66,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "\u003cmodule\u003e;main;a",
+          "percent": 33,
+          "error_margin": 6,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

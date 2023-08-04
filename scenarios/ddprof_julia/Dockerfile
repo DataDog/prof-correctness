@@ -22,7 +22,7 @@ ARG CACHE_DATE=2023-03-01_09:58:27
 ADD ./profilers/ddprof/install_profiler.sh .
 RUN ./install_profiler.sh /usr/local/bin
 
-ENV EXECUTION_TIME="11"
+ENV EXECUTION_TIME_SEC="11"
 # Default is that test data is dropped in the data folder
 ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
 ENV DD_PROFILING_UPLOAD_PERIOD="10"
@@ -33,7 +33,7 @@ ENV ENABLE_JITPROFILING=1
 # The rpath is defined by the caller of dlopen. Intercepting the call changes
 # who is calling dlopen. This is not easy to fix, so I'm adding the path to Julia libs
 # Debug command:
-# ENABLE_JITPROFILING=1 LD_LIBRARY_PATH=~/dd/scripts/julia-1.8.5/lib/julia/ EXECUTION_TIME=30 ddprof -l notice 
+# ENABLE_JITPROFILING=1 LD_LIBRARY_PATH=~/dd/scripts/julia-1.8.5/lib/julia/ EXECUTION_TIME_SEC=30 ddprof -l notice 
 # --show_sample julia scenarios/ddprof_julia/main.jl
 ENV LD_LIBRARY_PATH="/usr/local/julia/lib:${LD_LIBRARY_PATH}"
 RUN mkdir /.debug && mkdir /.debug/jit && chmod 777 /.debug/jit

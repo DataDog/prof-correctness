@@ -30,6 +30,6 @@ async function foo(iterCount, allocPeriodMs) {
 var refs = []
 const allocSize = 1024 * 1024 * 2
 const allocPeriodMs = 100
-const durationMs = (process.argv[2] || process.env.EXECUTION_TIME || 2) * 1000
+const durationMs = (process.argv[2] || process.env.EXECUTION_TIME_SEC || 2) * 1000
 const iterCount = durationMs / allocPeriodMs
 setTimeout(() => foo(iterCount, allocPeriodMs), 100)

@@ -8,7 +8,7 @@ COPY ./scenarios/node_wall/* ./
 RUN chmod 755 /app/*
 RUN npm install
 
-ENV EXECUTION_TIME="10"
+ENV EXECUTION_TIME_SEC="10"
 ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
 ENV DD_PROFILING_EXPORTERS=file
 ENV DD_PROFILING_ENABLED=1
