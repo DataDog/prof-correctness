@@ -11,6 +11,7 @@ def main():
     while time() < end:
         a()
         b()
+    # We add a print to prevent optimization that could turn this into a no-op program
     print(x)
 
 def a():
