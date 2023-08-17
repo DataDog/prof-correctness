@@ -225,13 +225,20 @@ func assertStackPercent(t *testing.T, prof []StackSample, regexpStack string, pc
 	}
 	var total int64 = 0
 	var matching int64 = 0
+	var found bool = false
 	for _, ss := range prof {
 		total += ss.Val
 		if r.MatchString(ss.Stack) {
 			if labels == nil || checkLabels(t, ss.Labels, labels) {
 				matching += ss.Val
+				found = true
 			}
 		}
+	}
+
+	if !found {
+		t.Errorf("Assertion failed: stack '%s' not found", regexpStack)
+		return
 	}
 
 	var actualPct int64 = 0
