@@ -55,19 +55,6 @@
               ]
             }
           ]
-        },
-        {
-          "regular_expression": "_bootstrap;_bootstrap_inner;run;target",
-          "percent": 5,
-          "error_margin": 2,
-          "labels": [
-            {
-              "key": "thread name",
-              "values": [
-                "Thread-2 (target)"
-              ]
-            }
-          ]
         }
       ]
     }
