@@ -1,0 +1,235 @@
+{
+  "test_name": "node_code_hotspots",
+  "stacks": [
+    {
+      "profile-type": "wall",
+      "stack-content": [
+        {
+          "regular_expression": "busyLoop22",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "span id",
+              "values": [
+                "12"
+              ]
+            },
+            {
+              "key": "local root span id",
+              "values": [
+                "9"
+              ]
+            },
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-2"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "busyLoop21",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "span id",
+              "values": [
+                "11"
+              ]
+            },
+            {
+              "key": "local root span id",
+              "values": [
+                "9"
+              ]
+            },
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-2"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "busyLoop20",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "span id",
+              "values": [
+                "10"
+              ]
+            },
+            {
+              "key": "local root span id",
+              "values": [
+                "9"
+              ]
+            },
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-2"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "busyLoop12",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "local root span id",
+              "values": [
+                "5"
+              ]
+            },
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-1"
+              ]
+            },
+            {
+              "key": "span id",
+              "values": [
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "busyLoop11",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "local root span id",
+              "values": [
+                "5"
+              ]
+            },
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-1"
+              ]
+            },
+            {
+              "key": "span id",
+              "values": [
+                "7"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "busyLoop10",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "local root span id",
+              "values": [
+                "5"
+              ]
+            },
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-1"
+              ]
+            },
+            {
+              "key": "span id",
+              "values": [
+                "6"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "busyLoop02",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-0"
+              ]
+            },
+            {
+              "key": "span id",
+              "values": [
+                "4"
+              ]
+            },
+            {
+              "key": "local root span id",
+              "values": [
+                "1"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "busyLoop01",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "span id",
+              "values": [
+                "3"
+              ]
+            },
+            {
+              "key": "local root span id",
+              "values": [
+                "1"
+              ]
+            },
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-0"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "busyLoop00",
+          "percent": 11,
+          "error_margin": 1,
+          "labels": [
+            {
+              "key": "span id",
+              "values": [
+                "2"
+              ]
+            },
+            {
+              "key": "local root span id",
+              "values": [
+                "1"
+              ]
+            },
+            {
+              "key": "trace endpoint",
+              "values": [
+                "endpoint-0"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
