@@ -2,7 +2,18 @@
   "test_name": "ddprof_live_heap",
   "stacks": [
     {
-      "profile-type": "alloc-samples",
+      "profile-type": "inuse-space",
+      "stack-content": [
+        {
+          
+          "regular_expression": ".*leak_function\\(int\\)",
+          "percent": 70,
+          "error_margin": 20
+        }
+      ]
+    },
+    {
+      "profile-type": "inuse-objects",
       "stack-content": [
         {
           
