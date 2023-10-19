@@ -1,8 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"math"
 	"os"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/google/pprof/profile"
+	"github.com/pierrec/lz4/v4"
 )
 
 type StackSample struct {
@@ -114,7 +116,7 @@ func captureProfData(t *testing.T, prof *profile.Profile, path string, stackTest
 		var newStackContent []StackContent
 		if totalVal != 0 {
 			var idxToRemove []int
-			for idx, _ := range typedStack.StackContent {
+			for idx := range typedStack.StackContent {
 				typedStack.StackContent[idx].Percent = (typedStack.StackContent[idx].Value * 100) / int64(totalVal)
 				if typedStack.StackContent[idx].Percent < typedStack.StackContent[idx].ErrorMargin {
 					idxToRemove = append(idxToRemove, idx)
@@ -219,7 +221,7 @@ func checkLabels(t *testing.T, labels map[string][]string, expected []Labels) bo
 }
 
 func assertStackPercent(t *testing.T, prof []StackSample, regexpStack string, pct int64, epsilonPct int64, labels []Labels) {
-	var r, err = regexp.Compile(regexpStack)
+	r, err := regexp.Compile(regexpStack)
 	if err != nil {
 		t.Fatalf("Error compiling regex: %v, %s", err, regexpStack)
 	}
@@ -256,7 +258,7 @@ func assertStackPercent(t *testing.T, prof []StackSample, regexpStack string, pc
 }
 
 func assertStackValue(t *testing.T, prof []StackSample, regexpStack string, value float64, epsilonPct int64) {
-	var r, err = regexp.Compile(regexpStack)
+	r, err := regexp.Compile(regexpStack)
 	if err != nil {
 		t.Fatalf("Error compiling regex: %v, %s", err, regexpStack)
 	}
@@ -300,7 +302,7 @@ func writeToJSONFile(data StackTestData, filePath string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filePath, jsonData, 0644)
+	return os.WriteFile(filePath, jsonData, 0644)
 }
 
 func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
@@ -310,7 +312,7 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 	}
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
-	byteValue, err := ioutil.ReadAll(jsonFile)
+	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
 		t.Fatalf("Unable to read json data %s", jsonFilePath)
 	}
@@ -331,9 +333,14 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 	// Other profilers (using pprof) include pprof in the name
 	pprof_regexp := regexp.MustCompile("(^profile.*|.*pprof.*)")
 
+	zr := lz4.NewReader(nil)
+
 	// Iterate over all files in the pprof folder
-	err = filepath.Walk(pprof_folder, func(path string, info os.FileInfo, err error) error {
+	filepath.Walk(pprof_folder, func(path string, info os.FileInfo, err error) error {
 		// anon function that opens all the prof data and checks that it has the correct stacks
+		if err != nil {
+			t.Fatalf("Error walking pprof folder: %v", err)
+		}
 		// Skip directories
 		if info.IsDir() {
 			return nil
@@ -350,9 +357,21 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 		defer file.Close()
 		// Read the file content
 		t.Logf("Analyzing results in %s", path)
-		content, err := ioutil.ReadAll(file)
+		content, err := io.ReadAll(file)
 		if err != nil {
 			t.Fatalf("Error reading file %s", path)
+		}
+		if ok, _ := lz4.ValidFrameHeader(content); ok {
+			in := bytes.NewReader(content)
+			zr.Reset(in)
+			var out bytes.Buffer
+			// is lz4 compressed? lets decompress that
+			_, err := io.Copy(&out, zr)
+			if err != nil {
+				t.Fatalf("Failed to decompress lz4 pprof: %v", err)
+			}
+			content = out.Bytes()
+			zr.Reset(nil)
 		}
 		prof, err := profile.ParseData(content)
 		if err != nil {
