@@ -45,8 +45,8 @@
         },
         {
           "regular_expression": "run",
-          "percent": 9,
-          "error_margin": 2,
+          "percent": 5,
+          "error_margin": 4,
           "labels": [
             {
               "key": "thread name",
@@ -64,8 +64,8 @@
         },
         {
           "regular_expression": "\u003cmodule\u003e;target;sleep",
-          "percent": 9,
-          "error_margin": 2,
+          "percent": 5,
+          "error_margin": 4,
           "labels": [
             {
               "key": "thread name",

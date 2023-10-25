@@ -6,7 +6,7 @@
       "stack-content": [
         {
           "regular_expression": "_bootstrap;_bootstrap_inner;run;wait;wait",
-          "percent": 12,
+          "percent": 18,
           "error_margin": 3,
           "labels": [
             {
@@ -19,7 +19,7 @@
         },
         {
           "regular_expression": "_bootstrap;_bootstrap_inner;run;wait;wait",
-          "percent": 12,
+          "percent": 18,
           "error_margin": 3,
           "labels": [
             {
@@ -32,7 +32,7 @@
         },
         {
           "regular_expression": "_bootstrap;_bootstrap_inner;run;periodic",
-          "percent": 12,
+          "percent": 18,
           "error_margin": 3,
           "labels": [
             {
@@ -45,7 +45,7 @@
         },
         {
           "regular_expression": "\u003cmodule\u003e;target",
-          "percent": 11,
+          "percent": 18,
           "error_margin": 2,
           "labels": [
             {

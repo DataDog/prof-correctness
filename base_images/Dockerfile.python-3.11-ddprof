@@ -1,0 +1,23 @@
+FROM python:3.11 AS base
+
+ENV DD_PROFILING_ENABLED true
+ENV DD_TRACE_ENABLED false
+ENV DD_TRACE_DEBUG true
+ENV DD_PROFILING_EXPORT_LIBDD_ENABLED 1
+ENV DD_PROFILING_EXPORT_PY_ENABLED 0
+ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
+
+# Native profiler deps
+RUN apt-get update && apt-get install -y \
+    curl \
+    jq \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Allow user to force a more recent install
+ARG CACHE_DATE=2023-10-25_12:26:27
+# Install native profiling
+ADD ./profilers/ddprof/install_profiler.sh .
+RUN ./install_profiler.sh /usr/local/bin
+
+ENV DD_PROFILING_NATIVE_LOG_MODE="/app/data/ddprof_log"

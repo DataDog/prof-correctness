@@ -239,7 +239,7 @@ func assertStackPercent(t *testing.T, prof []StackSample, regexpStack string, pc
 	}
 
 	if !found {
-		t.Errorf("Assertion failed: stack '%s' not found", regexpStack)
+		t.Errorf("\033[31mAssertion failed: stack '%s' not found\033[0m", regexpStack)
 		return
 	}
 
@@ -251,9 +251,9 @@ func assertStackPercent(t *testing.T, prof []StackSample, regexpStack string, pc
 	diff := absDiff(pct, actualPct)
 	// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
 	if diff > epsilonPct {
-		t.Errorf("Assertion failed: stack '%s' should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error", regexpStack, pct, epsilonPct, actualPct, diff)
+		t.Errorf("\033[31mAssertion failed: stack '%s' should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, pct, epsilonPct, actualPct, diff)
 	} else {
-		t.Logf("Assertion succeeded: stack '%s' is %d%% +/- %d%% of the profile (was %d%% with %d%% error)", regexpStack, pct, epsilonPct, actualPct, diff)
+		t.Logf("\033[32mAssertion succeeded: stack '%s' is %d%% +/- %d%% of the profile (was %d%% with %d%% error)\033[0m", regexpStack, pct, epsilonPct, actualPct, diff)
 	}
 }
 
