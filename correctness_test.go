@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"flag"
 	"fmt"
@@ -157,6 +158,52 @@ func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	return tmpdir
 }
 
+// Find the base image being used within a dockerfile
+func extractBaseImage(dockerfilePath string) (string, error) {
+	file, err := os.Open(dockerfilePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	lineCount := 0
+	for scanner.Scan() && lineCount < 10 {
+		line := scanner.Text()
+		matches := regexp.MustCompile(`ARG BASE_IMAGE="(.+?)"`).FindStringSubmatch(line)
+		if matches != nil && len(matches) > 1 {
+			return matches[1], nil
+		}
+		lineCount++
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return "", nil
+}
+
+// Build all base images
+func buildBaseImage(rootDir string, baseImageName string, t *testing.T) {
+	baseImageDir := filepath.Join(rootDir, "base_images")
+	dockerfileName := "Dockerfile." + strings.TrimPrefix(baseImageName, "prof-")
+	dockerfilePath := filepath.Join(baseImageDir, dockerfileName)
+
+	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+		t.Fatalf("Required base Dockerfile %s not found!", dockerfilePath)
+		return
+	}
+
+	tag := baseImageName
+	buildCmd := exec.Command("docker", "build", "-t", tag, "-f", dockerfilePath, baseImageDir)
+	buildCmd.Stdout = os.Stdout
+	buildCmd.Stderr = os.Stderr
+	err := buildCmd.Run()
+	if err != nil {
+		t.Fatalf("Error building base image %s: %v", tag, err)
+	}
+	t.Logf("Built base image with tag: %s", tag)
+}
+
 func testScenarios(t *testing.T, scenarioRegexp string) {
 	t.Logf("Considering only scenarios in %s", scenarioRegexp)
 	rootDir := "./scenarios"
@@ -167,6 +214,29 @@ func testScenarios(t *testing.T, scenarioRegexp string) {
 	if len(configs) == 0 {
 		t.Fatalf("No configurations were found with this regexp %s", scenarioRegexp)
 	}
+
+	// The build configurations are similar for scenarios within a language
+	// The idea is to have base images to group some of the configurations
+	// Here we accumulate base image names
+	baseImageNames := map[string]bool{}
+	for _, config := range configs {
+		t.Log("Extract base image from:", config.dockerfilePath)
+		baseImage, err := extractBaseImage(config.dockerfilePath)
+		if err != nil {
+			t.Fatalf("Error extracting base image from Dockerfile %s: %v", config.dockerfilePath, err)
+		}
+		if baseImage != "" {
+			baseImageNames[baseImage] = true
+		}
+	}
+
+	// Build required base images
+	for baseImageName := range baseImageNames {
+		t.Log("Building base image:", baseImageName)
+		buildBaseImage("./", baseImageName, t)
+	}
+
+	// Run the tests
 	for _, config := range configs {
 		t.Log("Folder:", config.folder)
 		t.Log("Json file:", config.jsonFilePath)
