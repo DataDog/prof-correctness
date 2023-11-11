@@ -194,7 +194,7 @@ func buildBaseImage(rootDir string, baseImageName string, t *testing.T) {
 	}
 
 	tag := baseImageName
-	buildCmd := exec.Command("docker", "build", "-t", tag, "-f", dockerfilePath, baseImageDir)
+	buildCmd := exec.Command("docker", "build", "-t", tag, "-f", dockerfilePath, rootDir)
 	buildCmd.Stdout = os.Stdout
 	buildCmd.Stderr = os.Stderr
 	err := buildCmd.Run()

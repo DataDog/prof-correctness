@@ -1,0 +1,25 @@
+FROM ubuntu:20.04 AS base
+
+RUN apt-get update && apt-get install -y \
+    g++ \
+    gcc \
+    cmake \
+    curl \
+    xz-utils \
+    jq \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /app
+WORKDIR /app
+
+# Install native profiling
+ARG CACHE_DATE=2023-03-01_09:58:27
+COPY ./binaries/ /app/binaries/
+ADD ./profilers/ddprof/install_profiler.sh .
+RUN ./install_profiler.sh /usr/local/bin
+
+ENV EXECUTION_TIME_SEC="11"
+# Default is that test data is dropped in the data folder
+ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
+ENV DD_PROFILING_UPLOAD_PERIOD="10"
