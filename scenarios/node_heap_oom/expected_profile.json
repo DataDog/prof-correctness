@@ -5,7 +5,7 @@
       "profile-type": "space",
       "stack-content": [
         {
-          "regular_expression": "processTimers;listOnTimeout;\\(anonymous\\);foo",
+          "regular_expression": "processTimers;listOnTimeout;\\(anonymous:L#13:C#30\\);foo",
           "percent": 97,
           "error_margin": 3
         }
