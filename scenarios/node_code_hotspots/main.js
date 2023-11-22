@@ -11,7 +11,7 @@ let counter = 0
 setTimeout(runBusySpans, 100)
 
 function runBusySpans () {
-  tracer.trace('x' + counter, (span, done) => {
+  tracer.trace('x' + counter, { type: 'web', resource: `endpoint-${counter}` }, (span, done) => {
     // Make the span ID deterministic for the test.
     // NOTE: this (obviously) depends on unsupported internals of dd-trace-js as
     // it is accessing _* named properties. This is fine in tests, but can
@@ -20,10 +20,6 @@ function runBusySpans () {
     // internal changes in dd-trace-js.
     const rootSpanId = ((INNER_ROUNDS + 1) * counter) + 1
     span._spanContext._spanId._buffer = [0, 0, 0, 0, 0, 0, 0, rootSpanId]
-
-    // Add tags for endpoint tracing
-    span.setTag('span.type', 'web')
-    span.setTag('resource.name', `endpoint-${counter}`)
 
     setImmediate(() => {
       for (let i = 0; i < INNER_ROUNDS; ++i) {
