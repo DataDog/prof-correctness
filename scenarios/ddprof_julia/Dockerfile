@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     jq \
     wget \
     bash \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -21,11 +22,11 @@ RUN apt-get update && apt-get install -y \
 ARG CACHE_DATE=2023-03-01_09:58:27
 ADD ./profilers/ddprof/install_profiler.sh .
 RUN ./install_profiler.sh /usr/local/bin
+ADD ./profilers/ddprof/run_ddprof.sh .
 
 ENV EXECUTION_TIME_SEC="11"
 # Default is that test data is dropped in the data folder
 ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
-ENV DD_PROFILING_UPLOAD_PERIOD="10"
 # Julia uses LLVM symbol maps (in .debug folder)
 ENV ENABLE_JITPROFILING=1
 # Why we have the LD_LIBRARY_PATH updated
@@ -37,4 +38,4 @@ ENV ENABLE_JITPROFILING=1
 # --show_sample julia scenarios/ddprof_julia/main.jl
 ENV LD_LIBRARY_PATH="/usr/local/julia/lib:${LD_LIBRARY_PATH}"
 RUN mkdir /.debug && mkdir /.debug/jit && chmod 777 /.debug/jit
-CMD ["ddprof", "-l", "notice", "--preset", "cpu_only", "julia", "main.jl" ]
+CMD ["/app/run_ddprof.sh", "-l", "notice", "--preset", "cpu_only", "julia", "main.jl" ]
