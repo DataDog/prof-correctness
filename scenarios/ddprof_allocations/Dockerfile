@@ -6,4 +6,4 @@ COPY ./scenarios/ddprof_allocations/ ./
 RUN cmake -S . -B build
 RUN cmake --build build -- -j $(nproc)
 
-CMD ["ddprof", "-l", "notice", "/app/build/simple_malloc" ]
+CMD ["/app/run_ddprof.sh", "-l", "notice", "/app/build/simple_malloc" ]

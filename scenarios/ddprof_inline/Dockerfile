@@ -5,4 +5,4 @@ ADD ./scenarios/ddprof_inline/inline.cc .
 ADD ./scenarios/ddprof_inline/build.sh .
 RUN ./build.sh
 
-CMD ddprof -l notice --show_config ./inline_test
+CMD /app/run_ddprof.sh -l notice --show_config ./inline_test
