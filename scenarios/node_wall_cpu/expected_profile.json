@@ -1,0 +1,214 @@
+{
+  "test_name": "node_wall_cpu",
+  "stacks": [
+    {
+      "profile-type": "wall",
+      "pprof-regex": "profiles_wall_worker_0_.*.pprof",
+      "stack-content": [
+        {
+          "regular_expression": "foo;b",
+          "percent": 66,
+          "value": 400000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Main Event Loop"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "[0-9]+"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "foo;a",
+          "percent": 33,
+          "value": 200000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Main Event Loop"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "[0-9]+"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu",
+      "pprof-regex": "profiles_wall_worker_0_.*.pprof",
+      "stack-content": [
+        {
+          "regular_expression": "foo;b",
+          "percent": 33,
+          "value": 400000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Main Event Loop"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "[0-9]+"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "foo;a",
+          "percent": 17,
+          "value": 200000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Main Event Loop"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "[0-9]+"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "\\(non-JS threads\\)",
+          "value": 650000000,
+          "percent": 52,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Non-JS threads"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "NA"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall",
+      "pprof-regex": "profiles_wall_worker_1_.*.pprof",
+      "stack-content": [
+        {
+          "regular_expression": "foo;b",
+          "percent": 66,
+          "value": 400000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Worker #1 Event Loop"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "[0-9]+"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "foo;a",
+          "percent": 33,
+          "value": 200000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Worker #1 Event Loop"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "[0-9]+"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu",
+      "pprof-regex": "profiles_wall_worker_1_.*.pprof",
+      "stack-content": [
+        {
+          "regular_expression": "foo;b",
+          "percent": 66,
+          "value": 400000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Worker #1 Event Loop"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "[0-9]+"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "foo;a",
+          "percent": 33,
+          "value": 200000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Worker #1 Event Loop"
+              ]
+            },
+            {
+              "key": "os thread id",
+              "values": [
+                "[0-9]+"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "\\(non-JS threads\\)",
+          "value": 0,
+          "error_margin": 0
+        }
+      ]
+    }    
+  ]
+}
