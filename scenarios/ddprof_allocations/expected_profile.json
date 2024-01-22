@@ -12,11 +12,11 @@
                     "labels": [
                         {
                           "key": "process_id",
-                          "values": ["7"]
+                          "values": ["[0-9]+"]
                         },
                         {
                           "key": "thread id",
-                          "values": ["7"]
+                          "values": ["[0-9]+"]
                         }
                     ]            
                 }
