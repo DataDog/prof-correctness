@@ -287,8 +287,12 @@ func assertStack(t *testing.T, prof []StackSample, regexpStack string, value flo
 func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, durationSecs float64) {
 	for _, stack := range typedStacks.StackContent {
 		regexpStack := stack.RegularExpression
-		value := float64(stack.Value) * durationSecs // value for total duration
-		percent := stack.Percent                     // percentage within the profile
+		// Do not scale values for profiles with a duration of 0 (eg. Node.js heap profiles)
+		value := float64(stack.Value)
+		if durationSecs > 0 {
+			value = value * durationSecs // value for total duration
+		}
+		percent := stack.Percent // percentage within the profile
 		errorMargin := stack.ErrorMargin
 		assertStack(t, prof, regexpStack, value, percent, errorMargin, stack.Labels)
 		// todo
