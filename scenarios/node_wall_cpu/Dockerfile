@@ -1,10 +1,10 @@
-FROM node:18-bullseye
+FROM node:20-bullseye
 
 # Give everyone write permissions in /app because profile is written here
 RUN mkdir /app && chmod a+rwX /app
 WORKDIR /app
 
-COPY ./scenarios/node_wall/* ./
+COPY ./scenarios/node_wall_cpu/* ./
 RUN chmod 755 /app/*
 RUN npm install
 
@@ -15,5 +15,6 @@ ENV DD_PROFILING_ENABLED=1
 ENV DD_TRACING_ENABLED=0
 ENV DD_REMOTE_CONFIGURATION_ENABLED=0
 ENV DD_PROFILING_PROFILERS=wall
+ENV DD_PROFILING_EXPERIMENTAL_CPU_ENABLED=1
 ENV DD_TRACE_DEBUG=1
 CMD node -r dd-trace/init main.js
