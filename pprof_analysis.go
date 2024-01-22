@@ -407,7 +407,8 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 
 	// python files are in the form "profile.<pid>.number"
 	// Other profilers (using pprof) include pprof in the name
-	default_pprof_regexp := regexp.MustCompile("(^profile.*|.*pprof.*)")
+	// Filter out files that ends with '.json' to avoid considering files dumped by captureProfData as profiles
+	default_pprof_regexp := regexp.MustCompile("(^profile.*|.*pprof.*)([^n]|[^o]n|[^s]on|[^j]son|[^.]json)$")
 	processedProfilesMap := make(map[string]bool)
 
 	for _, typedStacks := range stackTestData.Stacks {
