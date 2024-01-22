@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -38,12 +39,29 @@ type StackContent struct {
 
 type TypedStacks struct {
 	ProfileType  string         `json:"profile-type"`
+	PprofRegex   string         `json:"pprof-regex"`
 	StackContent []StackContent `json:"stack-content"`
 }
 
 type StackTestData struct {
 	TestName string        `json:"test_name"`
 	Stacks   []TypedStacks `json:"stacks"`
+}
+
+func (stack *StackContent) UnmarshalJSON(data []byte) error {
+	type stackcontent StackContent
+	stackContent := &stackcontent{
+		Value:   -1, // default value
+		Percent: -1, // default value
+	}
+
+	err := json.Unmarshal(data, stackContent)
+	if err != nil {
+		return err
+	}
+
+	*stack = StackContent(*stackContent)
+	return nil
 }
 
 func fileNameWithoutExt(fileName string) string {
@@ -75,12 +93,12 @@ func contains_str(s []string, v string) bool {
 	return false
 }
 
-func captureProfData(t *testing.T, prof *profile.Profile, path string, stackTestData StackTestData) {
+func captureProfData(t *testing.T, prof *profile.Profile, path string, testName string) {
 	// labels to ignore
 	keysToIgnore := []string{"thread id", "thread native id"}
 
 	var capturedData StackTestData
-	capturedData.TestName = stackTestData.TestName
+	capturedData.TestName = testName
 
 	for _, sampleType := range prof.SampleType {
 		var typedStack TypedStacks
@@ -208,7 +226,11 @@ func checkLabels(t *testing.T, labels map[string][]string, expected []Labels) bo
 			// Sample values for labels are sorted when read from stacks
 			sort.Strings(e.Values)
 			for i, v := range e.Values {
-				if vals[i] != v {
+				matched, err := regexp.MatchString(v, vals[i])
+				if err != nil {
+					t.Fatalf("Error matching regexp %s: %v", v, err)
+				}
+				if !matched {
 					// t.Log("NO")
 					return false
 				}
@@ -220,27 +242,20 @@ func checkLabels(t *testing.T, labels map[string][]string, expected []Labels) bo
 	return true
 }
 
-func assertStackPercent(t *testing.T, prof []StackSample, regexpStack string, pct int64, epsilonPct int64, labels []Labels) {
+func assertStack(t *testing.T, prof []StackSample, regexpStack string, value float64, pct int64, epsilonPct int64, labels []Labels) {
 	r, err := regexp.Compile(regexpStack)
 	if err != nil {
 		t.Fatalf("Error compiling regex: %v, %s", err, regexpStack)
 	}
 	var total int64 = 0
 	var matching int64 = 0
-	var found bool = false
 	for _, ss := range prof {
 		total += ss.Val
 		if r.MatchString(ss.Stack) {
 			if labels == nil || checkLabels(t, ss.Labels, labels) {
 				matching += ss.Val
-				found = true
 			}
 		}
-	}
-
-	if !found {
-		t.Errorf("\033[31mAssertion failed: stack '%s' not found\033[0m", regexpStack)
-		return
 	}
 
 	var actualPct int64 = 0
@@ -248,33 +263,24 @@ func assertStackPercent(t *testing.T, prof []StackSample, regexpStack string, pc
 		actualPct = matching * 100 / total
 	}
 
-	diff := absDiff(pct, actualPct)
-	// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
-	if diff > epsilonPct {
-		t.Errorf("\033[31mAssertion failed: stack '%s' should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, pct, epsilonPct, actualPct, diff)
-	} else {
-		t.Logf("\033[32mAssertion succeeded: stack '%s' is %d%% +/- %d%% of the profile (was %d%% with %d%% error)\033[0m", regexpStack, pct, epsilonPct, actualPct, diff)
-	}
-}
-
-func assertStackValue(t *testing.T, prof []StackSample, regexpStack string, value float64, epsilonPct int64) {
-	r, err := regexp.Compile(regexpStack)
-	if err != nil {
-		t.Fatalf("Error compiling regex: %v, %s", err, regexpStack)
-	}
-	var matching int64 = 0
-	for _, ss := range prof {
-		if r.MatchString(ss.Stack) {
-			matching += ss.Val
+	if value >= 0 {
+		errorPct := math.Abs(float64(matching)-value) / math.Max(value, math.SmallestNonzeroFloat64) * 100.0
+		// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
+		if errorPct > float64(epsilonPct) {
+			t.Errorf("\033[31mAssertion failed: stack '%s' should have been %.1f +/- %d%% of the profile but was %d with %.1f%% error\033[0m", regexpStack, value, epsilonPct, matching, errorPct)
+		} else {
+			t.Logf("\033[32mAssertion succeeded: stack '%s' is %.1f +/- %d%% of the profile (was %d with %.1f%% error)\033[0m", regexpStack, value, epsilonPct, matching, errorPct)
 		}
 	}
 
-	errorPct := math.Abs(float64(matching)-value) / value * 100.0
-	// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
-	if errorPct > float64(epsilonPct) {
-		t.Errorf("Assertion failed: stack '%s' should have been %.1f +/- %d%% of the profile but was %d with %.1f%% error", regexpStack, value, epsilonPct, matching, errorPct)
-	} else {
-		t.Logf("Assertion succeeded: stack '%s' is %.1f +/- %d%% of the profile (was %d with %.1f%% error)", regexpStack, value, epsilonPct, matching, errorPct)
+	if pct >= 0 {
+		diff := absDiff(pct, actualPct)
+		// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
+		if diff > epsilonPct {
+			t.Errorf("\033[31mAssertion failed: stack '%s' should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, pct, epsilonPct, actualPct, diff)
+		} else {
+			t.Logf("\033[32mAssertion succeeded: stack '%s' is %d%% +/- %d%% of the profile (was %d%% with %d%% error)\033[0m", regexpStack, pct, epsilonPct, actualPct, diff)
+		}
 	}
 }
 
@@ -284,13 +290,7 @@ func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, 
 		value := float64(stack.Value) * durationSecs // value for total duration
 		percent := stack.Percent                     // percentage within the profile
 		errorMargin := stack.ErrorMargin
-		if percent != 0 {
-			assertStackPercent(t, prof, regexpStack, percent, errorMargin, stack.Labels)
-		}
-
-		if value != 0 {
-			assertStackValue(t, prof, regexpStack, value, errorMargin)
-		}
+		assertStack(t, prof, regexpStack, value, percent, errorMargin, stack.Labels)
 		// todo
 		// - add an assertion on counts (example:number of allocations)
 		// - add an assertion on the total amount captured
@@ -305,94 +305,127 @@ func writeToJSONFile(data StackTestData, filePath string) error {
 	return os.WriteFile(filePath, jsonData, 0644)
 }
 
-func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
-	jsonFile, err := os.Open(jsonFilePath)
+func readJSONFile(filePath string) (StackTestData, error) {
+	var data StackTestData
+	jsonFile, err := os.Open(filePath)
 	if err != nil {
-		t.Fatalf("Error opening file %s", jsonFilePath)
+		return data, err
 	}
-	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
-		t.Fatalf("Unable to read json data %s", jsonFilePath)
+		return data, err
 	}
-
 	if !json.Valid(byteValue) {
-		t.Fatalf("Invalid json data %s", jsonFilePath)
+		return data, fmt.Errorf("Invalid json data %s", filePath)
 	}
-
-	var stackTestData StackTestData
-	if err := json.Unmarshal(byteValue, &stackTestData); err != nil {
-		t.Fatalf("Unable to Unmarshal json data %s", jsonFilePath)
+	if err := json.Unmarshal(byteValue, &data); err != nil {
+		return data, err
 	}
+	return data, nil
+}
 
-	found_pprof := false
-	// retrieve all stack data
-	stacks := stackTestData.Stacks
-	// python files are in the form "profile.<pid>.number"
-	// Other profilers (using pprof) include pprof in the name
-	pprof_regexp := regexp.MustCompile("(^profile.*|.*pprof.*)")
-
-	zr := lz4.NewReader(nil)
-
-	// Iterate over all files in the pprof folder
-	filepath.Walk(pprof_folder, func(path string, info os.FileInfo, err error) error {
-		// anon function that opens all the prof data and checks that it has the correct stacks
+func getMatchingFiles(folder string, filenameRegex *regexp.Regexp) ([]string, error) {
+	var matchingFiles []string
+	err := filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			t.Fatalf("Error walking pprof folder: %v", err)
+			return err
 		}
-		// Skip directories
 		if info.IsDir() {
 			return nil
 		}
-		// Only consider pprof files
-		if !pprof_regexp.MatchString(filepath.Base(path)) {
-			return nil
-		}
-		// Open the file
-		file, err := os.Open(path)
-		if err != nil {
-			t.Fatalf("Error opening file %s", path)
-		}
-		defer file.Close()
-		// Read the file content
-		t.Logf("Analyzing results in %s", path)
-		content, err := io.ReadAll(file)
-		if err != nil {
-			t.Fatalf("Error reading file %s", path)
-		}
-		if ok, _ := lz4.ValidFrameHeader(content); ok {
-			in := bytes.NewReader(content)
-			zr.Reset(in)
-			var out bytes.Buffer
-			// is lz4 compressed? lets decompress that
-			_, err := io.Copy(&out, zr)
-			if err != nil {
-				t.Fatalf("Failed to decompress lz4 pprof: %v", err)
-			}
-			content = out.Bytes()
-			zr.Reset(nil)
-		}
-		prof, err := profile.ParseData(content)
-		if err != nil {
-			t.Fatalf("Failed to parse profile: %v", err)
-		}
-		found_pprof = true
-		profileDuration := float64(prof.DurationNanos) / 1000000000.0
-		t.Logf("Found a profile duration of %.1f seconds (in %s)", profileDuration, filepath.Base(path))
-
-		// Store current data in a json file to help users create their tests
-		captureProfData(t, prof, path, stackTestData)
-
-		// Loop on all profile types
-		for _, typedStacks := range stacks {
-			typedProf := getProfileType(t, prof, typedStacks.ProfileType)
-
-			analyzeProfData(t, typedProf, typedStacks, profileDuration)
+		if filenameRegex.MatchString(info.Name()) {
+			matchingFiles = append(matchingFiles, path)
 		}
 		return nil
 	})
-	if !found_pprof {
-		t.Fatalf("No pprof file found. Check what profiler emitted")
+	if err != nil {
+		return nil, err
+	}
+	return matchingFiles, nil
+}
+
+func readPprofFile(pprof_file string) (*profile.Profile, error) {
+	// Open the file
+	file, err := os.Open(pprof_file)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	// Read the file content
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	if ok, _ := lz4.ValidFrameHeader(content); ok {
+		in := bytes.NewReader(content)
+		zr := lz4.NewReader(in)
+		var out bytes.Buffer
+		// is lz4 compressed? lets decompress that
+		_, err := io.Copy(&out, zr)
+		if err != nil {
+			return nil, err
+		}
+		content = out.Bytes()
+		zr.Reset(nil)
+	}
+	prof, err := profile.ParseData(content)
+	if err != nil {
+		return nil, err
+	}
+	return prof, nil
+}
+
+func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, testName string, captureData bool) {
+	prof, err := readPprofFile(pprof_file)
+	if err != nil {
+		t.Fatalf("Error reading file %s", pprof_file)
+	}
+	t.Logf("Analyzing results in %s for profile type %s", pprof_file, typedStacks.ProfileType)
+
+	profileDuration := float64(prof.DurationNanos) / 1000000000.0
+	t.Logf("Found a profile duration of %.1f seconds (in %s)", profileDuration, filepath.Base(pprof_file))
+
+	// Store current data in a json file to help users create their tests
+	if captureData {
+		captureProfData(t, prof, pprof_file, testName)
+	}
+
+	typedProf := getProfileType(t, prof, typedStacks.ProfileType)
+	analyzeProfData(t, typedProf, typedStacks, profileDuration)
+}
+
+func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
+	stackTestData, err := readJSONFile(jsonFilePath)
+	if err != nil {
+		t.Fatalf("Error opening file %s", jsonFilePath)
+	}
+
+	// python files are in the form "profile.<pid>.number"
+	// Other profilers (using pprof) include pprof in the name
+	default_pprof_regexp := regexp.MustCompile("(^profile.*|.*pprof.*)")
+	processedProfilesMap := make(map[string]bool)
+
+	for _, typedStacks := range stackTestData.Stacks {
+		// use typedStack.PprofRegex if defined, otherwise use default_pprof_regexp
+		pprof_regexp := default_pprof_regexp
+		if typedStacks.PprofRegex != "" {
+			pprof_regexp = regexp.MustCompile(typedStacks.PprofRegex)
+		}
+		matchingFiles, err := getMatchingFiles(pprof_folder, pprof_regexp)
+		if err != nil {
+			t.Fatalf("Error getting matching files: %v", err)
+		}
+		if len(matchingFiles) == 0 {
+			t.Errorf("No matching files found for %s in %s", pprof_regexp, pprof_folder)
+		} else {
+			for _, file := range matchingFiles {
+				_, fileAlreadyProcessed := processedProfilesMap[file]
+				if !fileAlreadyProcessed {
+					processedProfilesMap[file] = true
+				}
+				analyzePprofFile(t, file, typedStacks, stackTestData.TestName, !fileAlreadyProcessed)
+			}
+		}
 	}
 }
