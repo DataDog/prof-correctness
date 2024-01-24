@@ -19,9 +19,7 @@
             },
             {
               "key": "os thread id",
-              "values": [
-                "[0-9]+"
-              ]
+              "values_regex": "[0-9]+"
             }
           ]
         },
@@ -39,9 +37,7 @@
             },
             {
               "key": "os thread id",
-              "values": [
-                "[0-9]+"
-              ]
+              "values_regex": "[0-9]+"
             }
           ]
         }
@@ -65,9 +61,7 @@
             },
             {
               "key": "os thread id",
-              "values": [
-                "[0-9]+"
-              ]
+              "values_regex": "[0-9]+"
             }
           ]
         },
@@ -85,9 +79,7 @@
             },
             {
               "key": "os thread id",
-              "values": [
-                "[0-9]+"
-              ]
+              "values_regex": "[0-9]+"
             }
           ]
         },
@@ -131,9 +123,7 @@
             },
             {
               "key": "os thread id",
-              "values": [
-                "[0-9]+"
-              ]
+              "values_regex": "[0-9]+"
             }
           ]
         },
@@ -151,9 +141,7 @@
             },
             {
               "key": "os thread id",
-              "values": [
-                "[0-9]+"
-              ]
+              "values_regex": "[0-9]+"
             }
           ]
         }
@@ -177,9 +165,7 @@
             },
             {
               "key": "os thread id",
-              "values": [
-                "[0-9]+"
-              ]
+              "values_regex": "[0-9]+"
             }
           ]
         },
@@ -197,9 +183,7 @@
             },
             {
               "key": "os thread id",
-              "values": [
-                "[0-9]+"
-              ]
+              "values_regex": "[0-9]+"
             }
           ]
         },

@@ -25,8 +25,9 @@ type StackSample struct {
 
 // Reference data from the json files
 type Labels struct {
-	Key    string   `json:"key"`
-	Values []string `json:"values"` // fixed value
+	Key         string   `json:"key"`
+	Values      []string `json:"values"`      // fixed value
+	ValuesRegex string   `json:"values_regex"` // regex for values
 }
 
 type StackContent struct {
@@ -49,6 +50,25 @@ type StackTestData struct {
 	Stacks     []TypedStacks `json:"stacks"`
 }
 
+// Custom unmarshaller for Labels to ensure exactly one of Values and ValueRegex is defined
+func (l *Labels) UnmarshalJSON(data []byte) error {
+	type labels Labels
+	var tmp labels
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	if (tmp.Values != nil) == (tmp.ValuesRegex != "") {
+		return fmt.Errorf("Exactly one of values and value_regex must be defined")
+	}
+
+	sort.Strings(tmp.Values)
+
+	*l = Labels(tmp)
+	return nil
+}
+
+// UnmarshalJSON is a custom unmarshaller for StackContent because we want to assign non-zero default values for Value and Percent
 func (stack *StackContent) UnmarshalJSON(data []byte) error {
 	type stackcontent StackContent
 	stackContent := &stackcontent{
@@ -215,25 +235,32 @@ func getProfileType(t *testing.T, profile *profile.Profile, type_ string) []Stac
 	return out
 }
 
-func checkLabels(t *testing.T, labels map[string][]string, expected []Labels) bool {
-	for _, e := range expected {
-		if vals, ok := labels[e.Key]; ok {
-			// Right now all values should be present.
-			// t.Log("Checking: vals ", vals, "vs ", e.Values, "key", e.Key)
-			if len(vals) != len(e.Values) {
-				// t.Log("NO")
-				return false
-			}
-			// Sample values for labels are sorted when read from stacks
-			sort.Strings(e.Values)
-			for i, v := range e.Values {
-				matched, err := regexp.MatchString(v, vals[i])
-				if err != nil {
-					t.Fatalf("Error matching regexp %s: %v", v, err)
-				}
-				if !matched {
+func checkLabels(t *testing.T, labels map[string][]string, expectedLabels []Labels) bool {
+	for _, expectedLabel := range expectedLabels {
+		if values, ok := labels[expectedLabel.Key]; ok {
+			if expectedLabel.Values != nil {
+				// Right now all values should be present.
+				// t.Log("Checking: vals ", vals, "vs ", e.Values, "key", e.Key)
+				if len(values) != len(expectedLabel.Values) {
 					// t.Log("NO")
 					return false
+				}
+				// Sample values and exepected values are sorted when read from profile/json file
+				for i, v := range expectedLabel.Values {
+					if values[i] != v {
+						return false
+					}
+				}
+			} else {
+				// Sample values and expected values are sorted when read from profile/json file
+				for _, v := range values {
+					matched, err := regexp.MatchString(expectedLabel.ValuesRegex, v)
+					if err != nil {
+						t.Fatalf("Error matching regexp %s: %v", v, err)
+					}
+					if !matched {
+						return false
+					}
 				}
 			}
 		} else {
@@ -403,7 +430,7 @@ func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, 
 func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 	stackTestData, err := readJSONFile(jsonFilePath)
 	if err != nil {
-		t.Fatalf("Error opening file %s", jsonFilePath)
+		t.Fatalf("Error opening file %s: %v", jsonFilePath, err)
 	}
 
 	var default_pprof_regexp *regexp.Regexp
