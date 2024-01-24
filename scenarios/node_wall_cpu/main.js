@@ -39,6 +39,8 @@ async function foo(nsecs) {
     b(2*niter);
     const t1 = Date.now();
     bCumulativeTime += t1-t0;
+
+    // Ensure that we spend as much time in c as in b
     while (cCumulativeTime < bCumulativeTime) {
       const t0 = Date.now();
       await c();
