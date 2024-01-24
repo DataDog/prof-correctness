@@ -44,8 +44,9 @@ type TypedStacks struct {
 }
 
 type StackTestData struct {
-	TestName string        `json:"test_name"`
-	Stacks   []TypedStacks `json:"stacks"`
+	TestName   string        `json:"test_name"`
+	PprofRegex string        `json:"pprof-regex"`
+	Stacks     []TypedStacks `json:"stacks"`
 }
 
 func (stack *StackContent) UnmarshalJSON(data []byte) error {
@@ -405,10 +406,16 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 		t.Fatalf("Error opening file %s", jsonFilePath)
 	}
 
-	// python files are in the form "profile.<pid>.number"
-	// Other profilers (using pprof) include pprof in the name
-	// Filter out files that ends with '.json' to avoid considering files dumped by captureProfData as profiles
-	default_pprof_regexp := regexp.MustCompile("(^profile.*|.*pprof.*)([^n]|[^o]n|[^s]on|[^j]son|[^.]json)$")
+	var default_pprof_regexp *regexp.Regexp
+	if stackTestData.PprofRegex != "" {
+		default_pprof_regexp = regexp.MustCompile(stackTestData.PprofRegex)
+	} else {
+		// python files are in the form "profile.<pid>.number"
+		// Other profilers (using pprof) include pprof in the name
+		// Filter out files that ends with '.json' to avoid considering files dumped by captureProfData as profiles
+		// Golang regexes do not have negative lookahed, so we need to use `([^n]|[^o]n|[^s]on|[^j]son|[^.]json)$` instead of `(?![.]json)$
+		default_pprof_regexp = regexp.MustCompile("(^profile.*|.*pprof.*)([^n]|[^o]n|[^s]on|[^j]son|[^.]json)$")
+	}
 	processedProfilesMap := make(map[string]bool)
 
 	for _, typedStacks := range stackTestData.Stacks {
