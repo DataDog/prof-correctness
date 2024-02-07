@@ -441,7 +441,7 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 		// Other profilers (using pprof) include pprof in the name
 		// Filter out files that ends with '.json' to avoid considering files dumped by captureProfData as profiles
 		// Golang regexes do not have negative lookahed, so we need to use `([^n]|[^o]n|[^s]on|[^j]son|[^.]json)$` instead of `(?![.]json)$
-		default_pprof_regexp = regexp.MustCompile("(^profile.*|.*pprof.*)([^n]|[^o]n|[^s]on|[^j]son|[^.]json)$")
+		default_pprof_regexp = regexp.MustCompile("^(profile|.*pprof)($|.*([^n]|[^o]n|[^s]on|[^j]son|[^.]json)$)")
 	}
 	processedProfilesMap := make(map[string]bool)
 
