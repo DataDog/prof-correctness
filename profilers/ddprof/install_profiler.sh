@@ -58,27 +58,12 @@ look_in_s3() {
 }
 
 download_from_github() {
-    # Make API request to retrieve all releases
-    response=$(curl -L \
-                -H "Accept: application/vnd.github+json" \
-                -H "X-GitHub-Api-Version: 2022-11-28" \
-                https://api.github.com/repos/DataDog/ddprof/releases)
+    # Download the latest release candidate and store it in the current directory
+    ddprof_name="ddprof-amd64-linux.tar.xz"
+    url_release_candidate="https://github.com/DataDog/ddprof/releases/download/latest-rc/${ddprof_name}"
 
-    # We retrieve the different versions and test with latest
-    # "tag_name": "v0.11.0-experimental",
-    # "tag_name": "v0.10.1",
-    tag_names=$(echo -E $response | jq -r '.[].tag_name')
-    # Everything is on a single line, put on different lines and take the release candidate
-    highest_version=$(echo $tag_names | tr ' ' '\n' | grep -E "\-rc$" | head -n1)
-    # Extract the version numbers from the response using grep
-    version_numbers=$(echo $highest_version | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
-
-    # Construct the download URL for the highest version
-    url_release="https://github.com/DataDog/ddprof/releases/download/${highest_version}/ddprof-${version_numbers}-amd64-linux.tar.xz"
-    # Download the release archive and store it in the current directory
-    echo "Downloading from ${url_release}..."
-    curl -L -O ${url_release}
-    ddprof_name=$(ls ddprof*.xz)
+    echo "Downloading from ${url_release_candidate}..."
+    curl -fsSL -O "${url_release_candidate}"
 }
 
 # Takes name and path to binary
