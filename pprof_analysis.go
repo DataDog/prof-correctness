@@ -26,7 +26,7 @@ type StackSample struct {
 // Reference data from the json files
 type Labels struct {
 	Key         string   `json:"key"`
-	Values      []string `json:"values"`      // fixed value
+	Values      []string `json:"values"`       // fixed value
 	ValuesRegex string   `json:"values_regex"` // regex for values
 }
 
@@ -34,14 +34,16 @@ type StackContent struct {
 	RegularExpression string   `json:"regular_expression"`
 	Value             int64    `json:"value"`
 	Percent           int64    `json:"percent"`
-	ErrorMargin       int64    `json:"error_margin"`
+	ErrorMargin       int64    `json:"error_margin,omitempty"`
 	Labels            []Labels `json:"labels"`
 }
 
 type TypedStacks struct {
-	ProfileType  string         `json:"profile-type"`
-	PprofRegex   string         `json:"pprof-regex"`
-	StackContent []StackContent `json:"stack-content"`
+	ProfileType      string         `json:"profile-type"`
+	PprofRegex       string         `json:"pprof-regex"`
+	StackContent     []StackContent `json:"stack-content"`
+	ErrorMargin      int64          `json:"error-margin,omitempty"`
+	ValueMatchingSum int64          `json:"value-matching-sum,omitempty"`
 }
 
 type StackTestData struct {
@@ -96,6 +98,10 @@ func absDiff(x, y int64) int64 {
 	return x - y
 }
 
+func relDiff(actual, reference float64) float64 {
+	return math.Abs((actual - reference) / math.Max(reference, math.SmallestNonzeroFloat64) * 100.0)
+}
+
 func contains(s []int, v int) bool {
 	for _, i := range s {
 		if i == v {
@@ -114,7 +120,7 @@ func contains_str(s []string, v string) bool {
 	return false
 }
 
-func captureProfData(t *testing.T, prof *profile.Profile, path string, testName string) {
+func captureProfData(t *testing.T, prof *profile.Profile, path string, testName string, profileDuration float64) {
 	// labels to ignore
 	keysToIgnore := []string{"thread id", "thread native id"}
 
@@ -124,6 +130,7 @@ func captureProfData(t *testing.T, prof *profile.Profile, path string, testName 
 	for _, sampleType := range prof.SampleType {
 		var typedStack TypedStacks
 		typedStack.ProfileType = sampleType.Type
+		typedStack.ErrorMargin = 3 // TODO: is this a good default ?
 
 		typedProf := getProfileType(t, prof, sampleType.Type)
 		// drop the content to a file to allow a comparison
@@ -141,11 +148,14 @@ func captureProfData(t *testing.T, prof *profile.Profile, path string, testName 
 				})
 			}
 
+			if profileDuration > 0 {
+				ss.Val = int64(float64(ss.Val) / profileDuration)
+			}
+
 			stackContent := StackContent{
-				ErrorMargin: 3, // TODO: is this a good default ?
-				Value:       ss.Val,
+				Value: ss.Val,
 				// protect any charact
-				RegularExpression: regexp.QuoteMeta(ss.Stack),
+				RegularExpression: "^" + regexp.QuoteMeta(ss.Stack) + "$",
 				Labels:            labels,
 			}
 			typedStack.StackContent = append(typedStack.StackContent, stackContent)
@@ -157,7 +167,7 @@ func captureProfData(t *testing.T, prof *profile.Profile, path string, testName 
 			var idxToRemove []int
 			for idx := range typedStack.StackContent {
 				typedStack.StackContent[idx].Percent = (typedStack.StackContent[idx].Value * 100) / int64(totalVal)
-				if typedStack.StackContent[idx].Percent < typedStack.StackContent[idx].ErrorMargin {
+				if typedStack.StackContent[idx].Percent < typedStack.ErrorMargin {
 					idxToRemove = append(idxToRemove, idx)
 				}
 			}
@@ -240,7 +250,7 @@ func checkLabels(t *testing.T, labels map[string][]string, expectedLabels []Labe
 		if values, ok := labels[expectedLabel.Key]; ok {
 			if expectedLabel.Values != nil {
 				// Right now all values should be present.
-				// t.Log("Checking: vals ", vals, "vs ", e.Values, "key", e.Key)
+				// t.Log("Checking: vals ", values, "vs ", expectedLabel.Values, "key", expectedLabel.Key)
 				if len(values) != len(expectedLabel.Values) {
 					// t.Log("NO")
 					return false
@@ -270,13 +280,12 @@ func checkLabels(t *testing.T, labels map[string][]string, expectedLabels []Labe
 	return true
 }
 
-func assertStack(t *testing.T, prof []StackSample, regexpStack string, value float64, pct int64, epsilonPct int64, labels []Labels) {
+func assertStack(t *testing.T, prof []StackSample, regexpStack string, value float64, pct int64, epsilonPct int64, labels []Labels) (matching int64) {
 	r, err := regexp.Compile(regexpStack)
 	if err != nil {
 		t.Fatalf("Error compiling regex: %v, %s", err, regexpStack)
 	}
 	var total int64 = 0
-	var matching int64 = 0
 	for _, ss := range prof {
 		total += ss.Val
 		if r.MatchString(ss.Stack) {
@@ -292,12 +301,12 @@ func assertStack(t *testing.T, prof []StackSample, regexpStack string, value flo
 	}
 
 	if value >= 0 {
-		errorPct := math.Abs(float64(matching)-value) / math.Max(value, math.SmallestNonzeroFloat64) * 100.0
+		errorPct := relDiff(float64(matching), value)
 		// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
 		if errorPct > float64(epsilonPct) {
-			t.Errorf("\033[31mAssertion failed: stack '%s' should have been %.1f +/- %d%% of the profile but was %d with %.1f%% error\033[0m", regexpStack, value, epsilonPct, matching, errorPct)
+			t.Errorf("\033[31mAssertion failed: stack '%s' (labels=%v) should have been %.1f +/- %d%% of the profile but was %d with %.1f%% error\033[0m", regexpStack, labels, value, epsilonPct, matching, errorPct)
 		} else {
-			t.Logf("\033[32mAssertion succeeded: stack '%s' is %.1f +/- %d%% of the profile (was %d with %.1f%% error)\033[0m", regexpStack, value, epsilonPct, matching, errorPct)
+			t.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is %.1f +/- %d%% of the profile (was %d with %.1f%% error)\033[0m", regexpStack, labels, value, epsilonPct, matching, errorPct)
 		}
 	}
 
@@ -305,14 +314,16 @@ func assertStack(t *testing.T, prof []StackSample, regexpStack string, value flo
 		diff := absDiff(pct, actualPct)
 		// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
 		if diff > epsilonPct {
-			t.Errorf("\033[31mAssertion failed: stack '%s' should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, pct, epsilonPct, actualPct, diff)
+			t.Errorf("\033[31mAssertion failed: stack '%s' (labels=%v) should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
 		} else {
-			t.Logf("\033[32mAssertion succeeded: stack '%s' is %d%% +/- %d%% of the profile (was %d%% with %d%% error)\033[0m", regexpStack, pct, epsilonPct, actualPct, diff)
+			t.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is %d%% +/- %d%% of the profile (was %d%% with %d%% error)\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
 		}
 	}
+	return
 }
 
 func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, durationSecs float64) {
+	var matchingSum int64 = 0
 	for _, stack := range typedStacks.StackContent {
 		regexpStack := stack.RegularExpression
 		// Do not scale values for profiles with a duration of 0 (eg. Node.js heap profiles)
@@ -321,11 +332,28 @@ func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, 
 			value = value * durationSecs // value for total duration
 		}
 		percent := stack.Percent // percentage within the profile
-		errorMargin := stack.ErrorMargin
-		assertStack(t, prof, regexpStack, value, percent, errorMargin, stack.Labels)
+
+		errorMargin := typedStacks.ErrorMargin
+		if stack.ErrorMargin > 0 {
+			errorMargin = stack.ErrorMargin
+		}
+
+		matchingSum += assertStack(t, prof, regexpStack, value, percent, errorMargin, stack.Labels)
 		// todo
 		// - add an assertion on counts (example:number of allocations)
-		// - add an assertion on the total amount captured
+	}
+
+	value := float64(typedStacks.ValueMatchingSum)
+	if durationSecs > 0 {
+		value = value * durationSecs
+	}
+	if value > 0 {
+		errorPct := relDiff(float64(matchingSum), value)
+		if errorPct > float64(typedStacks.ErrorMargin) {
+			t.Errorf("\033[31mAssertion failed: profile '%s' should have total matching sum of %1.f +/- %d%% but was %d with %.1f%% error\033[0m", typedStacks.ProfileType, value, typedStacks.ErrorMargin, matchingSum, errorPct)
+		} else {
+			t.Logf("\033[32mAssertion succeeded: profile '%s' has total matching sum of %1.f +/- %d%% (was %d with %.1f%% error)\033[0m", typedStacks.ProfileType, value, typedStacks.ErrorMargin, matchingSum, errorPct)
+		}
 	}
 }
 
@@ -420,7 +448,7 @@ func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, 
 
 	// Store current data in a json file to help users create their tests
 	if captureData {
-		captureProfData(t, prof, pprof_file, testName)
+		captureProfData(t, prof, pprof_file, testName, profileDuration)
 	}
 
 	typedProf := getProfileType(t, prof, typedStacks.ProfileType)
