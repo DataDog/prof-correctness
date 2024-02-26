@@ -4,6 +4,8 @@ class ExportToFile
 
   def export(flush)
     File.write("#{PPROF_PREFIX}#{flush.start.strftime('%Y%m%dT%H%M%SZ')}.pprof", flush.pprof_data)
+    File.write("#{PPROF_PREFIX}#{flush.start.strftime('%Y%m%dT%H%M%SZ')}.internal_metadata.json",
+               flush.internal_metadata_json)
     true
   end
 end
@@ -66,16 +68,19 @@ def allocate_stuff(loops_per_sec:)
   puts "Thread #{Thread.current.name} finished with #{iterations} iterations and #{sum_sleep_time} total sleep time"
 end
 
+loops_per_sec = (ENV['LOOPS_PER_SEC'] || 100).to_i # Each loop does 5 allocations
 threads = []
+thread1_loops_per_sec = (loops_per_sec * 0.75).to_i # Thread 1 should use 3/4s of the flamegraph
 threads << Thread.new do
-  Thread.current.name = 'thread75'
-  allocate_stuff(loops_per_sec: 75) # 75 * 5=375 allocs/sec
+  Thread.current.name = "thread#{thread1_loops_per_sec}"
+  allocate_stuff(loops_per_sec: thread1_loops_per_sec)
 end
+thread2_loops_per_sec = (loops_per_sec * 0.25).to_i # Thread 2 should use 1/4 of the flamegraph
 threads << Thread.new do
-  Thread.current.name = 'thread25'
-  allocate_stuff(loops_per_sec: 25) # 25 * 5=125 allocs/sec
+  Thread.current.name = "thread#{thread2_loops_per_sec}"
+  allocate_stuff(loops_per_sec: thread2_loops_per_sec)
 end
 
-threads.each(&:join) # Total expectation of 500 allocs/sec
+threads.each(&:join) # Total expectation of 5 * loops_per_sec allocs/sec
 
 puts "Executable #{__FILE__} finished successfully"
