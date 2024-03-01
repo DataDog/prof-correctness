@@ -92,6 +92,6 @@ threads << Thread.new do
   allocate_stuff(loops_per_sec: thread2_loops_per_sec)
 end
 
-threads.each(&:join) # Total expectation of 5 * loops_per_sec allocs/sec
+threads.each(&:join) # Total expectation of 5 * loops_per_sec allocs/sec (value-matching-sum in json)
 
 puts "Executable #{__FILE__} finished successfully"
