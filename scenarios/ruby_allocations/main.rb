@@ -55,15 +55,26 @@ def allocate_stuff(loops_per_sec:)
     b # 1 Object allocation + 1 Array allocation per loop exec.
 
     stop = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    sleep_budget += time_per_loop
-    iterations += 1
     elapsed = stop - start
-    sleep_budget -= elapsed
+    # NOTE: When you sleep, you may actually end up sleeping for more time than you asked for.
+    #       If we were purely setting expectations on relative weights we could get away
+    #       with a simple `sleep(time_per_loop - elapsed)`. The end result is that we may not have
+    #       actually run all the loops we would expect given our `test_duration` and `loops_per_sec`
+    #       values but the relative percentages should still be ok. But in these correctness checks,
+    #       we're also asserting that the total value is indeed `test_duration * loops_per_sec * allocations_per_loop`
+    #       and thus we need to ensure that we actually ran for `test_duration * loops_per_sec` even in
+    #       the presence of high system load or weird scheduling delays meaning our sleep calls should
+    #       take into account the difference between expected vs real cumulative sleep time of past
+    #       iterations (which is what the sleep_budget is for).
+    sleep_budget += (time_per_loop - elapsed)
     time_to_sleep = sleep_budget.positive? ? sleep_budget : 0
     sleep(time_to_sleep)
     slept = Process.clock_gettime(Process::CLOCK_MONOTONIC) - stop
     sleep_budget -= slept
+
     sum_sleep_time += slept
+
+    iterations += 1
   end
   puts "Thread #{Thread.current.name} finished with #{iterations} iterations and #{sum_sleep_time} total sleep time"
 end

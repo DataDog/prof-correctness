@@ -69,18 +69,24 @@ type Labels struct {
 }
 
 type StackContent struct {
-	RegularExpression string          `json:"regular_expression"`
-	Value             Optional[int64] `json:"value"`
-	Percent           Optional[int64] `json:"percent"`
-	ErrorMargin       Optional[int64] `json:"error_margin,omitempty"`
-	Labels            []Labels        `json:"labels"`
+	RegularExpression string `json:"regular_expression"`
+	// NOTE: When the corresponding profile has a duration > 0, this value represents a rate (x/sec).
+	//       If the corresponding profile is a snapshot (i.e. duration == 0), then this value represents
+	//       an absolute/raw/scalar value independent of time.
+	Value       Optional[int64] `json:"value"`
+	Percent     Optional[int64] `json:"percent"`
+	ErrorMargin Optional[int64] `json:"error_margin,omitempty"`
+	Labels      []Labels        `json:"labels"`
 }
 
 type TypedStacks struct {
-	ProfileType      string          `json:"profile-type"`
-	PprofRegex       string          `json:"pprof-regex"`
-	StackContent     []StackContent  `json:"stack-content"`
-	ErrorMargin      int64           `json:"error-margin,omitempty"`
+	ProfileType  string         `json:"profile-type"`
+	PprofRegex   string         `json:"pprof-regex"`
+	StackContent []StackContent `json:"stack-content"`
+	ErrorMargin  int64          `json:"error-margin,omitempty"`
+	// NOTE: When the corresponding profile has a duration > 0, this value represents a rate (x/sec).
+	//       If the corresponding profile is a snapshot (i.e. duration == 0), then this value represents
+	//       an absolute/raw/scalar value independent of time.
 	ValueMatchingSum Optional[int64] `json:"value-matching-sum,omitempty"`
 }
 
@@ -170,6 +176,7 @@ func captureProfData(t *testing.T, prof *profile.Profile, path string, testName 
 			}
 
 			if profileDuration > 0 {
+				// NOTE: When profile duration is bigger than 0, all values represent rates.
 				ss.Val = int64(float64(ss.Val) / profileDuration)
 			}
 
@@ -353,6 +360,7 @@ func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, 
 		// Do not scale values for profiles with a duration of 0 (eg. Node.js heap profiles)
 		valueOpt := MapOptional(stack.Value, func(v int64) float64 { return float64(v) })
 		if durationSecs > 0 {
+			// NOTE: When profile duration is bigger than 0, all values represent rates.
 			valueOpt = MapOptional(valueOpt, func(v float64) float64 { return v * durationSecs }) // value for total duration
 		}
 		percent := stack.Percent // percentage within the profile
@@ -370,6 +378,7 @@ func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, 
 	if expectedSum, ok := typedStacks.ValueMatchingSum.Value(); ok {
 		value := float64(expectedSum)
 		if durationSecs > 0 {
+			// NOTE: When profile duration is bigger than 0, all values represent rates.
 			value = value * durationSecs
 		}
 		errorPct := relDiff(float64(matchingSum), value)
