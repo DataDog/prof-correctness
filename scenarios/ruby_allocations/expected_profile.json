@@ -1,0 +1,230 @@
+{
+  "test_name": "ruby_allocations",
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "alloc-samples",
+      "error-margin": 3,
+      "value-matching-sum": 500,
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmain\u003e;allocate_stuff;a$",
+          "percent": 15,
+          "labels": [
+            {
+              "key": "ruby vm type",
+              "values": [
+                "T_STRING"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "allocation class",
+              "values": [
+                "String"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "thread name",
+              "values": [
+                "thread75"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^\u003cmain\u003e;allocate_stuff;a$",
+          "percent": 5,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "String"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "thread name",
+              "values": [
+                "thread25"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "ruby vm type",
+              "values": [
+                "T_STRING"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^\u003cmain\u003e;allocate_stuff;a;\\*$",
+          "percent": 30,
+          "labels": [
+            {
+              "key": "ruby vm type",
+              "values": [
+                "T_STRING"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "allocation class",
+              "values": [
+                "String"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "thread name",
+              "values": [
+                "thread75"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^\u003cmain\u003e;allocate_stuff;a;\\*$",
+          "percent": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "thread25"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "ruby vm type",
+              "values": [
+                "T_STRING"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "allocation class",
+              "values": [
+                "String"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^\u003cmain\u003e;allocate_stuff;b;new$",
+          "percent": 15,
+          "labels": [
+            {
+              "key": "ruby vm type",
+              "values": [
+                "T_OBJECT"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "allocation class",
+              "values": [
+                "ComplexObject"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "thread name",
+              "values": [
+                "thread75"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^\u003cmain\u003e;allocate_stuff;b;new$",
+          "percent": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "thread25"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "ruby vm type",
+              "values": [
+                "T_OBJECT"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "allocation class",
+              "values": [
+                "ComplexObject"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^\u003cmain\u003e;allocate_stuff;b;new;initialize;new$",
+          "percent": 15,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "thread75"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "ruby vm type",
+              "values": [
+                "T_ARRAY"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "allocation class",
+              "values": [
+                "Array"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^\u003cmain\u003e;allocate_stuff;b;new;initialize;new$",
+          "percent": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "thread25"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "ruby vm type",
+              "values": [
+                "T_ARRAY"
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "allocation class",
+              "values": [
+                "Array"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
