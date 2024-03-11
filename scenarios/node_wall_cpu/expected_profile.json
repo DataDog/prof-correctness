@@ -84,7 +84,7 @@
           ]
         },
         {
-          "regular_expression": "\\(non-JS threads\\)",
+          "regular_expression": "Non JS threads activity",
           "value": 650000000,
           "percent": 52,
           "error_margin": 5,
@@ -188,7 +188,7 @@
           ]
         },
         {
-          "regular_expression": "\\(non-JS threads\\)",
+          "regular_expression": "Non JS threads activity",
           "value": 0,
           "error_margin": 0
         }
