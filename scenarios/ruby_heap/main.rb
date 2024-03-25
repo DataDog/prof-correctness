@@ -1,4 +1,5 @@
 require 'objspace'
+require 'timeout'
 
 # For expecation calculations refer to
 # https://docs.google.com/spreadsheets/d/1ZrR2UYsU78SnvBdE4OMOHeY5yKX7diussurgr2NAlQs
@@ -28,6 +29,14 @@ end
 Datadog.configure do |c|
   c.profiling.enabled = true
   c.profiling.exporter.transport = ExportToFile.new
+end
+
+Timeout.timeout(5) do
+  until Datadog::Profiling::Collectors::CpuAndWallTimeWorker::Testing._native_is_running?(
+    Datadog.send(:components).profiler.send(:worker)
+  )
+    sleep(0.5)
+  end
 end
 
 # Approx 1KB per living object (memsize_of says 1041) (e.g. 5MB for 5k live objects)
