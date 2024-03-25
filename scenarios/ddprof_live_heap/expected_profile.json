@@ -22,6 +22,17 @@
           "error_margin": 5
         }
       ]
+    },
+    {
+      "profile-type": "alloc-space",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^.*;main;allocate_memory\\(unsigned long\\)$",
+          "percent": 100,
+          "error_margin": 5
+        }
+      ]
     }
   ]
 }

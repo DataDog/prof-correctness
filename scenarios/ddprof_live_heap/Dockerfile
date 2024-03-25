@@ -5,4 +5,4 @@ ADD ./scenarios/ddprof_live_heap/main.cc .
 RUN g++ ./main.cc -o test
 
 # Force deterministic by sampling all allocations
-CMD /app/run_ddprof.sh -l notice -e "sALLOC period=1 mode=l" /app/test
+CMD /app/run_ddprof.sh -l notice --preset cpu_live_heap /app/test
