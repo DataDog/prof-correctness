@@ -31,6 +31,8 @@ Datadog.configure do |c|
   c.profiling.exporter.transport = ExportToFile.new
 end
 
+setup_end = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
 Timeout.timeout(5) do
   until Datadog::Profiling::Collectors::CpuAndWallTimeWorker::Testing._native_is_running?(
     Datadog.send(:components).profiler.send(:worker)
@@ -116,7 +118,7 @@ if exec_time_env
   exit(1) if test_duration.zero?
 end
 
-loops_per_sec = (ENV['LOOPS_PER_SEC'] || 50).to_i
+loops_per_sec = (ENV['LOOPS_PER_SEC'] || 100).to_i
 total_loops = loops_per_sec * test_duration
 toss_into_pool_per_loop = {
   a: 2,
@@ -130,6 +132,7 @@ drown_per_loop = {
   c: 3,
   d: 2
 }
+toss_order = toss_into_pool_per_loop.keys
 expected_swimming_at_end = toss_into_pool_per_loop.keys.map do |k|
   [k, (toss_into_pool_per_loop[k] - drown_per_loop[k]) * total_loops]
 end.to_h
@@ -140,13 +143,25 @@ sum_sleep_time = 0
 end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) + test_duration
 iterations = 0
 time_per_loop = (1.0 / loops_per_sec)
+reshuffle_secs = 0.5
+gc_every_secs = 1
 sleep_budget = 0
 while (start = Process.clock_gettime(Process::CLOCK_MONOTONIC)) < end_time
-  toss_into_pool_per_loop.each_entry { |sym, num_adds| num_adds.times { Object.send(sym) } }
+  # Shift allocationg ordering a bit. In a real app there would naturally be some
+  # variance to requests/tasks but here each loop looks much the same as the one before.
+  # This makes it easy to reason about expectations but, in combination with the interval
+  # sampling done by allocation+heap sampling, may make it extra prone to biases.
+  # By shuffling the tossing order we replicate some of the variety you'd see in real
+  # workloads.
+  toss_order.shuffle if (iterations % (loops_per_sec * reshuffle_secs).to_i).zero?
+  toss_order.each { |sym| toss_into_pool_per_loop[sym].times { Object.send(sym) } }
+
+  # Remove some objects from the pool
   drown_per_loop.each_entry do |sym, num_losses|
     $community_pool[sym].pop(num_losses)
   end
-  GC.start
+
+  GC.start if (iterations % (loops_per_sec * gc_every_secs)).zero?
 
   stop = Process.clock_gettime(Process::CLOCK_MONOTONIC)
   elapsed = stop - start
@@ -171,9 +186,12 @@ while (start = Process.clock_gettime(Process::CLOCK_MONOTONIC)) < end_time
   iterations += 1
 end
 
+GC.start
+
 expected_swimming_at_end.each_entry do |k, expected|
   actual = $community_pool[k].size
   puts "Expected #{expected} '#{k}'s in the pool at the end, found #{actual}" if actual != expected
 end
 
 puts "Executable #{__FILE__} finished successfully in #{iterations} iterations and after sleeping #{sum_sleep_time} seconds"
+puts "Time since setup end: #{Process.clock_gettime(Process::CLOCK_MONOTONIC) - setup_end} secs"

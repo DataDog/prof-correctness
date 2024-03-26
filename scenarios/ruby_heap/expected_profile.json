@@ -5,7 +5,7 @@
       "profile-type": "heap-live-samples",
       "stack-content": [
         {
-          "regular_expression": "^<main>;each_entry;each;<main>;times;<main>;a;\\*$",
+          "regular_expression": "^<main>;each;<main>;times;<main>;a;\\*$",
           "percent": 10,
           "labels": [
             {
@@ -18,7 +18,7 @@
           ]
         },
         {
-          "regular_expression": "^<main>;each_entry;each;<main>;times;<main>;b;new$",
+          "regular_expression": "^<main>;each;<main>;times;<main>;b;new$",
           "percent": 20,
           "labels": [
             {
@@ -30,7 +30,7 @@
           ]
         },
         {
-          "regular_expression": "^<main>;each_entry;each;<main>;times;<main>;c;new$",
+          "regular_expression": "^<main>;each;<main>;times;<main>;c;new$",
           "percent": 50,
           "labels": [
             {
@@ -42,7 +42,7 @@
           ]
         },
         {
-          "regular_expression": "^<main>;each_entry;each;<main>;times;<main>;d;new$",
+          "regular_expression": "^<main>;each;<main>;times;<main>;d;new$",
           "percent": 20,
           "labels": [
             {
@@ -55,13 +55,13 @@
         }
       ],
       "error-margin": 10,
-      "value-matching-sum": 500
+      "value-matching-sum": 1000
     },
     {
       "profile-type": "heap-live-size",
       "stack-content": [
         {
-          "regular_expression": "^<main>;each_entry;each;<main>;times;<main>;a;\\*$",
+          "regular_expression": "^<main>;each;<main>;times;<main>;a;\\*$",
           "percent": 22,
           "labels": [
             {
@@ -74,7 +74,7 @@
           ]
         },
         {
-          "regular_expression": "^<main>;each_entry;each;<main>;times;<main>;b;new$",
+          "regular_expression": "^<main>;each;<main>;times;<main>;b;new$",
           "percent": 36,
           "labels": [
             {
@@ -86,7 +86,7 @@
           ]
         },
         {
-          "regular_expression": "^<main>;each_entry;each;<main>;times;<main>;c;new$",
+          "regular_expression": "^<main>;each;<main>;times;<main>;c;new$",
           "percent": 17,
           "labels": [
             {
@@ -98,7 +98,7 @@
           ]
         },
         {
-          "regular_expression": "^<main>;each_entry;each;<main>;times;<main>;d;new$",
+          "regular_expression": "^<main>;each;<main>;times;<main>;d;new$",
           "percent": 25,
           "labels": [
             {
@@ -111,7 +111,7 @@
         }
       ],
       "error-margin": 10,
-      "value-matching-sum": 236050
+      "value-matching-sum": 472100
     }
   ]
 }
