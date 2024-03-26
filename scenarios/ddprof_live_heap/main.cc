@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
         allocate_memory(4096);
         allocate_memory(8192);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         char* ptr = leak_function(i);
         
