@@ -4,5 +4,4 @@ FROM $BASE_IMAGE
 ADD ./scenarios/ddprof_live_heap/main.cc .
 RUN g++ ./main.cc -o test
 
-# Force deterministic by sampling all allocations
 CMD /app/run_ddprof.sh -l notice --preset cpu_live_heap /app/test
