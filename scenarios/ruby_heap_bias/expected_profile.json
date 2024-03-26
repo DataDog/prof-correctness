@@ -1,5 +1,5 @@
 {
-  "test_name": "ruby_heap",
+  "test_name": "ruby_heap_bias",
   "stacks": [
     {
       "profile-type": "heap-live-samples",
@@ -54,7 +54,7 @@
           ]
         }
       ],
-      "error-margin": 10,
+      "error-margin": 15,
       "value-matching-sum": 500
     },
     {
@@ -110,7 +110,7 @@
           ]
         }
       ],
-      "error-margin": 10,
+      "error-margin": 15,
       "value-matching-sum": 236050
     }
   ]

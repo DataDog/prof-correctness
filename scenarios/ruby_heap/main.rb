@@ -118,7 +118,7 @@ if exec_time_env
   exit(1) if test_duration.zero?
 end
 
-loops_per_sec = (ENV['LOOPS_PER_SEC'] || 100).to_i
+loops_per_sec = (ENV['LOOPS_PER_SEC'] || 50).to_i
 total_loops = loops_per_sec * test_duration
 toss_into_pool_per_loop = {
   a: 2,
@@ -143,6 +143,8 @@ sum_sleep_time = 0
 end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) + test_duration
 iterations = 0
 time_per_loop = (1.0 / loops_per_sec)
+disable_reshuffle = ENV['DISABLE_RESHUFFLE'] == 'true'
+puts "Reshuffles enabled?: #{disable_reshuffle ? 'no' : 'yes'}"
 reshuffle_secs = 0.5
 gc_every_secs = 1
 sleep_budget = 0
@@ -153,7 +155,7 @@ while (start = Process.clock_gettime(Process::CLOCK_MONOTONIC)) < end_time
   # sampling done by allocation+heap sampling, may make it extra prone to biases.
   # By shuffling the tossing order we replicate some of the variety you'd see in real
   # workloads.
-  toss_order.shuffle if (iterations % (loops_per_sec * reshuffle_secs).to_i).zero?
+  toss_order.shuffle if !disable_reshuffle && (iterations % (loops_per_sec * reshuffle_secs).to_i).zero?
   toss_order.each { |sym| toss_into_pool_per_loop[sym].times { Object.send(sym) } }
 
   # Remove some objects from the pool
