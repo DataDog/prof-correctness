@@ -16,9 +16,11 @@ import (
 	"time"
 )
 
-var RUN_SECS = uint(60)
-var DURATION_SET = false
-var NETWORK_HOST = false
+var (
+	RUN_SECS     = uint(60)
+	DURATION_SET = false
+	NETWORK_HOST = false
+)
 
 func init() {
 	s := os.Getenv("TEST_RUN_SECS")
@@ -238,13 +240,15 @@ func testScenarios(t *testing.T, scenarioRegexp string) {
 
 	// Run the tests
 	for _, config := range configs {
-		t.Log("Folder:", config.folder)
-		t.Log("Json file:", config.jsonFilePath)
-		t.Log("Docker file:", config.dockerfilePath)
-		tag := buildTestApp(t, config)
-		t.Log("Built test app with:", tag)
-		pprof_folder := runTestApp(t, tag, config.folder)
-		AnalyzeResults(t, config.jsonFilePath, pprof_folder)
+		t.Run(config.folder, func(t *testing.T) {
+			t.Log("Folder:", config.folder)
+			t.Log("Json file:", config.jsonFilePath)
+			t.Log("Docker file:", config.dockerfilePath)
+			tag := buildTestApp(t, config)
+			t.Log("Built test app with:", tag)
+			pprof_folder := runTestApp(t, tag, config.folder)
+			AnalyzeResults(t, config.jsonFilePath, pprof_folder)
+		})
 	}
 }
 

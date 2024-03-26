@@ -1,0 +1,117 @@
+{
+  "test_name": "ruby_heap",
+  "stacks": [
+    {
+      "profile-type": "heap-live-samples",
+      "stack-content": [
+        {
+          "regular_expression": "^<main>;each;<main>;times;<main>;a;\\*$",
+          "percent": 10,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "String"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^<main>;each;<main>;times;<main>;b;new$",
+          "percent": 20,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "Array"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "^<main>;each;<main>;times;<main>;c;new$",
+          "percent": 50,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "ObjectWithShape"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "^<main>;each;<main>;times;<main>;d;new$",
+          "percent": 20,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "TooComplexObject"
+              ]
+            }
+          ]
+        }
+      ],
+      "error-margin": 10,
+      "value-matching-sum": 500
+    },
+    {
+      "profile-type": "heap-live-size",
+      "stack-content": [
+        {
+          "regular_expression": "^<main>;each;<main>;times;<main>;a;\\*$",
+          "percent": 22,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "String"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^<main>;each;<main>;times;<main>;b;new$",
+          "percent": 36,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "Array"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "^<main>;each;<main>;times;<main>;c;new$",
+          "percent": 17,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "ObjectWithShape"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "^<main>;each;<main>;times;<main>;d;new$",
+          "percent": 25,
+          "labels": [
+            {
+              "key": "allocation class",
+              "values": [
+                "TooComplexObject"
+              ]
+            }
+          ]
+        }
+      ],
+      "error-margin": 10,
+      "value-matching-sum": 236050
+    }
+  ]
+}
