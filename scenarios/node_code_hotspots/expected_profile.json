@@ -3,6 +3,7 @@
   "stacks": [
     {
       "profile-type": "wall",
+      "pprof-regex": "profiles_wall_worker_0_.*.pprof",
       "stack-content": [
         {
           "regular_expression": "busyLoop22",
