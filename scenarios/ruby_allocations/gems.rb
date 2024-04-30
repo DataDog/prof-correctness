@@ -1,3 +1,3 @@
 source 'https://rubygems.org'
 
-gem 'ddtrace', git: 'https://github.com/DataDog/dd-trace-rb.git', branch: 'master'
+gem 'datadog', git: 'https://github.com/datadog/dd-trace-rb.git', branch: 'master'
