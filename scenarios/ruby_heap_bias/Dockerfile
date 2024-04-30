@@ -20,4 +20,4 @@ RUN bundle install
 ENV DISABLE_RESHUFFLE="true"
 
 # Run the program when the container starts
-CMD bundle exec ddtracerb exec ruby main.rb
+CMD bundle exec ddprofrb exec ruby main.rb

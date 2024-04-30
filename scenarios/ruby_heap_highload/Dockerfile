@@ -18,4 +18,4 @@ RUN bundle install
 ENV LOOPS_PER_SEC=500
 
 # Run the program when the container starts
-CMD bundle exec ddtracerb exec ruby main.rb
+CMD bundle exec ddprofrb exec ruby main.rb

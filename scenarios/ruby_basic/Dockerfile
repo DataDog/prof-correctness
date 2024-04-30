@@ -14,4 +14,4 @@ WORKDIR /app
 RUN bundle install
 
 # Run the program when the container starts
-CMD bundle exec ddtracerb exec ruby main.rb
+CMD bundle exec ddprofrb exec ruby main.rb
