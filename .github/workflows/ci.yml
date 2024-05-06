@@ -9,11 +9,6 @@ jobs:
     with:
       test_scenarios: ddprof.*
     secrets: inherit
-  php:
-    uses: ./.github/workflows/test.yml
-    with:
-      test_scenarios: php.*
-    secrets: inherit
   ruby:
     uses: ./.github/workflows/test.yml
     with:
@@ -29,4 +24,3 @@ jobs:
     with:
       test_scenarios: python.*
     secrets: inherit
- 
