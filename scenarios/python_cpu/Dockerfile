@@ -11,15 +11,10 @@ RUN chmod 644 /usr/src/app/main.py
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENV EXECUTION_TIME_SEC=10
 # Run your python script when the container launches
 ENV DD_PROFILING_ENABLED true
 ENV DD_TRACE_ENABLED false
 ENV DD_TRACE_DEBUG false
-ENV DD_PROFILING_MEMORY_ENABLED false
-ENV DD_PROFILING_HEAP_ENABLED false
-ENV DD_PROFILING_LOCK_ENABLED false
-ENV DD_INSTRUMENTATION_TELEMETRY_ENABLED false
 ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
 
 CMD ddtrace-run python main.py

@@ -1,14 +1,9 @@
-import os
-from time import time
-
 x = 0
 i = 0
 
 def main():
     global x, i
-    EXECUTION_TIME_SEC = int(os.getenv("EXECUTION_TIME_SEC", "10")) # defaults to 10 if not set
-    end = time() + EXECUTION_TIME_SEC
-    while time() < end:
+    for _ in range(50):
         a()
         b()
     # We add a print to prevent optimization that could turn this into a no-op program
