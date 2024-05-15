@@ -12,7 +12,6 @@ RUN chmod 644 /usr/src/app/main.py
 RUN pip install --no-cache-dir -r requirements.txt
 
 ENV EXECUTION_TIME_SEC 30
-
 # Run your python script when the container launches
 ENV DD_PROFILING_ENABLED true
 ENV DD_TRACE_ENABLED false
