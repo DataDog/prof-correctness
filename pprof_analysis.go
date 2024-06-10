@@ -271,6 +271,7 @@ func getProfileType(t *testing.T, profile *profile.Profile, type_ string) []Stac
 			for _, i := range v {
 				labels[k] = append(labels[k], strconv.FormatInt(i, 10))
 			}
+            sort.Strings(labels[k]);
 		}
 
 		ss := StackSample{
