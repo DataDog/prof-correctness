@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -149,7 +150,7 @@ func contains_str(s []string, v string) bool {
 
 func captureProfData(t *testing.T, prof *profile.Profile, path string, testName string, profileDuration float64) {
 	// labels to ignore
-	keysToIgnore := []string{"thread id", "thread native id"}
+	keysToIgnore := []string{"thread native id"}
 
 	var capturedData StackTestData
 	capturedData.TestName = testName
@@ -237,7 +238,7 @@ func getProfileType(t *testing.T, profile *profile.Profile, type_ string) []Stac
 	// t.Logf("Found '%s' smaple type at idx %d\n", type_, typeIdx)
 
 	// if err := profile.Aggregate(true, true, false, p.LineNumbers, false); err != nil {
-	if err := profile.Aggregate(true, true, false, false, false); err != nil {
+	if err := profile.Aggregate(true, true, false, false, false, false); err != nil {
 		t.Fatalf("Error aggregating profile samples: %v", err)
 	}
 	profile = profile.Compact()
@@ -266,6 +267,13 @@ func getProfileType(t *testing.T, profile *profile.Profile, type_ string) []Stac
 			labels[k] = v
 			// t.Log("Sorted labels :", v)
 		}
+		for k, v := range sample.NumLabel {
+			for _, i := range v {
+				labels[k] = append(labels[k], strconv.FormatInt(i, 10))
+			}
+            sort.Strings(labels[k]);
+		}
+
 		ss := StackSample{
 			Stack:  strings.Join(frames, ";"),
 			Val:    sample.Value[typeIdx],
