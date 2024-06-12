@@ -57,7 +57,7 @@
           ]
         },
         {
-          "regular_expression": "_bootstrap;_bootstrap;_bootstrap_inner;run;target",
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;target",
           "percent": 11,
           "error_margin": 2,
           "labels": [
