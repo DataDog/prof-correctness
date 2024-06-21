@@ -1,0 +1,4 @@
+CPU Query1
+Sleep Query2
+CPU Query3
+Sleep Query4
