@@ -9,7 +9,7 @@
         {
           "regular_expression": ".*\\|fn:ProcessQueries.*",
           "value": 6000000000,
-          "error_margin": 10,
+          "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
@@ -23,7 +23,7 @@
         {
           "regular_expression": ".*\\|fn:ProcessQueries.*",
           "value": 8000000000,
-          "error_margin": 10,
+          "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
