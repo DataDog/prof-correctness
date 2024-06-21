@@ -18,8 +18,8 @@ class Program
         string[] queries = File.ReadAllLines(filePath);
         Queue<string> queryQueue = new Queue<string>(queries);
 
-        Thread thread1 = new Thread(() => ProcessQueries(queryQueue, 10)) { Name = "LongRunningThread" };
-        Thread thread2 = new Thread(() => ProcessQueries(queryQueue, 5)) { Name = "ShortRunningThread" };
+        Thread thread1 = new Thread(() => ProcessQueries(queryQueue, 4)) { Name = "LongRunningThread" };
+        Thread thread2 = new Thread(() => ProcessQueries(queryQueue, 3)) { Name = "ShortRunningThread" };
 
         thread1.Start();
         thread2.Start();

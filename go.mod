@@ -1,4 +1,4 @@
-module github.com/dbenamy/profiler-correctness/v1
+module github.com/DataDog/profiler-correctness/v1
 
 go 1.19
 

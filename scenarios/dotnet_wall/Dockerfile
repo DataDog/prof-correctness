@@ -22,6 +22,8 @@ COPY --from=build /app/out .
 # Copy the queries.txt file into the runtime image
 COPY --from=build /app/queries.txt .
 
+# this forces docker to not use the cache for the next commands
+ARG CACHE_DATE=2023-03-01_09:58:27
 #
 # Download and install Datadog .NET APM
 RUN apt-get update && apt-get install -y curl jq
@@ -44,5 +46,9 @@ ENV LD_PRELOAD=/opt/datadog/continuousprofiler/Datadog.Linux.ApiWrapper.x64.so
 
 ENV DD_INTERNAL_PROFILING_OUTPUT_DIR=/app/data
 ENV DD_PROFILING_ENABLED=1
+ENV DD_TRACE_DEBUG=TRUE
+
 # Set the entry point for the container
-ENTRYPOINT ["dotnet", "WorkloadScheduler.dll"]
+# ENTRYPOINT ["dotnet", "WorkloadScheduler.dll"]
+# ENTRYPOINT [ "bash" ]
+CMD dotnet WorkloadScheduler.dll && sleep 1

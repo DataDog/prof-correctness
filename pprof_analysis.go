@@ -271,7 +271,7 @@ func getProfileType(t *testing.T, profile *profile.Profile, type_ string) []Stac
 			for _, i := range v {
 				labels[k] = append(labels[k], strconv.FormatInt(i, 10))
 			}
-            sort.Strings(labels[k]);
+			sort.Strings(labels[k])
 		}
 
 		ss := StackSample{
@@ -491,7 +491,8 @@ func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, 
 	if captureData {
 		captureProfData(t, prof, pprof_file, testName, profileDuration)
 	}
-
+	// todo: this is a setting
+	profileDuration = 0
 	typedProf := getProfileType(t, prof, typedStacks.ProfileType)
 	analyzeProfData(t, typedProf, typedStacks, profileDuration)
 }
