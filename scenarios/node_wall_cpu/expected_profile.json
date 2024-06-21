@@ -193,6 +193,7 @@
           "error_margin": 0
         }
       ]
-    }    
-  ]
+    }
+  ],
+  "scale_by_duration": true
 }

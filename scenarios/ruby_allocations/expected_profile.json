@@ -9,7 +9,7 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmain\u003e;allocate_stuff;a$",
+          "regular_expression": "^<main>;allocate_stuff;a$",
           "percent": 15,
           "labels": [
             {
@@ -36,7 +36,7 @@
           ]
         },
         {
-          "regular_expression": "^\u003cmain\u003e;allocate_stuff;a$",
+          "regular_expression": "^<main>;allocate_stuff;a$",
           "percent": 5,
           "labels": [
             {
@@ -63,7 +63,7 @@
           ]
         },
         {
-          "regular_expression": "^\u003cmain\u003e;allocate_stuff;a;\\*$",
+          "regular_expression": "^<main>;allocate_stuff;a;\\*$",
           "percent": 30,
           "labels": [
             {
@@ -90,7 +90,7 @@
           ]
         },
         {
-          "regular_expression": "^\u003cmain\u003e;allocate_stuff;a;\\*$",
+          "regular_expression": "^<main>;allocate_stuff;a;\\*$",
           "percent": 10,
           "labels": [
             {
@@ -117,7 +117,7 @@
           ]
         },
         {
-          "regular_expression": "^\u003cmain\u003e;allocate_stuff;b;new$",
+          "regular_expression": "^<main>;allocate_stuff;b;new$",
           "percent": 15,
           "labels": [
             {
@@ -144,7 +144,7 @@
           ]
         },
         {
-          "regular_expression": "^\u003cmain\u003e;allocate_stuff;b;new$",
+          "regular_expression": "^<main>;allocate_stuff;b;new$",
           "percent": 5,
           "labels": [
             {
@@ -171,7 +171,7 @@
           ]
         },
         {
-          "regular_expression": "^\u003cmain\u003e;allocate_stuff;b;new;initialize;new$",
+          "regular_expression": "^<main>;allocate_stuff;b;new;initialize;new$",
           "percent": 15,
           "labels": [
             {
@@ -198,7 +198,7 @@
           ]
         },
         {
-          "regular_expression": "^\u003cmain\u003e;allocate_stuff;b;new;initialize;new$",
+          "regular_expression": "^<main>;allocate_stuff;b;new;initialize;new$",
           "percent": 5,
           "labels": [
             {
@@ -226,5 +226,6 @@
         }
       ]
     }
-  ]
+  ],
+  "scale_by_duration": true
 }

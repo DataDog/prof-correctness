@@ -51,4 +51,4 @@ ENV DD_TRACE_DEBUG=TRUE
 # Set the entry point for the container
 # ENTRYPOINT ["dotnet", "WorkloadScheduler.dll"]
 # ENTRYPOINT [ "bash" ]
-CMD dotnet WorkloadScheduler.dll && sleep 1
+CMD dotnet WorkloadScheduler.dll

@@ -92,9 +92,10 @@ type TypedStacks struct {
 }
 
 type StackTestData struct {
-	TestName   string        `json:"test_name"`
-	PprofRegex string        `json:"pprof-regex"`
-	Stacks     []TypedStacks `json:"stacks"`
+	TestName        string        `json:"test_name"`
+	ScaleByDuration bool          `json:"scale_by_duration"`
+	PprofRegex      string        `json:"pprof-regex"`
+	Stacks          []TypedStacks `json:"stacks"`
 }
 
 // Custom unmarshaller for Labels to ensure exactly one of Values and ValueRegex is defined
@@ -477,7 +478,7 @@ func readPprofFile(pprof_file string) (*profile.Profile, error) {
 	return prof, nil
 }
 
-func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, testName string, captureData bool) {
+func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, testName string, captureData bool, scaleByDuration bool) {
 	prof, err := readPprofFile(pprof_file)
 	if err != nil {
 		t.Fatalf("Error reading file %s", pprof_file)
@@ -491,8 +492,10 @@ func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, 
 	if captureData {
 		captureProfData(t, prof, pprof_file, testName, profileDuration)
 	}
-	// todo: this is a setting
-	profileDuration = 0
+	if !scaleByDuration {
+		// ignore duration, values can be considered absolute
+		profileDuration = 0
+	}
 	typedProf := getProfileType(t, prof, typedStacks.ProfileType)
 	analyzeProfData(t, typedProf, typedStacks, profileDuration)
 }
@@ -533,7 +536,7 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 				if !fileAlreadyProcessed {
 					processedProfilesMap[file] = true
 				}
-				analyzePprofFile(t, file, typedStacks, stackTestData.TestName, !fileAlreadyProcessed)
+				analyzePprofFile(t, file, typedStacks, stackTestData.TestName, !fileAlreadyProcessed, stackTestData.ScaleByDuration)
 			}
 		}
 	}

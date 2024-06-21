@@ -5,7 +5,7 @@
       "profile-type": "cpu-time",
       "stack-content": [
         {
-          "regular_expression": "\u003cmodule\u003e;main;b",
+          "regular_expression": "<module>;main;b",
           "percent": 66,
           "error_margin": 5,
           "labels": [
@@ -18,7 +18,7 @@
           ]
         },
         {
-          "regular_expression": "\u003cmodule\u003e;main;a",
+          "regular_expression": "<module>;main;a",
           "percent": 33,
           "error_margin": 6,
           "labels": [
@@ -32,5 +32,6 @@
         }
       ]
     }
-  ]
+  ],
+  "scale_by_duration": true
 }

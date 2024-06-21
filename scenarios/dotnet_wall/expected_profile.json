@@ -69,5 +69,6 @@
       "error-margin": 3,
       "value-matching-sum": null
     }
-  ]
+  ],
+  "scale_by_duration": false
 }
