@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -114,8 +113,6 @@ func buildTestApp(t *testing.T, config DockerTestConfig) string {
 	return string("test-app")
 }
 
-// docker run -v ${PWD}/data:/app/data:rw -e EXECUTION_TIME_SEC=60 -u $(id -u ${USER}):$(id -g ${USER}) --security-opt seccomp=unconfined test-app:latest
-
 func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	currentPath, err := os.Getwd()
 	if err != nil {
@@ -143,8 +140,9 @@ func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	if NETWORK_HOST {
 		args = append(args, "--network=host")
 	}
-	args = append(args, "-e", "DD_SERVICE=prof-correctness-"+folder)
+	args = append(args, "-e", "DD_SERVICE=prof-correctness-"+strings.Split(folder, "/")[1])
 	args = append(args, "test-app:latest")
+	t.Log("Docker run command: docker ", strings.Join(args, " "))
 	cmd := exec.Command("docker", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -153,7 +151,7 @@ func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	// Dump the combined output to a file as it might contain useful information
 	// such as tracebacks or error messages from the profiler that don't
 	// necessarily cause the test to fail.
-	err = ioutil.WriteFile(tmpdir+"/output.txt", out, 0644)
+	err = os.WriteFile(tmpdir+"/output.txt", out, 0644)
 	if err != nil {
 		t.Fatalf("Failed to write output to file: %v", err)
 	}

@@ -1,23 +1,23 @@
 {
-  "test_name":"clang_pie",
+  "test_name": "clang_pie",
   "stacks": [
     {
       "profile-type": "cpu-time",
-      "stack-content":
-      [
+      "stack-content": [
         {
-          "regular_expression":";_start;__libc_start_main.*;main;a$",
+          "regular_expression": ";_start;__libc_start_main.*;main;a$",
           "value": 330000000,
           "percent": 33,
           "error_margin": 10
         },
         {
-          "regular_expression":";_start;__libc_start_main.*;main;b$",
+          "regular_expression": ";_start;__libc_start_main.*;main;b$",
           "value": 660000000,
           "percent": 66,
           "error_margin": 10
         }
       ]
     }
-  ]
+  ],
+  "scale_by_duration": true
 }
