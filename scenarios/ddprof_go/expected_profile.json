@@ -1,0 +1,72 @@
+{
+  "test_name": "ddprof_go",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ";runtime\\.goexit\\.abi0;runtime\\.main;main\\.main",
+          "percent": 99,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "process_id",
+              "values": [
+                "1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-samples",
+      "stack-content": [
+        {
+          "regular_expression": ";runtime\\.goexit\\.abi0;runtime\\.main;main\\.main",
+          "percent": 99,
+          "error_margin": 3,
+          "labels": [
+            {
+              "key": "process_id",
+              "values": [
+                "1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-samples",
+      "stack-content": [
+        {
+          "regular_expression": ".*runtime\\.asmcgocall\\.abi0;cAllocateMemory",
+          "percent": 20,
+          "error_margin": 40,
+          "labels": [
+            {
+              "key": "process_id",
+              "values": [
+                "1"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": ".*;x_cgo_mmap",
+          "percent": 80,
+          "error_margin": 40,
+          "labels": [
+            {
+              "key": "process_id",
+              "values": [
+                "1"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
