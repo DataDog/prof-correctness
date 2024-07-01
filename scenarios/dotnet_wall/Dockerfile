@@ -26,12 +26,14 @@ COPY --from=build /app/queries.txt .
 ARG CACHE_DATE=2023-03-01_09:58:27
 #
 # Download and install Datadog .NET APM
-RUN apt-get update && apt-get install -y curl jq
-RUN URL_PACKAGE=$(curl -s https://api.github.com/repos/DataDog/dd-trace-dotnet/releases/latest | jq -r '.assets[] | select(.name | startswith("datadog-dotnet-apm")).browser_download_url' | grep tar.gz | grep -v musl | grep -v arm) \
-    && curl -L -o datadog-dotnet-apm.tar.gz $URL_PACKAGE
+RUN apt-get update && apt-get install -y curl jq xz-utils
+# RUN URL_PACKAGE=$(curl -s https://api.github.com/repos/DataDog/dd-trace-dotnet/releases/latest | jq -r '.assets[] | select(.name | startswith("datadog-dotnet-apm")).browser_download_url' | grep tar.gz | grep -v musl | grep -v arm) \
+#     && curl -L -o datadog-dotnet-apm.tar.gz $URL_PACKAGE
+COPY ./scenarios/dotnet_wall/datadog-dotnet-apm-2.54.0.tar.gz datadog-dotnet-apm.tar.gz
 RUN mkdir -p /opt/datadog
 RUN tar -C /opt/datadog -xzf datadog-dotnet-apm.tar.gz
 RUN /opt/datadog/createLogPath.sh
+COPY ./scenarios/dotnet_wall/Datadog.Profiler.Native.so ./linux-x64/Datadog.Profiler.Native.so
 
 # Set environment variables for Datadog
 ENV CORECLR_ENABLE_PROFILING=1 \
@@ -48,7 +50,13 @@ ENV DD_INTERNAL_PROFILING_OUTPUT_DIR=/app/data
 ENV DD_PROFILING_ENABLED=1
 ENV DD_TRACE_DEBUG=TRUE
 
+ARG CACHE_DATE=2023-03-01_09:58:27
+ADD ./profilers/ddprof/install_profiler.sh .
+RUN ./install_profiler.sh /usr/local/bin
+ADD ./profilers/ddprof/run_ddprof.sh .
+RUN chmod 755 ./run_ddprof.sh
+
 # Set the entry point for the container
 # ENTRYPOINT ["dotnet", "WorkloadScheduler.dll"]
 # ENTRYPOINT [ "bash" ]
-CMD dotnet WorkloadScheduler.dll
+CMD ddprof --inlined-functions true --timeline -l notice -u 20 -S test-dotnet --remote-symbolization dotnet WorkloadScheduler.dll

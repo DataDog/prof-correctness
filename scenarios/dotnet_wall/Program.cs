@@ -15,17 +15,29 @@ class Program
             return;
         }
 
-        string[] queries = File.ReadAllLines(filePath);
-        Queue<string> queryQueue = new Queue<string>(queries);
+        while (true)
+        {
+            string[] queries = File.ReadAllLines(filePath);
+            Queue<string> queryQueue = new Queue<string>(queries);
 
-        Thread thread1 = new Thread(() => ProcessQueries(queryQueue, 4)) { Name = "LongRunningThread" };
-        Thread thread2 = new Thread(() => ProcessQueries(queryQueue, 3)) { Name = "ShortRunningThread" };
+            List<Thread> threads = new List<Thread>();
+            for (int i = 1; i <= 20; i++)
+            {
+                int duration = i % 2 == 0 ? 4 : 3; // Alternating durations for demonstration
+                Thread thread = new Thread(() => ProcessQueries(queryQueue, duration)) { Name = $"Thread{i}" };
+                threads.Add(thread);
+            }
 
-        thread1.Start();
-        thread2.Start();
+            foreach (var thread in threads)
+            {
+                thread.Start();
+            }
 
-        thread1.Join();
-        thread2.Join();
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
+        }
     }
 
     static void ProcessQueries(Queue<string> queryQueue, int duration)
