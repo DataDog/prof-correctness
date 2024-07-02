@@ -19,6 +19,9 @@ RUN mkdir /app/rubyspec_temp
 RUN chmod 777 /app/rubyspec_temp
 
 # Needed by one of the ruby specs (which is testing access to home)
+# @ivoanjo: Locally I get uid 1000, and in CI I'm seeing 1001. I am not sure why they differ, or if any other uids
+# can show up. But, if we're missing this for an user, it'll cause the tests to fail so we definitely won't miss it.
 RUN useradd -u 1000 -ms /bin/bash someuser
+RUN useradd -u 1001 -ms /bin/bash someuser2
 
 CMD bundle exec ddprofrb exec ruby mspec-master/bin/mspec-run --config mspec_config.rb spec-master/core/dir/
