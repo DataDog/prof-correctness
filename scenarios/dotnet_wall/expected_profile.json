@@ -1,0 +1,74 @@
+{
+  "test_name": "dotnet_wall",
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "wall",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*\\|fn:ProcessQueries.*",
+          "value": 6000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "ShortRunningThread [#0]"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": ".*\\|fn:ProcessQueries.*",
+          "value": 8000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "LongRunningThread [#0]"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu",
+      "pprof-regex": "",
+      "stack-content": null,
+      "error-margin": 3,
+      "value-matching-sum": null
+    },
+    {
+      "profile-type": "exception",
+      "pprof-regex": "",
+      "stack-content": null,
+      "error-margin": 3,
+      "value-matching-sum": null
+    },
+    {
+      "profile-type": "lock-count",
+      "pprof-regex": "",
+      "stack-content": null,
+      "error-margin": 3,
+      "value-matching-sum": null
+    },
+    {
+      "profile-type": "lock-time",
+      "pprof-regex": "",
+      "stack-content": null
+    },
+    {
+      "profile-type": "timeline",
+      "pprof-regex": "",
+      "stack-content": null,
+      "error-margin": 3,
+      "value-matching-sum": null
+    }
+  ],
+  "scale_by_duration": false
+}

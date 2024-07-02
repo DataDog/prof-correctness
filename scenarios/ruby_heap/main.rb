@@ -33,13 +33,7 @@ end
 
 setup_end = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-Timeout.timeout(5) do
-  until Datadog::Profiling::Collectors::CpuAndWallTimeWorker::Testing._native_is_running?(
-    Datadog.send(:components).profiler.send(:worker)
-  )
-    sleep(0.5)
-  end
-end
+Datadog::Profiling.wait_until_running
 
 # Approx 1KB per living object (memsize_of says 1041) (e.g. 5MB for 5k live objects)
 def a

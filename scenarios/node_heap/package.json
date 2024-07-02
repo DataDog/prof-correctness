@@ -8,5 +8,6 @@
   },
   "overrides": {
     "@datadog/pprof": "dev"
-  }
+  },
+  "scale_by_duration": true
 }

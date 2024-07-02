@@ -16,5 +16,6 @@
         }
       ]
     }
-  ]
+  ],
+  "scale_by_duration": true
 }
