@@ -9,6 +9,11 @@ jobs:
     with:
       test_scenarios: ddprof.*
     secrets: inherit
+  dotnet:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: dotnet.*
+    secrets: inherit
   ruby:
     uses: ./.github/workflows/test.yml
     with:

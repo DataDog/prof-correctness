@@ -44,7 +44,7 @@
           ]
         },
         {
-          "regular_expression": "\u003cmodule\u003e;target",
+          "regular_expression": "<module>;target",
           "percent": 22,
           "error_margin": 2,
           "labels": [
@@ -57,7 +57,7 @@
           ]
         },
         {
-          "regular_expression": "_bootstrap;_bootstrap;_bootstrap_inner;run;target",
+          "regular_expression": "_bootstrap;_bootstrap_inner;run;target",
           "percent": 11,
           "error_margin": 2,
           "labels": [
@@ -71,5 +71,6 @@
         }
       ]
     }
-  ]
+  ],
+  "scale_by_duration": true
 }

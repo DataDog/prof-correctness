@@ -63,7 +63,7 @@
           ]
         },
         {
-          "regular_expression": "\u003cmodule\u003e;target;sleep",
+          "regular_expression": "<module>;target;sleep",
           "percent": 5,
           "error_margin": 4,
           "labels": [
@@ -102,5 +102,6 @@
         }
       ]
     }
-  ]
+  ],
+  "scale_by_duration": true
 }

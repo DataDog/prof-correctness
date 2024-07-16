@@ -16,7 +16,7 @@
         }
       ]
     },
-    { 
+    {
       "profile-type": "space",
       "stack-content": [
         {
@@ -33,5 +33,6 @@
         }
       ]
     }
-  ]
+  ],
+  "scale_by_duration": true
 }
