@@ -29,6 +29,7 @@ end
 Datadog.configure do |c|
   c.profiling.enabled = true
   c.profiling.exporter.transport = ExportToFile.new
+  c.telemetry.enabled = false
 end
 
 setup_end = Process.clock_gettime(Process::CLOCK_MONOTONIC)
