@@ -12,7 +12,7 @@ WORKDIR /app
 
 RUN bundle config set --local path 'vendor/bundle'
 RUN bundle install
-RUN rm -f vendor/bundle/ruby/*/gems/ddtrace-*/lib/*so vendor/bundle/ruby/*/bundler/gems/*/lib/datadog*so
+RUN rm -f vendor/bundle/ruby/*/gems/*/lib/datadog*so vendor/bundle/ruby/*/bundler/gems/*/lib/datadog*so
 RUN bundle config set --local path 'vendor-moved/bundle'
 RUN mv vendor vendor-moved
 
