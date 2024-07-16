@@ -15,6 +15,7 @@ end
 Datadog.configure do |c|
   c.profiling.enabled = true
   c.profiling.exporter.transport = ExportToFile.new
+  c.telemetry.enabled = false
 end
 
 Datadog::Profiling.wait_until_running
