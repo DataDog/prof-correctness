@@ -1,1 +1,1 @@
-git+https://git@github.com/DataDog/dd-trace-py.git@taegyunkim/libdd-pprof
+ddtrace @ git+https://git@github.com/DataDog/dd-trace-py.git@taegyunkim/libdd-pprof
