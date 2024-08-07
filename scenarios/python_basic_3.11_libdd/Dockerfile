@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="prof-python-3.11"
+ARG BASE_IMAGE="prof-python-3.11-libdd"
 FROM $BASE_IMAGE
 
 # Copy the Python target into the container
