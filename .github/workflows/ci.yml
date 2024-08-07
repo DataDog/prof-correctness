@@ -25,6 +25,7 @@ jobs:
       test_scenarios: node.*
     secrets: inherit
   python:
+    timeout-minutes: 30
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: python.*
