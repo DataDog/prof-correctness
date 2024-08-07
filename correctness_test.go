@@ -110,7 +110,10 @@ func buildTestApp(t *testing.T, config DockerTestConfig) string {
 		t.Logf("%s", err)
 		t.Fatalf("Error building %s - %s", config.folder, out)
 	}
-	return string("test-app")
+	end_time := time.Now()
+	tag := string("test-app")
+	t.Log("Built test app with tag: ", tag, " in time ", end_time.Sub(now_time))
+	return tag
 }
 
 func runTestApp(t *testing.T, dockerTag string, folder string) string {
@@ -243,7 +246,6 @@ func testScenarios(t *testing.T, scenarioRegexp string) {
 			t.Log("Json file:", config.jsonFilePath)
 			t.Log("Docker file:", config.dockerfilePath)
 			tag := buildTestApp(t, config)
-			t.Log("Built test app with:", tag)
 			pprof_folder := runTestApp(t, tag, config.folder)
 			AnalyzeResults(t, config.jsonFilePath, pprof_folder)
 		})
