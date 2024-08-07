@@ -1,5 +1,9 @@
 FROM python:3.10
 
+# install rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
 ENV DD_PROFILING_ENABLED true
 ENV DD_TRACE_ENABLED false
 ENV DD_TRACE_DEBUG true
