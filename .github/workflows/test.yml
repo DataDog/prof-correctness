@@ -1,7 +1,7 @@
 name: Docker scenarios
 run-name: Docker scenarios
 
-on: 
+on:
   workflow_call:
     inputs:
       test_scenarios:
@@ -13,6 +13,7 @@ on:
 jobs:
   docker-scenarios:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v3
     - name: Set up Go
@@ -24,7 +25,7 @@ jobs:
       run: sudo sysctl kernel.perf_event_paranoid=1
     - name: Run Docker scenarios
       run: go test -v -run TestScenarios
-      env: 
+      env:
         TEST_SCENARIOS: ${{ inputs.test_scenarios }}
     - name: Upload test files
       uses: actions/upload-artifact@v3
