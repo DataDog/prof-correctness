@@ -18,3 +18,4 @@ ENV EXECUTION_TIME_SEC="2"
 # Run the program when the container starts
 CMD python main.py
 # CMD ddprof -l notice --preset cpu_live_heap python main.py
+
