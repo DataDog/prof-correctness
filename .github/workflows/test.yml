@@ -13,7 +13,6 @@ on:
 jobs:
   docker-scenarios:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v3
     - name: Set up Go
@@ -24,6 +23,7 @@ jobs:
     - name: Update perf_event_paranoid settings
       run: sudo sysctl kernel.perf_event_paranoid=1
     - name: Run Docker scenarios
+      timeout-minutes: 30
       run: go test -v -run TestScenarios
       env:
         TEST_SCENARIOS: ${{ inputs.test_scenarios }}
