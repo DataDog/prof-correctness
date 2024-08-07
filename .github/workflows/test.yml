@@ -1,7 +1,7 @@
 name: Docker scenarios
 run-name: Docker scenarios
 
-on:
+on: 
   workflow_call:
     inputs:
       test_scenarios:
@@ -23,9 +23,8 @@ jobs:
     - name: Update perf_event_paranoid settings
       run: sudo sysctl kernel.perf_event_paranoid=1
     - name: Run Docker scenarios
-      timeout-minutes: 30
       run: go test -v -run TestScenarios
-      env:
+      env: 
         TEST_SCENARIOS: ${{ inputs.test_scenarios }}
     - name: Upload test files
       uses: actions/upload-artifact@v3
