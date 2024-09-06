@@ -11,7 +11,7 @@ RUN chmod 644 /app/*
 # Set the working directory to the location of the program
 WORKDIR /app
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 ENV EXECUTION_TIME_SEC="2"
 
