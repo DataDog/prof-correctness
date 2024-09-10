@@ -1,11 +1,8 @@
 FROM python:3.11 AS base
 
-# install rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-
 ENV DD_PROFILING_ENABLED true
 ENV DD_TRACE_ENABLED false
 ENV DD_TRACE_DEBUG true
 ENV DD_PROFILING_EXPORT_LIBDD_ENABLED 0
+ENV DD_PROFILING__FORCE_LEGACY_EXPORTER 1
 ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
