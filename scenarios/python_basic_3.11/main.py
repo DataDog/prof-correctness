@@ -18,6 +18,15 @@ if __name__ == "__main__":
     prof = Profiler()
     prof.start()  # Should be as early as possible, eg before other imports, to ensure everything is profiled
 
+    from ddtrace.internal.datadog.profiling import ddup
+    from ddtrace.internal.datadog.profiling import stack_v2
+
+    assert ddup.is_available
+
+    print(stack_v2.failure_msg)
+    assert stack_v2.is_available
+
+
     EXECUTION_TIME_SEC = int(os.environ.get("EXECUTION_TIME_SEC", "2"))
 
     t = Thread(target=target, args=(EXECUTION_TIME_SEC / 2,))
