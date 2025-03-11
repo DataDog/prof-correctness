@@ -8,6 +8,11 @@
           "regular_expression": ";_start;__libc_start_main;main;intensiveTask.*",
           "percent": 33,
           "error_margin": 3
+        },
+        {
+          "regular_expression": ";_start;__libc_start_main;main;foo;moreIntensiveTask.*",
+          "percent": 66,
+          "error_margin": 3
         }
       ]
     }
