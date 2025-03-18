@@ -20,6 +20,10 @@ inline void moreIntensiveTask(std::chrono::steady_clock::time_point endTime) {
     }
 }
 
+inline void foo(std::chrono::steady_clock::time_point endTime) {
+    moreIntensiveTask(endTime);
+}
+
 int main() {
     const char* envVar = std::getenv("EXECUTION_TIME_SEC");
     if (!envVar) {
@@ -34,7 +38,7 @@ int main() {
         intensiveTask(intensiveEndTime);
 
         auto moreIntensiveEndTime = totalStartTime + std::chrono::milliseconds(1000); // full second
-        moreIntensiveTask(moreIntensiveEndTime);
+        foo(moreIntensiveEndTime);
     }
     return 0;
 }
