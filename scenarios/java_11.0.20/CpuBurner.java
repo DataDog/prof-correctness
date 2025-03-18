@@ -4,8 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CpuBurner {
     public static void main(String[] args) {
-        // int numThreads = Runtime.getRuntime().availableProcessors();
-        int numThreads = 2; // avoid overloading system
+        int numThreads = 2;
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
         int executionTimeSec = Integer.parseInt(System.getenv().getOrDefault("EXECUTION_TIME_SEC", "60"));
