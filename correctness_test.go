@@ -142,6 +142,11 @@ func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	}
 	args = append(args, "-e", "DD_SERVICE=prof-correctness-"+strings.Split(folder, "/")[1])
 	args = append(args, "test-app:latest")
+	// default socket path for Datadog
+	// socketPath := "/var/run/containerd/containerd.sock"
+	// if _, err := os.Stat(socketPath); err == nil {
+	// 	args = append(args, "-v", socketPath+":"+socketPath)
+	// }
 	t.Log("Docker run command: docker ", strings.Join(args, " "))
 	cmd := exec.Command("docker", args...)
 	out, err := cmd.CombinedOutput()
