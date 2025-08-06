@@ -1,102 +1,93 @@
 {
   "test_name": "python_basic",
+  "scale_by_duration": true,
+  "pprof-regex": "",
   "stacks": [
     {
       "profile-type": "wall-time",
+      "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "_bootstrap;_bootstrap_inner;run;wait;wait",
-          "percent": 11,
-          "error_margin": 2,
+          "regular_expression": "^periodic$",
+          "percent": 32,
+          "error_margin": 5,
           "labels": [
             {
-              "key": "thread name",
+              "key": "class name",
               "values": [
-                "ddtrace.profiling.scheduler:Scheduler"
-              ]
-            }
-          ]
-        },
-        {
-          "regular_expression": "_bootstrap;_bootstrap_inner;run;wait;wait",
-          "percent": 11,
-          "error_margin": 2,
-          "labels": [
-            {
-              "key": "thread name",
-              "values": [
-                "ddtrace.profiling.collector.memalloc:MemoryCollector"
-              ]
-            }
-          ]
-        },
-        {
-          "regular_expression": "_bootstrap;_bootstrap_inner;run;periodic",
-          "percent": 11,
-          "error_margin": 2,
-          "labels": [
+                "StackCollector"
+              ],
+              "values_regex": ""
+            },
             {
               "key": "thread name",
               "values": [
                 "ddtrace.profiling.collector.stack:StackCollector"
-              ]
+              ],
+              "values_regex": ""
             }
           ]
         },
         {
-          "regular_expression": "run",
-          "percent": 5,
+          "regular_expression": "^\u003cmodule\u003e;target;sleep$",
+          "percent": 23,
           "error_margin": 4,
           "labels": [
             {
               "key": "thread name",
               "values": [
                 "MainThread"
-              ]
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "task name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": "^run$",
+          "percent": 23,
+          "error_margin": 4,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
             },
             {
               "key": "class name",
               "values": [
                 "Hub"
-              ]
+              ],
+              "values_regex": ""
             }
           ]
         },
         {
-          "regular_expression": "\u003cmodule\u003e;target;sleep",
-          "percent": 5,
-          "error_margin": 4,
-          "labels": [
-            {
-              "key": "thread name",
-              "values": [
-                "MainThread"
-              ]
-            },
-            {
-              "key": "task name",
-              "values": [
-                "MainThread"
-              ]
-            }
-          ]
-        },
-        {
-          "regular_expression": "_bootstrap;_bootstrap_inner;run;target;sleep",
-          "percent": 4,
+          "regular_expression": "^_bootstrap;_bootstrap_inner;run;target;sleep$",
+          "percent": 11,
           "error_margin": 2,
           "labels": [
-            {
-              "key": "thread name",
-              "values": [
-                "MainThread"
-              ]
-            },
             {
               "key": "task name",
               "values": [
                 "Thread-1 (target)"
-              ]
+              ],
+              "values_regex": ""
+            },
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
             }
           ]
         }

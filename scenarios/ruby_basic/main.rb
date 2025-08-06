@@ -15,13 +15,7 @@ Datadog.configure do |c|
   c.profiling.exporter.transport = ExportToFile.new
 end
 
-Timeout.timeout(5) do
-  until Datadog::Profiling::Collectors::CpuAndWallTimeWorker::Testing._native_is_running?(
-    Datadog.send(:components).profiler.send(:worker)
-  )
-    sleep(0.5)
-  end
-end
+Datadog::Profiling.wait_until_running
 
 def a
   x = 0

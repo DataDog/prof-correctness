@@ -1,0 +1,21 @@
+{
+  "test_name":"ruby_basic",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content":
+      [
+        {
+          "regular_expression": "\u003cmain\u003e;a",
+          "percent": 33,
+          "error_margin": 20
+        },
+        {
+          "regular_expression": "\u003cmain\u003e;b",
+          "percent": 66,
+          "error_margin": 20
+        }
+      ]
+    }
+  ]
+}

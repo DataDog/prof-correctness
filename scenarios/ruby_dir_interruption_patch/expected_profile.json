@@ -1,0 +1,5 @@
+{
+  "test_name": "ruby_dir_interruption_patch",
+  "stacks": [],
+  "note": "This test has no stacks, as it's not expected to emit profiles -- we're only testing that the mspec run is successful even when the profiler monkey patches are available."
+}

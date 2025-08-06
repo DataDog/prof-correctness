@@ -113,5 +113,6 @@
       "error-margin": 15,
       "value-matching-sum": 236050
     }
-  ]
+  ],
+  "scale_by_duration": true
 }
