@@ -30,7 +30,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: docker_scenario_test_data
+        name: docker_scenario_test_data_${{ github.run_id }}_${{ github.run_attempt }}
         path: data
     - name: Notify Slack
       if: failure() && github.ref == 'refs/heads/main'
