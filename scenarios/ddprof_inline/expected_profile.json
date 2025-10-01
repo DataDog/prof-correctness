@@ -5,12 +5,12 @@
       "profile-type": "cpu-time",
       "stack-content": [
         {
-          "regular_expression": ";_start;__libc_start_main;main;intensiveTask.*",
+          "regular_expression": "inline_test;_start;__libc_start_main;main;intensiveTask.*",
           "percent": 33,
           "error_margin": 3
         },
         {
-          "regular_expression": ";_start;__libc_start_main;main;foo;moreIntensiveTask.*",
+          "regular_expression": "inline_test;_start;__libc_start_main;main;foo.*moreIntensiveTask.*",
           "percent": 66,
           "error_margin": 3
         }

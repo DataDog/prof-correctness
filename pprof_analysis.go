@@ -159,7 +159,7 @@ func captureProfData(t *testing.T, prof *profile.Profile, path string, testName 
 	for _, sampleType := range prof.SampleType {
 		var typedStack TypedStacks
 		typedStack.ProfileType = sampleType.Type
-		typedStack.ErrorMargin = 3 // TODO: is this a good default ?
+		typedStack.ErrorMargin = 1
 
 		typedProf := getProfileType(t, prof, sampleType.Type)
 		// drop the content to a file to allow a comparison
