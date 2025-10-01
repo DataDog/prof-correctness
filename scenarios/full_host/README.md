@@ -8,27 +8,17 @@ The test runs a simple C program (`main.c`) that contains two functions:
 - `a()`: Performs 100M iterations of simple arithmetic
 - `b()`: Performs 200M iterations of simple arithmetic  
 
-The expected CPU profile should show `b()` taking approximately twice as much CPU time as `a()`.
+The expected CPU profile will not contain symbols.
+We could check that the unwinding is happening correctly (separate locations).
+Though for now the test frameowrk does not support it.
 
 ## Profiler Setup
 
 This test uses the dd-otel-host-profiler, which:
 - Runs as a daemon process with elevated privileges
 - Profiles all processes on the host using eBPF
-- Outputs pprof files to `/app/data/`
+- With split by service, we filter out the data that is relevant to the test (refer to json file for `pprof-regex`)
 
-## Docker Requirements
-
-The container needs to run with elevated privileges to allow the eBPF-based profiler to function:
-
-```bash
-docker run --privileged <image>
-```
-
-Or with specific capabilities:
-```bash
-docker run --cap-add SYS_ADMIN --cap-add SYS_PTRACE <image>
-```
 
 ## Environment Variables
 
