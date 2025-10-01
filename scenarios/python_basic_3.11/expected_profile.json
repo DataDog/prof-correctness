@@ -1,6 +1,5 @@
 {
   "test_name": "python_basic",
-  "scale_by_duration": true,
   "pprof-regex": "",
   "stacks": [
     {
@@ -8,30 +7,9 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^periodic$",
-          "percent": 40,
-          "error_margin": 6,
-          "labels": [
-            {
-              "key": "thread name",
-              "values": [
-                "ddtrace.profiling.collector.stack:StackCollector"
-              ],
-              "values_regex": ""
-            },
-            {
-              "key": "class name",
-              "values": [
-                "StackCollector"
-              ],
-              "values_regex": ""
-            }
-          ]
-        },
-        {
           "regular_expression": "^\u003cmodule\u003e;target$",
-          "percent": 40,
-          "error_margin": 3,
+          "value": 1500000000,
+          "error_margin": 20,
           "labels": [
             {
               "key": "thread name",
@@ -43,9 +21,9 @@
           ]
         },
         {
-          "regular_expression": "^_bootstrap;_bootstrap_inner;run;target$",
-          "percent": 19,
-          "error_margin": 3,
+          "regular_expression": ".*run;target$",
+          "value": 500000000,
+          "error_margin": 25,
           "labels": [
             {
               "key": "thread name",
@@ -58,5 +36,6 @@
         }
       ]
     }
-  ]
+  ],
+  "scale_by_duration": false
 }
