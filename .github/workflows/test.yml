@@ -27,7 +27,7 @@ jobs:
       env: 
         TEST_SCENARIOS: ${{ inputs.test_scenarios }}
     - name: Upload test files
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: docker_scenario_test_data
