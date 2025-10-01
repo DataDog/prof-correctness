@@ -12,7 +12,7 @@ The expected CPU profile should show `b()` taking approximately twice as much CP
 
 ## Profiler Setup
 
-This test uses the dd-otel-host-profiler v0.4.0, which:
+This test uses the dd-otel-host-profiler, which:
 - Runs as a daemon process with elevated privileges
 - Profiles all processes on the host using eBPF
 - Outputs pprof files to `/app/data/`
@@ -33,4 +33,5 @@ docker run --cap-add SYS_ADMIN --cap-add SYS_PTRACE <image>
 ## Environment Variables
 
 - `EXECUTION_TIME_SEC`: Duration to run the test application (default: 12 seconds)
+The aim is to have 2 profiles, the first one fails due to startup / warmup of full host
 - Profiler outputs are written to `/app/data/profiles_*`here

@@ -6,7 +6,7 @@ echo "Starting dd-otel-host-profiler daemon..."
 # Configure it to output pprof files locally with 10s reporting period
 DD_HOST_PROFILING_UPLOAD_SYMBOLS=false \
 dd-otel-host-profiler \
-    --pprof-prefix=/app/data/profiles_ \
+    --pprof-prefix=/app/data/profiles \
     --upload-period=5s \
     --split-by-service=true \
     --verbose &
