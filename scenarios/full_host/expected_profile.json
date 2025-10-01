@@ -1,0 +1,17 @@
+{
+  "test_name": "full_host",
+  "pprof-regex": ".*clang_pie_test.*\\.pprof$",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*clang_pie.*",
+          "value": 5000000000,
+          "error_margin": 80
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
