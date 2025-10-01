@@ -26,11 +26,18 @@ jobs:
       run: go test -v -run TestScenarios
       env: 
         TEST_SCENARIOS: ${{ inputs.test_scenarios }}
+    - name: Create unique artifact name
+      id: artifact_name
+      if: failure()
+      run: |
+        # Replace special characters with underscores to make it artifact-name safe
+        SAFE_NAME=$(echo "${{ inputs.test_scenarios }}" | sed 's/[^a-zA-Z0-9]/_/g')
+        echo "name=docker_scenario_test_data_${SAFE_NAME}_${{ github.run_id }}" >> $GITHUB_OUTPUT
     - name: Upload test files
       uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: docker_scenario_test_data_${{ github.run_id }}_${{ github.run_attempt }}
+        name: ${{ steps.artifact_name.outputs.name }}
         path: data
     - name: Notify Slack
       if: failure() && github.ref == 'refs/heads/main'
