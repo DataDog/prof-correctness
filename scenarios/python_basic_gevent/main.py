@@ -10,9 +10,9 @@ from time import sleep
 def target(n):
     # Do actual work instead of just sleeping so profiler can capture it
     import time
-    end_time = time.time() + n
+    end_time = time.monotonic() + n
     count = 0
-    while time.time() < end_time:
+    while time.monotonic() < end_time:
         count += 1
         if count % 1000 == 0:
             # Yield to gevent
