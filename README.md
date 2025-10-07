@@ -7,7 +7,7 @@ Checkout #profiling-library-pager to get notified of test failures.
 
 ### Pre-requisites
 
-Install go >= 1.19: `brew install go`, `choco install go`, etc.
+Install go >= 1.25.1: `brew install go`, `choco install go`, etc.
 Install docker.
 
 ### Running Tests
