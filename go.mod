@@ -1,6 +1,6 @@
 module github.com/DataDog/profiler-correctness/v1
 
-go 1.19
+go 1.25.1
 
 require (
 	github.com/google/pprof v0.0.0-20240528025155-186aa0362fba
