@@ -8,8 +8,8 @@
         {
           "regular_expression": "foo;b",
           "percent": 66,
-          "value": 400000000,
-          "error_margin": 5,
+          "value": 4200000000,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -26,8 +26,8 @@
         {
           "regular_expression": "foo;a",
           "percent": 33,
-          "value": 200000000,
-          "error_margin": 5,
+          "value": 2100000000,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -50,8 +50,8 @@
         {
           "regular_expression": "foo;b",
           "percent": 33,
-          "value": 400000000,
-          "error_margin": 5,
+          "value": 4200000000,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -68,8 +68,8 @@
         {
           "regular_expression": "foo;a",
           "percent": 17,
-          "value": 200000000,
-          "error_margin": 5,
+          "value": 2100000000,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -85,9 +85,9 @@
         },
         {
           "regular_expression": "Non JS threads activity",
-          "value": 650000000,
+          "value": 6900000000,
           "percent": 52,
-          "error_margin": 5,
+          "error_margin": 11,
           "labels": [
             {
               "key": "thread name",
@@ -112,8 +112,8 @@
         {
           "regular_expression": "foo;b",
           "percent": 66,
-          "value": 400000000,
-          "error_margin": 7,
+          "value": 2100000000,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -130,8 +130,8 @@
         {
           "regular_expression": "foo;a",
           "percent": 33,
-          "value": 200000000,
-          "error_margin": 7,
+          "value": 1100000000,
+          "error_margin": 15,
           "labels": [
             {
               "key": "thread name",
@@ -154,8 +154,8 @@
         {
           "regular_expression": "foo;b",
           "percent": 66,
-          "value": 400000000,
-          "error_margin": 7,
+          "value": 2100000000,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -172,8 +172,8 @@
         {
           "regular_expression": "foo;a",
           "percent": 33,
-          "value": 200000000,
-          "error_margin": 7,
+          "value": 1100000000,
+          "error_margin": 15,
           "labels": [
             {
               "key": "thread name",
@@ -195,5 +195,5 @@
       ]
     }
   ],
-  "scale_by_duration": true
+  "scale_by_duration": false
 }
