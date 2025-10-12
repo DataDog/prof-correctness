@@ -29,3 +29,8 @@ jobs:
     with:
       test_scenarios: python.*
     secrets: inherit
+  full_host:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: full_host.*
+    secrets: inherit

@@ -133,14 +133,32 @@ func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	cmdSlice, _ := retrieveCurrentCommand(dockerTag)
 	t.Log("Running docker command with output", tmpdir)
 	t.Log(strings.Join(cmdSlice, " "))
-	args := []string{"run", "-v", mountOption, "-u", userOption, "--security-opt", "seccomp=unconfined"}
+	// Add elevated privileges for full_host profiler test
+	var args []string
+	if strings.Contains(folder, "full_host") {
+		// For full_host profiler, run as root and with full privileges
+		args = []string{"run", "-v", mountOption, "--pid=host", "--privileged", "--security-opt", "seccomp=unconfined"}
+		args = append(args, "--cap-add=SYS_ADMIN")
+		args = append(args, "--cap-add=SYS_PTRACE")
+		args = append(args, "--cap-add=SYS_RESOURCE")
+		// Mount debugfs and tracefs for tracepoint access
+		args = append(args, "-v", "/sys/kernel/debug:/sys/kernel/debug:ro")
+		args = append(args, "-v", "/sys/kernel/tracing:/sys/kernel/tracing:ro")
+	} else {
+		// For other tests, use normal user
+		args = []string{"run", "-v", mountOption, "-u", userOption, "--security-opt", "seccomp=unconfined"}
+	}
+
 	if DURATION_SET {
 		args = append(args, "-e", "EXECUTION_TIME_SEC="+fmt.Sprint(RUN_SECS))
 	}
 	if NETWORK_HOST {
 		args = append(args, "--network=host")
 	}
-	args = append(args, "-e", "DD_SERVICE=prof-correctness-"+strings.Split(folder, "/")[1])
+	// Don't set DD_SERVICE for full_host tests - let the profiler detect services per-process
+	if !strings.Contains(folder, "full_host") {
+		args = append(args, "-e", "DD_SERVICE=prof-correctness-"+strings.Split(folder, "/")[1])
+	}
 	args = append(args, "test-app:latest")
 	t.Log("Docker run command: docker ", strings.Join(args, " "))
 	cmd := exec.Command("docker", args...)

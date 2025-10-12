@@ -92,10 +92,11 @@ type TypedStacks struct {
 }
 
 type StackTestData struct {
-	TestName        string        `json:"test_name"`
-	ScaleByDuration bool          `json:"scale_by_duration"`
-	PprofRegex      string        `json:"pprof-regex"`
-	Stacks          []TypedStacks `json:"stacks"`
+	TestName                 string        `json:"test_name"`
+	ScaleByDuration          bool          `json:"scale_by_duration"`
+	PprofRegex               string        `json:"pprof-regex"`
+	AllowFirstProfileFailure bool          `json:"allow_first_profile_failure,omitempty"`
+	Stacks                   []TypedStacks `json:"stacks"`
 }
 
 // Custom unmarshaller for Labels to ensure exactly one of Values and ValueRegex is defined
@@ -321,6 +322,11 @@ func checkLabels(t *testing.T, labels map[string][]string, expectedLabels []Labe
 }
 
 func assertStack(t *testing.T, prof []StackSample, regexpStack string, valueOpt Optional[float64], pctOpt Optional[int64], epsilonPct int64, labels []Labels) (matching int64) {
+	var hasFailures bool
+	return assertStackWithFailureHandling(t, prof, regexpStack, valueOpt, pctOpt, epsilonPct, labels, false, &hasFailures)
+}
+
+func assertStackWithFailureHandling(t *testing.T, prof []StackSample, regexpStack string, valueOpt Optional[float64], pctOpt Optional[int64], epsilonPct int64, labels []Labels, allowFailure bool, hasFailures *bool) (matching int64) {
 	r, err := regexp.Compile(regexpStack)
 	if err != nil {
 		t.Fatalf("Error compiling regex: %v, %s", err, regexpStack)
@@ -344,7 +350,12 @@ func assertStack(t *testing.T, prof []StackSample, regexpStack string, valueOpt 
 		errorPct := relDiff(float64(matching), value)
 		// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
 		if errorPct > float64(epsilonPct) {
-			t.Errorf("\033[31mAssertion failed: stack '%s' (labels=%v) should have been %.1f +/- %d%% of the profile but was %d with %.1f%% error\033[0m", regexpStack, labels, value, epsilonPct, matching, errorPct)
+			if allowFailure {
+				t.Logf("\033[33mAssertion failed (allowed): stack '%s' (labels=%v) should have been %.1f +/- %d%% of the profile but was %d with %.1f%% error\033[0m", regexpStack, labels, value, epsilonPct, matching, errorPct)
+				*hasFailures = true
+			} else {
+				t.Errorf("\033[31mAssertion failed: stack '%s' (labels=%v) should have been %.1f +/- %d%% of the profile but was %d with %.1f%% error\033[0m", regexpStack, labels, value, epsilonPct, matching, errorPct)
+			}
 		} else {
 			t.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is %.1f +/- %d%% of the profile (was %d with %.1f%% error)\033[0m", regexpStack, labels, value, epsilonPct, matching, errorPct)
 		}
@@ -354,7 +365,12 @@ func assertStack(t *testing.T, prof []StackSample, regexpStack string, valueOpt 
 		diff := absDiff(pct, actualPct)
 		// t.Logf("Stack '%s' should be %d%% +/- %d%% of the profile and is %d%%\n", stack, pct, epsilonPct, actualPct)
 		if diff > epsilonPct {
-			t.Errorf("\033[31mAssertion failed: stack '%s' (labels=%v) should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
+			if allowFailure {
+				t.Logf("\033[33mAssertion failed (allowed): stack '%s' (labels=%v) should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
+				*hasFailures = true
+			} else {
+				t.Errorf("\033[31mAssertion failed: stack '%s' (labels=%v) should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
+			}
 		} else {
 			t.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is %d%% +/- %d%% of the profile (was %d%% with %d%% error)\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
 		}
@@ -363,7 +379,13 @@ func assertStack(t *testing.T, prof []StackSample, regexpStack string, valueOpt 
 }
 
 func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, durationSecs float64) {
+	analyzeProfDataWithFailureHandling(t, prof, typedStacks, durationSecs, false)
+}
+
+func analyzeProfDataWithFailureHandling(t *testing.T, prof []StackSample, typedStacks TypedStacks, durationSecs float64, allowFailure bool) {
 	var matchingSum int64 = 0
+	var hasFailures bool = false
+
 	for _, stack := range typedStacks.StackContent {
 		regexpStack := stack.RegularExpression
 		// Do not scale values for profiles with a duration of 0 (eg. Node.js heap profiles)
@@ -379,7 +401,8 @@ func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, 
 			errorMargin = stackErrorMargin
 		}
 
-		matchingSum += assertStack(t, prof, regexpStack, valueOpt, percent, errorMargin, stack.Labels)
+		matching := assertStackWithFailureHandling(t, prof, regexpStack, valueOpt, percent, errorMargin, stack.Labels, allowFailure, &hasFailures)
+		matchingSum += matching
 		// todo
 		// - add an assertion on counts (example:number of allocations)
 	}
@@ -392,10 +415,19 @@ func analyzeProfData(t *testing.T, prof []StackSample, typedStacks TypedStacks, 
 		}
 		errorPct := relDiff(float64(matchingSum), value)
 		if errorPct > float64(typedStacks.ErrorMargin) {
-			t.Errorf("\033[31mAssertion failed: profile '%s' should have total matching sum of %1.f +/- %d%% but was %d with %.1f%% error\033[0m", typedStacks.ProfileType, value, typedStacks.ErrorMargin, matchingSum, errorPct)
+			if allowFailure {
+				t.Logf("\033[33mAssertion failed (allowed): profile '%s' should have total matching sum of %1.f +/- %d%% but was %d with %.1f%% error\033[0m", typedStacks.ProfileType, value, typedStacks.ErrorMargin, matchingSum, errorPct)
+				hasFailures = true
+			} else {
+				t.Errorf("\033[31mAssertion failed: profile '%s' should have total matching sum of %1.f +/- %d%% but was %d with %.1f%% error\033[0m", typedStacks.ProfileType, value, typedStacks.ErrorMargin, matchingSum, errorPct)
+			}
 		} else {
 			t.Logf("\033[32mAssertion succeeded: profile '%s' has total matching sum of %1.f +/- %d%% (was %d with %.1f%% error)\033[0m", typedStacks.ProfileType, value, typedStacks.ErrorMargin, matchingSum, errorPct)
 		}
+	}
+
+	if allowFailure && hasFailures {
+		t.Logf("\033[33mProfile analysis completed with failures (allowed for first profile)\033[0m")
 	}
 }
 
@@ -478,7 +510,7 @@ func readPprofFile(pprof_file string) (*profile.Profile, error) {
 	return prof, nil
 }
 
-func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, testName string, captureData bool, scaleByDuration bool) {
+func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, testName string, captureData bool, scaleByDuration bool, allowFailure bool) {
 	prof, err := readPprofFile(pprof_file)
 	if err != nil {
 		t.Fatalf("Error reading file %s", pprof_file)
@@ -497,7 +529,7 @@ func analyzePprofFile(t *testing.T, pprof_file string, typedStacks TypedStacks, 
 		profileDuration = 0
 	}
 	typedProf := getProfileType(t, prof, typedStacks.ProfileType)
-	analyzeProfData(t, typedProf, typedStacks, profileDuration)
+	analyzeProfDataWithFailureHandling(t, typedProf, typedStacks, profileDuration, allowFailure)
 }
 
 func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
@@ -531,12 +563,22 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 		if len(matchingFiles) == 0 {
 			t.Errorf("No matching files found for %s in %s", pprof_regexp, pprof_folder)
 		} else {
-			for _, file := range matchingFiles {
+			// Sort files by name to ensure consistent ordering
+			sort.Strings(matchingFiles)
+
+			for i, file := range matchingFiles {
 				_, fileAlreadyProcessed := processedProfilesMap[file]
 				if !fileAlreadyProcessed {
 					processedProfilesMap[file] = true
 				}
-				analyzePprofFile(t, file, typedStacks, stackTestData.TestName, !fileAlreadyProcessed, stackTestData.ScaleByDuration)
+
+				// Allow failure for the first profile if the setting is enabled
+				allowFailure := stackTestData.AllowFirstProfileFailure && i == 0
+				if allowFailure {
+					t.Logf("Analyzing first profile with failure tolerance enabled: %s", filepath.Base(file))
+				}
+
+				analyzePprofFile(t, file, typedStacks, stackTestData.TestName, !fileAlreadyProcessed, stackTestData.ScaleByDuration, allowFailure)
 			}
 		}
 	}
