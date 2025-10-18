@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/pprof/profile"
 	"github.com/pierrec/lz4/v4"
+	"github.com/klauspost/compress/zstd"
 )
 
 var (
@@ -470,6 +471,23 @@ func readPprofFile(pprof_file string) (*profile.Profile, error) {
 		}
 		content = out.Bytes()
 		zr.Reset(nil)
+	}
+
+	// handle zstd compressed profiles (magic bytes 0x28B52FFD / 0xFD2FB528)
+	if len(content) >= 4 {
+		magic := uint32(content[0]) | uint32(content[1])<<8 | uint32(content[2])<<16 | uint32(content[3])<<24
+		if magic == 0xFD2FB528 || magic == 0x28B52FFD { // little or big endian check
+			dec, err := zstd.NewReader(nil)
+			if err != nil {
+				return nil, err
+			}
+			defer dec.Close()
+			decompressed, err := dec.DecodeAll(content, nil)
+			if err != nil {
+				return nil, err
+			}
+			content = decompressed
+		}
 	}
 	prof, err := profile.ParseData(content)
 	if err != nil {
