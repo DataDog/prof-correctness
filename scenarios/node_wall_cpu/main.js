@@ -53,7 +53,7 @@ async function foo(nsecs) {
 let executionTime = 0
 
 if (isMainThread) {
-  executionTime = process.argv[2] || process.env.EXECUTION_TIME_SEC || 2
+  executionTime = process.argv[2] || process.env.EXECUTION_TIME_SEC || 10
   const nworkers = process.argv[3] || process.env.NWORKERS || 1
   console.log(`executionTime: ${executionTime}, nworkers: ${nworkers}`)
   

@@ -7,10 +7,13 @@ Asynchronous cryptographic operations are run on separate libuv threads, and the
 CPU consumed on non-JS threads is only reported in the profile of the main JS thread with a special `(non-JS threads)` frames because we are currenlty unable to correctly assign it to worker/main thread.
 
 In the end we expect the following profiles:
-* Main thread: 
-    * `a`: 2s of wall/cpu
-    * `b`: 4s of wall/cpu
-    * `(non-JS threads)`: 4s (main) + 2s (worker) of cpu (+ 0.5s for some other work that occur outside of JS threads)
-* Worker thread:
-    * `a`: 1s of wall/cpu
-    * `b`: 2s of wall/cpu 
+* Main thread (10s execution): 
+    * `a`: ~2.1s of wall/cpu
+    * `b`: ~4.2s of wall/cpu
+    * `(non-JS threads)`: ~6.9s of cpu (main crypto work + worker crypto work + system overhead)
+* Worker thread (5s execution):
+    * `a`: ~1.1s of wall/cpu
+    * `b`: ~2.1s of wall/cpu
+
+Note: Actual values may vary by ±10-15% due to system scheduling, startup overhead, and timer precision. 
+Locally the accuracy is good, though we get 10-15% in CI.
