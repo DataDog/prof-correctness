@@ -8,7 +8,7 @@
       "stack-content": [
         {
           "regular_expression": ".*clang_pie.*",
-          "error_margin": 99
+          "error_margin": 4
         }
       ],
       "value-matching-sum": 1000000000,
