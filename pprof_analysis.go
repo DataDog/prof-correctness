@@ -473,16 +473,18 @@ func readPprofFile(pprof_file string) (*profile.Profile, error) {
 		zr.Reset(nil)
 	}
 
-	// handle zstd compressed profiles (magic bytes 0x28B52FFD / 0xFD2FB528)
+	// Handle zstd-compressed profiles.
+	// RFC 8878 defines the zstd frame magic as little-endian 0xFD2FB528; the decoder expects this LE constant.
 	if len(content) >= 4 {
+		// parse the first 4 bytes as little-endian and compare to 0xFD2FB528
 		magic := uint32(content[0]) | uint32(content[1])<<8 | uint32(content[2])<<16 | uint32(content[3])<<24
-		if magic == 0xFD2FB528 || magic == 0x28B52FFD { // little or big endian check
+		if magic == 0xFD2FB528 {
 			dec, err := zstd.NewReader(nil)
 			if err != nil {
 				return nil, err
 			}
-			defer dec.Close()
 			decompressed, err := dec.DecodeAll(content, nil)
+			dec.Close()
 			if err != nil {
 				return nil, err
 			}
