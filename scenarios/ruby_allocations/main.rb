@@ -5,7 +5,7 @@ class ExportToFile
   PPROF_PREFIX = ENV.fetch('DD_PROFILING_PPROF_PREFIX')
 
   def export(flush)
-    File.write("#{PPROF_PREFIX}#{flush.start.strftime('%Y%m%dT%H%M%SZ')}.pprof", flush.pprof_data)
+    File.write("#{PPROF_PREFIX}#{flush.start.strftime('%Y%m%dT%H%M%SZ')}.pprof", flush.encoded_profile._native_bytes)
     File.write("#{PPROF_PREFIX}#{flush.start.strftime('%Y%m%dT%H%M%SZ')}.internal_metadata.json",
                flush.internal_metadata_json)
     true
