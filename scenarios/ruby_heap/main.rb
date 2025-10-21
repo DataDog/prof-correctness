@@ -19,7 +19,7 @@ class ExportToFile
     $community_pool.each_entry do |element|
       puts("#{element[0]} #{element[1].size} #{ObjectSpace.memsize_of(element[1].last)}")
     end
-    File.write("#{PPROF_PREFIX}#{flush.start.strftime('%Y%m%dT%H%M%SZ')}.pprof", flush.pprof_data)
+    File.write("#{PPROF_PREFIX}#{flush.start.strftime('%Y%m%dT%H%M%SZ')}.pprof", flush.encoded_profile._native_bytes)
     File.write("#{PPROF_PREFIX}#{flush.start.strftime('%Y%m%dT%H%M%SZ')}.internal_metadata.json",
                flush.internal_metadata_json)
     true
