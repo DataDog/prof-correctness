@@ -194,7 +194,9 @@ func buildBaseImage(rootDir string, baseImageName string, t *testing.T) {
 	}
 
 	tag := baseImageName
-	buildCmd := exec.Command("docker", "build", "-t", tag, "-f", dockerfilePath, rootDir)
+	// Cache date helps force re-fetching newer profiler versions (though this requires the dockerfile to handle it)
+	now_time := time.Now()
+	buildCmd := exec.Command("docker", "build", "-t", tag, "-f", dockerfilePath, "--build-arg", "CACHE_DATE="+now_time.Format("2006-01-02_15:04:05"), rootDir)
 	buildCmd.Stdout = os.Stdout
 	buildCmd.Stderr = os.Stderr
 	err := buildCmd.Run()
