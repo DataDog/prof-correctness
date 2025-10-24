@@ -1,0 +1,27 @@
+{
+  "test_name": "python_asyncio",
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "run;.*;run_until_complete;Task-1;main;Task-.*;my_coroutine$",
+          "value": 2000000000,
+          "error_margin": 20,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
