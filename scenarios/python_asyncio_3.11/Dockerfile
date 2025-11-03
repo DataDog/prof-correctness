@@ -1,12 +1,14 @@
 ARG BASE_IMAGE="prof-python-3.11"
 FROM $BASE_IMAGE
 
-# Copy the Python target into the container
-COPY ./scenarios/python_asyncio_3.11/main.py \
-    ./scenarios/python_asyncio_3.11/requirements.txt \
-    /app/
-RUN chmod 644 /app/*
+ARG LATEST_WHEEL
 
+COPY $LATEST_WHEEL /tmp/
+RUN pip install /tmp/$LATEST_WHEEL
+
+# Copy the Python target into the container
+COPY main.py /app/
+RUN chmod 644 /app/*
 
 # Set the working directory to the location of the program
 WORKDIR /app
