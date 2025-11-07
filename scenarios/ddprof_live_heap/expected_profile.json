@@ -26,7 +26,7 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^.*;main;allocate_memory\\(unsigned long\\)$",
+          "regular_expression": "^.*;main;allocate_memory\\(unsigned long\\);operator new\\(unsigned long\\)$",
           "percent": 100,
           "error_margin": 5
         }
