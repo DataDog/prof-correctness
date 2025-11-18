@@ -1,21 +1,17 @@
 ARG BASE_IMAGE="prof-python-3.11"
 FROM $BASE_IMAGE
 
-ARG LATEST_WHEEL
-
-COPY $LATEST_WHEEL /tmp/
-RUN pip install /tmp/$LATEST_WHEEL
+RUN pip download ddtrace --no-deps --no-index --find-links https://dd-trace-py-builds.s3.amazonaws.com/82657378/index.html
+RUN pip install ddtrace-*.whl
 
 # Copy the Python target into the container
-COPY main.py /app/
+COPY ./scenarios/python_asyncio_3.11/main.py /app/
 RUN chmod 644 /app/*
+
+ENV EXECUTION_TIME_SEC="2"
 
 # Set the working directory to the location of the program
 WORKDIR /app
-
-RUN pip install -r requirements.txt
-
-ENV EXECUTION_TIME_SEC="2"
 
 # Run the program when the container starts
 CMD python main.py

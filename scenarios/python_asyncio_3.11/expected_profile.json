@@ -7,7 +7,7 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "run;.*;run_until_complete;Task-1;main;Task-.*;my_coroutine$",
+          "regular_expression": ".*run;.*;BaseEventLoop\\.run_until_complete;.*;main;my_coroutine;sleep",
           "value": 2000000000,
           "error_margin": 20,
           "labels": [
