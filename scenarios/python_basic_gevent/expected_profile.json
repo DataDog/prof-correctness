@@ -9,8 +9,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 717884000, 
-          "error_margin": 50,
+          "value": 1000000000,
+          "error_margin": 25,
           "labels": [
             {
               "key": "task name",
