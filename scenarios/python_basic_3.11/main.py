@@ -1,10 +1,11 @@
 import os
 from threading import Thread
 from time import sleep
+
 from ddtrace.profiling import Profiler
 
 
-def target(n):
+def target(n: int)->None:
     sleep(n)
 
 if __name__ == "__main__":

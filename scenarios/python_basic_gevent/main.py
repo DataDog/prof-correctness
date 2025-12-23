@@ -3,13 +3,12 @@ from gevent import monkey
 monkey.patch_all()
 
 import os  # noqa: E402
+import time  # noqa: E402
 from threading import Thread  # noqa: E402
 
 
 def target(n: int) -> None:
     # Do actual work instead of just sleeping so profiler can capture it
-    import time
-
     end_time = time.monotonic() + n
     count = 0
     while time.monotonic() < end_time:
