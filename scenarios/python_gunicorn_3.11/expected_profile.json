@@ -1,0 +1,102 @@
+{
+  "test_name": "python_gunicorn_3.11",
+  "scale_by_duration": false,
+  "pprof-regex": "profiles.*\\.pprof$",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "pprof-regex": "profiles\\.([2-9]|[1-9][0-9]+)\\..*\\.pprof$",
+      "stack-content": [
+        {
+          "regular_expression": ".*make_request.*",
+          "percent": 5,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Requester"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "profiles\\.([2-9]|[1-9][0-9]+)\\..*\\.pprof$",
+      "stack-content": [
+        {
+          "regular_expression": ".*make_request.*",
+          "percent": 50,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Requester"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "pprof-regex": "profiles\\.([2-9]|[1-9][0-9]+)\\..*\\.pprof$",
+      "stack-content": [
+        {
+          "regular_expression": ".*process.*",
+          "percent": 90,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "pprof-regex": "profiles\\.([2-9]|[1-9][0-9]+)\\..*\\.pprof$",
+      "stack-content": [
+        {
+          "regular_expression": ".*sub_process.*",
+          "percent": 15,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "profiles\\.([2-9]|[1-9][0-9]+)\\..*\\.pprof$",
+      "stack-content": [
+        {
+          "regular_expression": ".*process.*",
+          "percent": 50,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
