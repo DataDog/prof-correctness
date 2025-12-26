@@ -1,0 +1,37 @@
+{
+  "test_name": "python_flask_3.11",
+  "scale_by_duration": false,
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*_make_requests.*",
+          "percent": 33,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Requester"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*hello_world;compute_big_number.*",
+          "percent": 33,
+          "error_margin": 5
+        }
+      ]
+    }
+  ]
+}
