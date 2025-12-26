@@ -8,4 +8,4 @@ data/*
 gems.locked
 
 .DS_Store
-
+*.pyc
