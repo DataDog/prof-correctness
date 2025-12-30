@@ -15,8 +15,8 @@ import (
 	"testing"
 
 	"github.com/google/pprof/profile"
-	"github.com/pierrec/lz4/v4"
 	"github.com/klauspost/compress/zstd"
+	"github.com/pierrec/lz4/v4"
 )
 
 var (
@@ -460,6 +460,26 @@ func readJSONFile(filePath string) (StackTestData, error) {
 	return data, nil
 }
 
+func getAllFiles(folder string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Strings(files)
+	return files, nil
+}
+
 func getMatchingFiles(folder string, filenameRegex *regexp.Regexp) ([]string, error) {
 	var matchingFiles []string
 	err := filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
@@ -582,6 +602,10 @@ func AnalyzeResults(t *testing.T, jsonFilePath string, pprof_folder string) {
 		}
 		if len(matchingFiles) == 0 {
 			t.Errorf("No matching files found for %s in %s", pprof_regexp, pprof_folder)
+
+			if allFiles, err := getAllFiles(pprof_folder); err == nil {
+				t.Errorf("All files: %v", allFiles)
+			}
 		} else {
 			// Sort files by name to ensure consistent ordering
 			sort.Strings(matchingFiles)
