@@ -1,17 +1,20 @@
 FROM python:3.11 AS base
 
-ENV DD_PROFILING_ENABLED true
-ENV DD_TRACE_ENABLED false
-ENV DD_TRACE_DEBUG true
-ENV DD_PROFILING_EXPORT_LIBDD_ENABLED 1
-ENV DD_PROFILING_EXPORT_PY_ENABLED 0
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV DD_PROFILING_ENABLED=true
+ENV DD_TRACE_ENABLED=false
+ENV DD_TRACE_DEBUG=true
+ENV DD_PROFILING_EXPORT_LIBDD_ENABLED=1
+ENV DD_PROFILING_EXPORT_PY_ENABLED=0
 ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
 
 # Native profiler deps
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     curl \
     jq \
     wget \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Allow user to force a more recent install
