@@ -120,7 +120,8 @@ func runTestApp(t *testing.T, dockerTag string, folder string) string {
 	}
 	// Outputs are written to /app/data
 	profilePath := currentPath + "/data"
-	tmpdir, err := os.MkdirTemp(profilePath, filepath.Base(folder)+"-*")
+	timestamp := time.Now().Format("20060102-150405")
+	tmpdir, err := os.MkdirTemp(profilePath, filepath.Base(folder)+"-"+timestamp+"-*")
 	if err != nil {
 		t.Fatalf("Failed to make tmp dir: %v", err)
 	}
@@ -189,7 +190,7 @@ func extractBaseImage(dockerfilePath string) (string, error) {
 	for scanner.Scan() && lineCount < 10 {
 		line := scanner.Text()
 		matches := regexp.MustCompile(`ARG BASE_IMAGE="(.+?)"`).FindStringSubmatch(line)
-		if matches != nil && len(matches) > 1 {
+		if len(matches) > 1 {
 			return matches[1], nil
 		}
 		lineCount++
