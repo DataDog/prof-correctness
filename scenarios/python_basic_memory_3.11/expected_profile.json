@@ -1,0 +1,47 @@
+{
+  "test_name": "python_memory_basic",
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "alloc-samples",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory$",
+          "percent": 40,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-samples",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_2$",
+          "percent": 60,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
