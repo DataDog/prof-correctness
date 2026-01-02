@@ -1,5 +1,7 @@
-import os
 import asyncio
+import os
+
+from ddtrace.profiling import Profiler
 
 
 async def my_coroutine(n: float) -> None:
@@ -21,20 +23,18 @@ async def main() -> None:
     # We are in the process of making asyncio better in dd-trace-py; we will update the correctness check once that
     # issue is fixed.
 
-    from ddtrace.profiling import Profiler
-
     prof = Profiler()
     prof.start()  # Should be as early as possible, eg before other imports, to ensure everything is profiled
 
     # Give the Profiler some time to start up
     await asyncio.sleep(0.5)
 
-    EXECUTION_TIME_SEC = float(os.environ.get("EXECUTION_TIME_SEC", "2"))
+    execution_time_sec = float(os.environ.get("EXECUTION_TIME_SEC", "2"))
 
-    short_task = asyncio.create_task(my_coroutine(EXECUTION_TIME_SEC / 2))
+    short_task = asyncio.create_task(my_coroutine(execution_time_sec / 2))
 
     # asyncio.gather will automatically wrap my_coroutine into a Task
-    await asyncio.gather(short_task, my_coroutine(EXECUTION_TIME_SEC))
+    await asyncio.gather(short_task, my_coroutine(execution_time_sec))
 
 
 if __name__ == "__main__":

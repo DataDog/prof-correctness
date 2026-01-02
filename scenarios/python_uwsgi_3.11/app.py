@@ -9,7 +9,7 @@ import uwsgi  # pyright: ignore[reportMissingModuleSource]
 
 
 def _make_requests() -> None:
-    run_time = int(os.environ.get("EXECUTION_TIME_SEC", 10))
+    run_time = int(os.environ.get("EXECUTION_TIME_SEC", "10"))
 
     start = time.monotonic()
     while time.monotonic() - start < run_time:
