@@ -1,8 +1,28 @@
 {
-  "test_name": "python_basic",
+  "test_name": "python_basic_gevent",
   "scale_by_duration": false,
   "pprof-regex": "",
   "stacks": [
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^run$",
+          "value": 2000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Hub"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
     {
       "profile-type": "wall-time",
       "pprof-regex": "",
@@ -16,6 +36,186 @@
               "key": "task name",
               "values": [
                 "Greenlet-0"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-1"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-2"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-3"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-4"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-5"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-6"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-7"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-8"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 1000000000,
+          "error_margin": 25,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Greenlet-9"
               ],
               "values_regex": ""
             }
