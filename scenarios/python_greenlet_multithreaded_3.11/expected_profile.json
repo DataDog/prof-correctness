@@ -1,0 +1,102 @@
+{
+  "test_name": "python_greenlet_multithreaded_3.11",
+  "scale_by_duration": false,
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*MathWorker.*work_fibonacci.*",
+          "percent": 25,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MathWorker"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*MathWorker.*work_prime.*",
+          "percent": 10,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MathWorker"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*MathWorker.*work_prime;.*genexpr.*",
+          "percent": 7,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MathWorker"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*UtilWorker.*work_string.*",
+          "percent": 15,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "UtilWorker"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*UtilWorker.*work_list.*",
+          "percent": 20,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "UtilWorker"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
