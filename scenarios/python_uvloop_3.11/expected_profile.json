@@ -1,0 +1,64 @@
+{
+    "test_name": "python_uvloop_3.11",
+    "scale_by_duration": false,
+    "pprof-regex": "",
+    "stacks": [
+        {
+            "profile-type": "wall-time",
+            "pprof-regex": "",
+            "stack-content": [
+                {
+                    "regular_expression": ".*cpu_bound_work.*",
+                    "percent": 75,
+                    "error_margin": 15,
+                    "labels": [
+                        {
+                            "key": "thread name",
+                            "values": [
+                                "MainThread"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "profile-type": "wall-time",
+            "pprof-regex": "",
+            "stack-content": [
+                {
+                    "regular_expression": ".*mixed_workload.*",
+                    "percent": 15,
+                    "error_margin": 10,
+                    "labels": [
+                        {
+                            "key": "thread name",
+                            "values": [
+                                "MainThread"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "profile-type": "wall-time",
+            "pprof-regex": "",
+            "stack-content": [
+                {
+                    "regular_expression": ".*io_simulation.*",
+                    "percent": 0,
+                    "error_margin": 5,
+                    "labels": [
+                        {
+                            "key": "thread name",
+                            "values": [
+                                "MainThread"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
