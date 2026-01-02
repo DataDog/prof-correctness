@@ -7,6 +7,7 @@ from ddtrace.profiling import Profiler
 def target(n):
     sleep(n)
 
+
 if __name__ == "__main__":
     # Simple application that creates two threads with different durations:
     # - MainThread runs target() for 2 seconds
