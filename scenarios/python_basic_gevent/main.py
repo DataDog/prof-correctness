@@ -21,9 +21,11 @@ def target(n: int) -> None:
 if __name__ == "__main__":
     EXECUTION_TIME_SEC = int(os.environ.get("EXECUTION_TIME_SEC", "2"))
 
-    t = Thread(target=target, args=(EXECUTION_TIME_SEC / 2,))
-    t.start()
+    threads = [Thread(target=target, args=(EXECUTION_TIME_SEC / 2,)) for _ in range(10)]
+    for thread in threads:
+        thread.start()
 
     target(EXECUTION_TIME_SEC)
 
-    t.join()
+    for thread in threads:
+        thread.join()
