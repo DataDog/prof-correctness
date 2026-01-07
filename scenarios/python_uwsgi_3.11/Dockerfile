@@ -18,7 +18,11 @@ ENV DD_PROFILING_ENABLED=true
 ENV DD_TRACE_DEBUG=false
 ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED=0
 ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
-ENV EXECUTION_TIME_SEC=10
+
+# It's important that those are roughly the same, but execution time is slightly longer so
+# that we're sure the Profile has been dumped.
+ENV EXECUTION_TIME_SEC=11
+ENV DD_PROFILING_UPLOAD_INTERVAL=10
 
 # Run the program when the container starts
 CMD ["uwsgi", "--ini", "uwsgi.ini"]
