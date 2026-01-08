@@ -35,39 +35,6 @@
           ]
         }
       ]
-    },
-    {
-      "profile-type": "cpu",
-      "pprof-regex": "",
-      "stack-content": null,
-      "error-margin": 3,
-      "value-matching-sum": null
-    },
-    {
-      "profile-type": "exception",
-      "pprof-regex": "",
-      "stack-content": null,
-      "error-margin": 3,
-      "value-matching-sum": null
-    },
-    {
-      "profile-type": "lock-count",
-      "pprof-regex": "",
-      "stack-content": null,
-      "error-margin": 3,
-      "value-matching-sum": null
-    },
-    {
-      "profile-type": "lock-time",
-      "pprof-regex": "",
-      "stack-content": null
-    },
-    {
-      "profile-type": "timeline",
-      "pprof-regex": "",
-      "stack-content": null,
-      "error-margin": 3,
-      "value-matching-sum": null
     }
   ],
   "scale_by_duration": false

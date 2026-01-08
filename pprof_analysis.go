@@ -17,12 +17,56 @@ import (
 	"github.com/google/pprof/profile"
 	"github.com/klauspost/compress/zstd"
 	"github.com/pierrec/lz4/v4"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 var (
 	_ json.Unmarshaler = (*Optional[int64])(nil)
 	_ json.Marshaler   = (*Optional[int64])(nil)
 )
+
+// JSON Schema for validating expected profile JSON files.
+// Basic structure validation, complex rules validated in Go code.
+var expectedProfileSchema = `{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["stacks"],
+  "properties": {
+    "test_name": { "type": "string" },
+    "note": { "type": "string" },
+    "scale_by_duration": { "type": "boolean" },
+    "pprof-regex": { "type": "string" },
+    "allow_first_profile_failure": { "type": "boolean" },
+    "stacks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["profile-type", "stack-content"],
+        "properties": {
+          "profile-type": { "type": "string", "minLength": 1 },
+          "pprof-regex": { "type": "string" },
+          "stack-content": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["regular_expression"],
+              "properties": {
+                "regular_expression": { "type": "string", "minLength": 1 },
+                "value": { "type": "integer" },
+                "percent": { "type": "integer" },
+                "error_margin": { "type": "integer" },
+                "labels": { "type": "array" }
+              }
+            }
+          },
+          "error-margin": { "type": "integer" },
+          "value-matching-sum": { "type": "integer" }
+        }
+      }
+    }
+  }
+}`
 
 type Optional[T any] struct {
 	value *T
@@ -94,10 +138,35 @@ type TypedStacks struct {
 
 type StackTestData struct {
 	TestName                 string        `json:"test_name"`
+	Note                     string        `json:"note,omitempty"`
 	ScaleByDuration          bool          `json:"scale_by_duration"`
 	PprofRegex               string        `json:"pprof-regex"`
 	AllowFirstProfileFailure bool          `json:"allow_first_profile_failure,omitempty"`
 	Stacks                   []TypedStacks `json:"stacks"`
+}
+
+// Validate rules that JSON Schema can't express
+func (s *StackTestData) Validate() error {
+	// Stacks must be non-empty unless note is present
+	if len(s.Stacks) == 0 && s.Note == "" {
+		return fmt.Errorf("'stacks' must have at least one entry (or provide a 'note' explaining why it's empty)")
+	}
+
+	// If no value-matching-sum, require value or percent in stack-content
+	for i, stack := range s.Stacks {
+		if _, hasValueMatchingSum := stack.ValueMatchingSum.Value(); hasValueMatchingSum {
+			continue
+		}
+		for j, content := range stack.StackContent {
+			_, hasValue := content.Value.Value()
+			_, hasPercent := content.Percent.Value()
+			if !hasValue && !hasPercent {
+				return fmt.Errorf("stacks[%d].stack-content[%d]: must have 'value' or 'percent' (or parent must have 'value-matching-sum')", i, j)
+			}
+		}
+	}
+
+	return nil
 }
 
 // Custom unmarshaller for Labels to ensure exactly one of Values and ValueRegex is defined
@@ -442,21 +511,41 @@ func writeToJSONFile(data StackTestData, filePath string) error {
 
 func readJSONFile(filePath string) (StackTestData, error) {
 	var data StackTestData
-	jsonFile, err := os.Open(filePath)
+	byteValue, err := os.ReadFile(filePath)
 	if err != nil {
 		return data, err
 	}
-	defer jsonFile.Close()
-	byteValue, err := io.ReadAll(jsonFile)
-	if err != nil {
-		return data, err
-	}
+
+	// Step 1: Validate JSON syntax
 	if !json.Valid(byteValue) {
-		return data, fmt.Errorf("Invalid json data %s", filePath)
+		return data, fmt.Errorf("invalid JSON syntax in %s", filePath)
 	}
+
+	// Step 2: Validate against schema
+	schemaLoader := gojsonschema.NewStringLoader(expectedProfileSchema)
+	documentLoader := gojsonschema.NewBytesLoader(byteValue)
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		return data, fmt.Errorf("schema validation error for %s: %v", filePath, err)
+	}
+	if !result.Valid() {
+		var errs []string
+		for _, desc := range result.Errors() {
+			errs = append(errs, desc.String())
+		}
+		return data, fmt.Errorf("JSON schema validation failed for %s:\n  - %s", filePath, strings.Join(errs, "\n  - "))
+	}
+
+	// Step 3: Unmarshal validated JSON
 	if err := json.Unmarshal(byteValue, &data); err != nil {
 		return data, err
 	}
+
+	// Step 4: Validate rules
+	if err := data.Validate(); err != nil {
+		return data, fmt.Errorf("validation failed for %s: %v", filePath, err)
+	}
+
 	return data, nil
 }
 
