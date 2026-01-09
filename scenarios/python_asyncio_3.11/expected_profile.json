@@ -8,8 +8,8 @@
       "stack-content": [
         {
           "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*;main;my_coroutine",
-          "value": 1025498000,
-          "error_margin": 20,
+          "value": 2000000000,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
