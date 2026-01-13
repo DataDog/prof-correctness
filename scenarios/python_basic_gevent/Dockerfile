@@ -12,7 +12,11 @@ RUN chmod 644 /app/*
 # Set the working directory to the location of the program
 WORKDIR /app
 
-RUN pip install -r requirements.txt
+RUN pip download ddtrace --no-deps --no-index --find-links https://dd-trace-py-builds.s3.amazonaws.com/90138225/index.html
+RUN if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+RUN pip uninstall ddtrace || echo "ddtrace not installed"
+RUN pip install ddtrace-*.whl
+
 
 # Run the program when the container starts
 CMD ddtrace-run python main.py
