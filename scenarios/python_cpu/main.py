@@ -20,14 +20,11 @@ class CPUBurner:
             self.i += 1
 
     def main(self) -> None:
-        execution_time_sec = int(os.getenv("EXECUTION_TIME_SEC", "10"))  # defaults to 10 if not set
+        execution_time_sec = float(os.getenv("EXECUTION_TIME_SEC", "10"))
         end = time() + execution_time_sec
         while time() < end:
             self.a()
             self.b()
-
-        # We add a print to prevent optimization that could turn this into a no-op program
-        print(self.x)
 
 
 CPUBurner().main()
