@@ -1,0 +1,5 @@
+ddtrace
+fastapi
+uvicorn
+httpx
+

@@ -1,0 +1,94 @@
+{
+  "test_name": "python_fastapi_3.11",
+  "scale_by_duration": false,
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*_WorkItem.run;_do_request.*",
+          "percent": 75,
+          "error_margin": 10
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*make_requests.*",
+          "percent": 5,
+          "error_margin": 3,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Requester"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*process.*",
+          "percent": 2,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*process.*",
+          "percent": 95,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*sub_process.*",
+          "percent": 90,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

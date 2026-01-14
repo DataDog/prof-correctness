@@ -14,7 +14,7 @@ class GreenletBurner:
         self.total_count_a = 0
         self.total_count_b = 0
 
-    def work_dependency(self, count:int)->tuple[bool, int]:
+    def work_dependency(self, count: int) -> tuple[bool, int]:
         count += 1
         if count % 10000 == 0:
             return True, count
@@ -50,7 +50,8 @@ class GreenletBurner:
         self.greenlet_a = greenlet.greenlet(self.work_a)
         self.greenlet_b = greenlet.greenlet(self.work_b)
 
-def main()->None:
+
+def main() -> None:
     execution_time_sec = int(os.environ.get("EXECUTION_TIME_SEC", "10"))
 
     greenlet_burner = GreenletBurner()
@@ -63,6 +64,7 @@ def main()->None:
         greenlet_burner.work()
 
     print(f"Completed execution for {execution_time_sec} seconds")
+
 
 if __name__ == "__main__":
     main()
