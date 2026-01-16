@@ -1,0 +1,127 @@
+{
+  "test_name": "python_memory_basic",
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "alloc-samples",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_1.*$",
+          "percent": 35,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-samples",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_2.*$",
+          "percent": 45,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-samples",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^.*__init__;.*grow_list.*$",
+          "percent": 19,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-space",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_1.*$",
+          "percent": 25,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-space",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_2.*$",
+          "percent": 75,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-space",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^.*grow_list.*$",
+          "percent": 3,
+          "error_margin": 3,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
