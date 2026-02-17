@@ -1,1 +1,5 @@
-* @DataDog/profiling
+scenarios/ddprof*/ @DataDog/profiling-native
+scenarios/dotnet*/ @DataDog/profiling-dotnet
+scenarios/node*/ @DataDog/profiling-js
+scenarios/python*/ @DataDog/profiling-python
+scenarios/ruby*/ @DataDog/profiling-rb
