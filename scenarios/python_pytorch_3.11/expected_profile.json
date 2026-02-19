@@ -1,0 +1,37 @@
+{
+  "test_name": "python_pytorch",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": "<module>;.*main;.*heavy_compute",
+          "percent": 66,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "<module>;.*main;.*light_compute",
+          "percent": 33,
+          "error_margin": 6,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": true
+}
