@@ -1,41 +1,48 @@
 import asyncio
+import math
 import os
-
-from ddtrace.profiling import Profiler
+import time
 
 
 async def my_coroutine(n: float) -> None:
     await asyncio.sleep(n)
 
 
-async def main() -> None:
-    # Simple application that creates two Tasks with different durations:
-    # - "unnamed Task" runs my_coroutine() for 2 second
-    # - short_task runs my_coroutine() for 1 second
-    # The profiler should capture both Tasks with their respective durations.
+async def long_computation(seconds: float) -> int:
+    start_time = time.monotonic()
+    result = 1
+    i = 0
+    while time.monotonic() < start_time + seconds:
+        result *= math.factorial(10)
 
-    # Note: there currently is an issue in ddtrace that attaches one of the gathered Tasks to the "parent"
-    # task. As a result, using an explicit name for the manually started Task would result in flakiness (as we cannot
-    # know which Task name will be "absorbed" by the Parent).
-    # For the time being, we thus don't name the Task, so that we will always have Task-1 and Task-2 in the Profile.
+        # Yield control back every once in a while, important for all Tasks to appear
+        i += 1
+        if i % 1000 == 0:
+            await asyncio.sleep(0.0)
 
-    # Note: additionally, there is an issue in how we count wall time that results in blatantly incorrect results.
-    # We are in the process of making asyncio better in dd-trace-py; we will update the correctness check once that
-    # issue is fixed.
+    return result
 
-    prof = Profiler()
-    prof.start()  # Should be as early as possible, eg before other imports, to ensure everything is profiled
 
-    # Give the Profiler some time to start up
+async def async_main() -> None:
+    execution_time_sec = float(os.environ.get("EXECUTION_TIME_SEC", "3"))
+
+    # Give the Profiler some time to start up; this we don't check in the expected Profile.
     await asyncio.sleep(0.5)
 
-    execution_time_sec = float(os.environ.get("EXECUTION_TIME_SEC", "2"))
+    # This is going to run in the background, the stack should not include async_main
+    short_task = asyncio.create_task(my_coroutine(execution_time_sec / 2), name="short_task")
 
-    short_task = asyncio.create_task(my_coroutine(execution_time_sec / 2))
+    # Yield control back so that short_task can actually start
+    await asyncio.sleep(0.0)
+
+    # Do on-CPU work for a while
+    await long_computation(execution_time_sec / 3.0)
 
     # asyncio.gather will automatically wrap my_coroutine into a Task
+    # Here we are explicitly "linking" the current Task and short_task / the new Task, so
+    # we expect to see "async_main" in their Stacks.
     await asyncio.gather(short_task, my_coroutine(execution_time_sec))
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(async_main())

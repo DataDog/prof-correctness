@@ -1,5 +1,5 @@
 {
-  "test_name": "python_asyncio",
+  "test_name": "python_asyncio_3.11",
   "pprof-regex": "",
   "stacks": [
     {
@@ -7,9 +7,34 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*;main;my_coroutine",
-          "value": 1025498000,
-          "error_margin": 20,
+          "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*run;my_coroutine;sleep",
+          "value": 1000000000,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "short_task"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*run;async_main;long_computation",
+          "value": 1000000000,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -21,6 +46,81 @@
               "key": "task name",
               "values": [
                 "Task-1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*run;async_main;long_computation",
+          "value": 1000000000,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "Task-1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*;async_main;my_coroutine;sleep",
+          "value": 3000000000,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "Task-3"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*;async_main;my_coroutine;sleep",
+          "value": 500000000,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "short_task"
               ]
             }
           ]
