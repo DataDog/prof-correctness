@@ -17,6 +17,7 @@ ENV DD_TRACE_ENABLED=false
 ENV DD_PROFILING_ENABLED=true
 ENV DD_TRACE_DEBUG=false
 ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED=0
+ENV ECHION_USE_FAST_COPY_MEMORY=1
 ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
 
 # It's important that those are roughly the same, but execution time is slightly longer so
