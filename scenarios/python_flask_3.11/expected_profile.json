@@ -9,8 +9,8 @@
       "stack-content": [
         {
           "regular_expression": ".*_make_requests.*",
-          "percent": 33,
-          "error_margin": 5,
+          "percent": 25,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -28,8 +28,38 @@
       "stack-content": [
         {
           "regular_expression": ".*hello_world;compute_big_number.*",
-          "percent": 33,
-          "error_margin": 5
+          "percent": 25,
+          "error_margin": 10
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*serve_forever.*",
+          "percent": 25,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*process_request_thread.*",
+          "percent": 25,
+          "error_margin": 15
         }
       ]
     }

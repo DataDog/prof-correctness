@@ -1,3 +1,4 @@
+import math
 import os
 import signal
 import time
@@ -22,11 +23,11 @@ def _make_requests() -> None:
 
 def compute_big_number() -> int:
     start = time.monotonic()
+    x = 2
     while time.monotonic() - start < 0.5:
-        x = 0
-        for i in range(1000000):
-            x += i
-    return x
+        x *= math.factorial(min(10_000, x))
+
+    return min(x, 1e32)
 
 
 @app.route("/")

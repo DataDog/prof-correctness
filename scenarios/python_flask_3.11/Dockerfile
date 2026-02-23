@@ -12,6 +12,8 @@ RUN pip install -r requirements.txt
 
 COPY ./scenarios/python_flask_3.11/app.py /app/
 
+ENV ECHION_USE_FAST_COPY_MEMORY=1
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED=0
 ENV DD_PROFILING_ENABLED=true
 ENV DD_TRACE_ENABLED=false
 ENV DD_TRACE_DEBUG=false
