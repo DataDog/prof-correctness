@@ -8,7 +8,7 @@
       "stack-content": [
         {
           "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*;main;my_coroutine",
-          "value": 1025498000,
+          "value": 2525498000,
           "error_margin": 20,
           "labels": [
             {
@@ -20,7 +20,32 @@
             {
               "key": "task name",
               "values": [
-                "Task-1"
+                "short_task"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*;.*run;.*;BaseEventLoop\\.run_until_complete;.*;main;my_coroutine",
+          "value": 5000000000,
+          "error_margin": 10,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "Task-3"
               ]
             }
           ]
