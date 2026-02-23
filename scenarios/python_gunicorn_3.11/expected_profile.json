@@ -9,8 +9,8 @@
       "stack-content": [
         {
           "regular_expression": ".*make_request.*",
-          "percent": 5,
-          "error_margin": 10,
+          "percent": 28,
+          "error_margin": 7,
           "labels": [
             {
               "key": "thread name",
@@ -47,8 +47,8 @@
       "stack-content": [
         {
           "regular_expression": ".*process.*",
-          "percent": 85,
-          "error_margin": 15,
+          "percent": 65,
+          "error_margin": 13,
           "labels": [
             {
               "key": "thread name",
@@ -66,8 +66,8 @@
       "stack-content": [
         {
           "regular_expression": ".*sub_process.*",
-          "percent": 15,
-          "error_margin": 10,
+          "percent": 6,
+          "error_margin": 7,
           "labels": [
             {
               "key": "thread name",
