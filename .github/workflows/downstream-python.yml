@@ -1,0 +1,23 @@
+name: "Downstream: dd-trace-py"
+run-name: "dd-trace-py downstream (${{ inputs.dd_trace_py_commit_sha }})"
+
+on:
+  workflow_dispatch:
+    inputs:
+      dd_trace_py_commit_sha:
+        description: 'dd-trace-py commit SHA to test against (installs wheels from S3)'
+        required: true
+        type: string
+      test_scenarios:
+        description: 'Regexp to select which scenarios to run'
+        required: false
+        type: string
+        default: 'python.*'
+
+jobs:
+  python:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: ${{ inputs.test_scenarios }}
+      ddtrace_install_url: "https://dd-trace-py-builds.s3.amazonaws.com/${{ inputs.dd_trace_py_commit_sha }}/install-manylinux2014_x86_64.sh"
+    secrets: inherit

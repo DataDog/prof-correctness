@@ -1,5 +1,5 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11
+ARG BASE_IMAGE="prof-python-3.11"
+FROM $BASE_IMAGE
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
@@ -13,10 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 ENV EXECUTION_TIME_SEC 30
 # Run your python script when the container launches
-ENV DD_PROFILING_ENABLED true
-ENV DD_TRACE_ENABLED false
-ENV DD_TRACE_DEBUG false
+ENV DD_TRACE_DEBUG=false
 ENV DD_PROFILING_MEMORY_ENABLED=false
-ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
 
 CMD ddtrace-run python main.py

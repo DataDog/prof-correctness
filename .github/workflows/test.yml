@@ -1,7 +1,7 @@
 name: Docker scenarios
 run-name: Docker scenarios
 
-on: 
+on:
   workflow_call:
     inputs:
       test_scenarios:
@@ -9,6 +9,11 @@ on:
         required: false
         type: string
         default: '.*'
+      ddtrace_install_url:
+        description: 'URL to a ddtrace install script (e.g. from S3 builds)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   docker-scenarios:
@@ -26,6 +31,7 @@ jobs:
       run: go test -timeout 20m -v -run TestScenarios
       env:
         TEST_SCENARIOS: ${{ inputs.test_scenarios }}
+        DDTRACE_INSTALL_URL: ${{ inputs.ddtrace_install_url }}
     - name: Create unique artifact name
       id: artifact_name
       if: failure()

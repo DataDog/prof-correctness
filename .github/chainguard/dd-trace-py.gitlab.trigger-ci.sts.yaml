@@ -1,0 +1,14 @@
+# Policy for: .gitlab-ci.yml prof-correctness job in DataDog/apm-reliability/dd-trace-py
+# Allows dd-trace-py GitLab CI to trigger prof-correctness GitHub Actions workflows
+# when profiling code changes, to run correctness tests against just-built wheels.
+issuer: https://gitlab.ddbuild.io
+subject_pattern: project_path:DataDog/apm-reliability/dd-trace-py:ref_type:branch:ref:.*
+
+claim_pattern:
+  ci_config_ref_uri: gitlab\.ddbuild\.io/DataDog/apm-reliability/dd-trace-py//\.gitlab-ci\.yml@refs/heads/.*
+  pipeline_source: (push|schedule|web)
+  project_path: DataDog/apm-reliability/dd-trace-py
+  ref_path: refs/heads/.*
+
+permissions:
+  actions: write
