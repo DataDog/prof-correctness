@@ -1,6 +1,13 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11
 
+# When set, pre-install ddtrace from this URL (pip --find-links compatible).
+# Used by upstream dd-trace-py CI to test with just-built wheels.
+ARG DDTRACE_FIND_LINKS=""
+RUN if [ -n "$DDTRACE_FIND_LINKS" ]; then \
+      pip install --no-cache-dir --find-links "$DDTRACE_FIND_LINKS" --pre ddtrace; \
+    fi
+
 # Set the working directory in the container
 WORKDIR /usr/src/app
 

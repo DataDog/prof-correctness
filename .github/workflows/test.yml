@@ -1,7 +1,7 @@
 name: Docker scenarios
 run-name: Docker scenarios
 
-on: 
+on:
   workflow_call:
     inputs:
       test_scenarios:
@@ -9,6 +9,11 @@ on:
         required: false
         type: string
         default: '.*'
+      dd_trace_py_commit_sha:
+        description: 'dd-trace-py commit SHA to test against (installs wheels from S3)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   docker-scenarios:
@@ -23,7 +28,16 @@ jobs:
     - name: Update perf_event_paranoid settings
       run: sudo sysctl kernel.perf_event_paranoid=1
     - name: Run Docker scenarios
-      run: go test -timeout 20m -v -run TestScenarios
+      run: |
+        SHA="${{ inputs.dd_trace_py_commit_sha }}"
+        echo "dd_trace_py_commit_sha input: '${SHA}'"
+        if [ -n "$SHA" ]; then
+          export DDTRACE_FIND_LINKS="https://dd-trace-py-builds.s3.amazonaws.com/${SHA}/index-manylinux2014_x86_64.html"
+          echo "Will install ddtrace wheels from: ${DDTRACE_FIND_LINKS}"
+        else
+          echo "No custom ddtrace wheels requested, using PyPI"
+        fi
+        go test -timeout 20m -v -run TestScenarios
       env:
         TEST_SCENARIOS: ${{ inputs.test_scenarios }}
     - name: Create unique artifact name
