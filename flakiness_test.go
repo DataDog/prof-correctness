@@ -3,64 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
-	"time"
 )
-
-// runTestAppSafe is a goroutine-safe version of runTestApp that returns
-// an error instead of calling t.Fatalf.
-func runTestAppSafe(dockerTag string, folder string) (string, error) {
-	currentPath, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("getwd: %w", err)
-	}
-	profilePath := currentPath + "/data"
-	timestamp := time.Now().Format("20060102-150405")
-	tmpdir, err := os.MkdirTemp(profilePath, filepath.Base(folder)+"-"+timestamp+"-*")
-	if err != nil {
-		return "", fmt.Errorf("mkdtemp: %w", err)
-	}
-	mountOption := tmpdir + ":/app/data:rw"
-	userID := os.Getuid()
-	groupID := os.Getgid()
-	userOption := fmt.Sprintf("%d:%d", userID, groupID)
-
-	var args []string
-	if strings.Contains(folder, "full_host") {
-		args = []string{"run", "-v", mountOption, "--pid=host", "--privileged", "--security-opt", "seccomp=unconfined"}
-		args = append(args, "--cap-add=SYS_ADMIN", "--cap-add=SYS_PTRACE", "--cap-add=SYS_RESOURCE")
-		args = append(args, "-v", "/sys/kernel/debug:/sys/kernel/debug:ro")
-		args = append(args, "-v", "/sys/kernel/tracing:/sys/kernel/tracing:ro")
-	} else {
-		args = []string{"run", "-v", mountOption, "-u", userOption, "--security-opt", "seccomp=unconfined"}
-	}
-
-	if DURATION_SET {
-		args = append(args, "-e", "EXECUTION_TIME_SEC="+fmt.Sprint(RUN_SECS))
-	}
-	if NETWORK_HOST {
-		args = append(args, "--network=host")
-	}
-	if !strings.Contains(folder, "full_host") {
-		args = append(args, "-e", "DD_SERVICE=prof-correctness-"+strings.Split(folder, "/")[1])
-	}
-	args = append(args, dockerTag+":latest")
-
-	cmd := exec.Command("docker", args...)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return tmpdir, fmt.Errorf("docker run failed: %w\noutput: %s", err, out)
-	}
-	if writeErr := os.WriteFile(tmpdir+"/output.txt", out, 0644); writeErr != nil {
-		return tmpdir, fmt.Errorf("write output: %w", writeErr)
-	}
-	return tmpdir, nil
-}
 
 // TestFlakiness runs a single scenario N times in parallel to detect flaky tests.
 //
@@ -75,7 +23,7 @@ func runTestAppSafe(dockerTag string, folder string) (string, error) {
 func TestFlakiness(t *testing.T) {
 	scenarioRegexp := os.Getenv("TEST_SCENARIOS")
 	if scenarioRegexp == "" {
-		t.Fatal("TEST_SCENARIOS must be set for flakiness testing")
+		t.Skip("TEST_SCENARIOS not set, skipping flakiness testing")
 	}
 
 	numRuns := 10
@@ -107,24 +55,9 @@ func TestFlakiness(t *testing.T) {
 			scenarioRegexp, len(configs), strings.Join(names, ", "))
 	}
 
-	// Build base images
-	baseImageNames := map[string]bool{}
-	for _, config := range configs {
-		baseImage, err := extractBaseImage(config.dockerfilePath)
-		if err != nil {
-			t.Fatalf("Error extracting base image from %s: %v", config.dockerfilePath, err)
-		}
-		if baseImage != "" {
-			baseImageNames[baseImage] = true
-		}
-	}
-	for baseImageName := range baseImageNames {
-		t.Logf("Building base image: %s", baseImageName)
-		buildBaseImage("./", baseImageName, t)
-	}
+	buildBaseImages(t, configs)
 
 	for _, config := range configs {
-		config := config
 		t.Run(config.folder, func(t *testing.T) {
 			// Build the image once
 			tag := buildTestApp(t, config)
@@ -132,9 +65,9 @@ func TestFlakiness(t *testing.T) {
 
 			// Run all containers in parallel, collect output dirs
 			type runResult struct {
-				index      int
-				pprofDir   string
-				err        error
+				index    int
+				pprofDir string
+				err      error
 			}
 			results := make([]runResult, numRuns)
 			var wg sync.WaitGroup
@@ -144,15 +77,9 @@ func TestFlakiness(t *testing.T) {
 					defer wg.Done()
 					defer func() {
 						if r := recover(); r != nil {
-							results[idx] = runResult{index: idx, err: fmt.Errorf("panic: %v", r)}
+							results[idx] = runResult{index: idx, err: fmt.Errorf("panic: %v\n%s", r, debug.Stack())}
 						}
 					}()
-					// runTestApp uses t.Fatalf on failure which triggers
-					// runtime.Goexit in goroutines. We use a sub-test so
-					// each run gets its own *testing.T that is safe to fail.
-					// However t.Run is sequential by default; to get real
-					// parallelism in the container-run phase we call docker
-					// directly.
 					pprofDir, runErr := runTestAppSafe(tag, config.folder)
 					results[idx] = runResult{index: idx, pprofDir: pprofDir, err: runErr}
 				}(i)
