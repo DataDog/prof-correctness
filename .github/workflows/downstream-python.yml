@@ -19,5 +19,5 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: ${{ inputs.test_scenarios }}
-      ddtrace_install_url: "https://dd-trace-py-builds.s3.amazonaws.com/${{ inputs.dd_trace_py_commit_sha }}/install-manylinux2014_x86_64.sh"
+      ddtrace_install_url: "https://dd-trace-py-builds.s3.amazonaws.com/${{ inputs.dd_trace_py_commit_sha }}/install.sh"
     secrets: inherit
