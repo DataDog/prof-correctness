@@ -9,8 +9,8 @@ on:
         required: false
         type: string
         default: '.*'
-      dd_trace_py_commit_sha:
-        description: 'dd-trace-py commit SHA to test against (installs wheels from S3)'
+      ddtrace_install_url:
+        description: 'URL to a ddtrace install script (e.g. from S3 builds)'
         required: false
         type: string
         default: ''
@@ -28,17 +28,10 @@ jobs:
     - name: Update perf_event_paranoid settings
       run: sudo sysctl kernel.perf_event_paranoid=1
     - name: Run Docker scenarios
-      run: |
-        SHA="${{ inputs.dd_trace_py_commit_sha }}"
-        if [ -n "$SHA" ]; then
-          export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/${SHA}/install-manylinux2014_x86_64.sh"
-          echo "Will install ddtrace from: ${DDTRACE_INSTALL_URL}"
-        else
-          echo "No custom ddtrace wheels requested, using PyPI"
-        fi
-        go test -timeout 20m -v -run TestScenarios
+      run: go test -timeout 20m -v -run TestScenarios
       env:
         TEST_SCENARIOS: ${{ inputs.test_scenarios }}
+        DDTRACE_INSTALL_URL: ${{ inputs.ddtrace_install_url }}
     - name: Create unique artifact name
       id: artifact_name
       if: failure()

@@ -3,20 +3,8 @@ on:
   push:
   schedule:
     - cron: "0 0 * * *"
-  workflow_dispatch:
-    inputs:
-      dd_trace_py_commit_sha:
-        description: 'dd-trace-py commit SHA to test against (installs wheels from S3)'
-        required: false
-        type: string
-      test_scenarios:
-        description: 'Regexp to select which scenarios to run (default: python.*)'
-        required: false
-        type: string
-        default: 'python.*'
 jobs:
   schema-validation:
-    if: ${{ !inputs.dd_trace_py_commit_sha }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -27,7 +15,6 @@ jobs:
       - name: Run schema validation tests
         run: go test -v -run TestSchemaValidation
   ruff:
-    if: ${{ !inputs.dd_trace_py_commit_sha }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -43,25 +30,21 @@ jobs:
         if: success() || failure()
         run: ruff check .
   ddprof:
-    if: ${{ !inputs.dd_trace_py_commit_sha }}
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: ddprof.*
     secrets: inherit
   dotnet:
-    if: ${{ !inputs.dd_trace_py_commit_sha }}
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: dotnet.*
     secrets: inherit
   ruby:
-    if: ${{ !inputs.dd_trace_py_commit_sha }}
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: ruby.*
     secrets: inherit
   node:
-    if: ${{ !inputs.dd_trace_py_commit_sha }}
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: node.*
@@ -69,11 +52,9 @@ jobs:
   python:
     uses: ./.github/workflows/test.yml
     with:
-      test_scenarios: ${{ inputs.test_scenarios || 'python.*' }}
-      dd_trace_py_commit_sha: ${{ inputs.dd_trace_py_commit_sha || '' }}
+      test_scenarios: python.*
     secrets: inherit
   full_host:
-    if: ${{ !inputs.dd_trace_py_commit_sha }}
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: full_host.*
