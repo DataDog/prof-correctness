@@ -30,10 +30,9 @@ jobs:
     - name: Run Docker scenarios
       run: |
         SHA="${{ inputs.dd_trace_py_commit_sha }}"
-        echo "dd_trace_py_commit_sha input: '${SHA}'"
         if [ -n "$SHA" ]; then
-          export DDTRACE_FIND_LINKS="https://dd-trace-py-builds.s3.amazonaws.com/${SHA}/index-manylinux2014_x86_64.html"
-          echo "Will install ddtrace wheels from: ${DDTRACE_FIND_LINKS}"
+          export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/${SHA}/install-manylinux2014_x86_64.sh"
+          echo "Will install ddtrace from: ${DDTRACE_INSTALL_URL}"
         else
           echo "No custom ddtrace wheels requested, using PyPI"
         fi

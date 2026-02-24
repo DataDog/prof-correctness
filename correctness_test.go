@@ -105,8 +105,8 @@ func buildTestApp(t *testing.T, config DockerTestConfig) string {
 	now_time := time.Now()
 	// Following arg helps forces to rerun steps after the arg (allows reinstallation of recent profiler) --build-arg CACHE_DATE=$(date +%Y-%m-%d_%H:%M:%S)
 	args := []string{"build", "-f", config.dockerfilePath, "--build-arg", now_time.Format("2006-01-02_15:04:05"), "-t", "test-app"}
-	if fl := os.Getenv("DDTRACE_FIND_LINKS"); fl != "" {
-		args = append(args, "--build-arg", "DDTRACE_FIND_LINKS="+fl)
+	if u := os.Getenv("DDTRACE_INSTALL_URL"); u != "" {
+		args = append(args, "--build-arg", "DDTRACE_INSTALL_URL="+u)
 	}
 	args = append(args, ".")
 	cmd := exec.Command("docker", args...)
@@ -219,8 +219,8 @@ func buildBaseImage(rootDir string, baseImageName string, t *testing.T) {
 
 	tag := baseImageName
 	args := []string{"build", "-t", tag, "-f", dockerfilePath}
-	if fl := os.Getenv("DDTRACE_FIND_LINKS"); fl != "" {
-		args = append(args, "--build-arg", "DDTRACE_FIND_LINKS="+fl)
+	if u := os.Getenv("DDTRACE_INSTALL_URL"); u != "" {
+		args = append(args, "--build-arg", "DDTRACE_INSTALL_URL="+u)
 	}
 	args = append(args, rootDir)
 	buildCmd := exec.Command("docker", args...)
