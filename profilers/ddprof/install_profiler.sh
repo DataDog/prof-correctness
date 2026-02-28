@@ -82,7 +82,7 @@ pushd /tmp
 if look_in_folder ${binaries_path}; then
     echo "Success finding file in binaries"
 elif look_in_s3 ${s3_path}; then
-    echo "Success fetchin from s3..."
+    echo "Success fetching from s3..."
 else
     echo "Fetching latest GH release..."
     # This should not fail
