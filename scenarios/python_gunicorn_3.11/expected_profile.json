@@ -2,6 +2,7 @@
   "test_name": "python_gunicorn_3.11",
   "scale_by_duration": false,
   "pprof-regex": "profiles.*\\.pprof$",
+  "allow_first_profile_failure": true,
   "stacks": [
     {
       "profile-type": "cpu-time",

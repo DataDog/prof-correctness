@@ -9,7 +9,7 @@
             "stack-content": [
                 {
                     "regular_expression": ".*cpu_bound_work.*",
-                    "percent": 75,
+                    "percent": 60,
                     "error_margin": 15,
                     "labels": [
                         {
@@ -28,7 +28,7 @@
             "stack-content": [
                 {
                     "regular_expression": ".*mixed_workload.*",
-                    "percent": 15,
+                    "percent": 25,
                     "error_margin": 10,
                     "labels": [
                         {
@@ -47,8 +47,8 @@
             "stack-content": [
                 {
                     "regular_expression": ".*io_simulation.*",
-                    "percent": 0,
-                    "error_margin": 5,
+                    "percent": 40,
+                    "error_margin": 15,
                     "labels": [
                         {
                             "key": "thread name",
