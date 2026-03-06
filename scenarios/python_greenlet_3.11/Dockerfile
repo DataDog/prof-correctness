@@ -16,7 +16,8 @@ ENV DD_PROFILING_ENABLED=true
 ENV DD_TRACE_ENABLED=false
 ENV DD_TRACE_DEBUG=false
 ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
-ENV EXECUTION_TIME_SEC="4"
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED=0
+ENV EXECUTION_TIME_SEC="8"
 
 # Run the program when the container starts
 CMD ddtrace-run python main.py
