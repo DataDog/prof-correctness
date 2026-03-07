@@ -31,6 +31,37 @@
           ]
         }
       ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": "\u003cmodule\u003e;main;b",
+          "value": 666666666,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "\u003cmodule\u003e;main;a",
+          "value": 333333333,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "scale_by_duration": true
