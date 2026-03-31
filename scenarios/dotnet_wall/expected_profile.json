@@ -14,7 +14,7 @@
             {
               "key": "thread name",
               "values": [
-                "ShortRunningThread [#0]"
+                "ShortRunningThread"
               ],
               "values_regex": ""
             }
@@ -28,7 +28,7 @@
             {
               "key": "thread name",
               "values": [
-                "LongRunningThread [#0]"
+                "LongRunningThread"
               ],
               "values_regex": ""
             }
