@@ -6,12 +6,12 @@
       "stack-content": [
         {
           "regular_expression": "processTimers;listOnTimeout;work;b;slice",
-          "percent": 66,
+          "percent": 50,
           "error_margin": 5
         },
         {
           "regular_expression": "processTimers;listOnTimeout;work;a;slice",
-          "percent": 33,
+          "percent": 50,
           "error_margin": 5
         }
       ]
