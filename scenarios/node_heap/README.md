@@ -14,7 +14,7 @@ Both functions are called once per iteration in a timed loop, creating equal **n
 
 **Objects Profile**: Should count allocation instances
 - Theoretically: 50% `a` / 50% `b` (equal number of calls)
-- Measured: Matches expectations
+- Actually measured: 33% `a` / 66% `b` (biased toward larger objects)
 
 **Space Profile**: Should count memory usage  
 - Expected: 33% `a` / 66% `b` (proportional to allocation sizes)
