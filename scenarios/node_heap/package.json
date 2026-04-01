@@ -6,5 +6,8 @@
   "dependencies": {
     "dd-trace": "DataDog/dd-trace-js#master"
   },
+  "overrides": {
+    "@datadog/pprof": "dev"
+  },
   "scale_by_duration": true
 }
