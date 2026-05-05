@@ -6,8 +6,8 @@
       "stack-content": [
         {
           "regular_expression": "processTimers;listOnTimeout;\\(anonymous:L#13:C#30\\);foo",
-          "percent": 97,
-          "error_margin": 3
+          "percent": 87,
+          "error_margin": 13
         }
       ]
     }
