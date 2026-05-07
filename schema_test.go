@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/DataDog/profiler-correctness/v1/analysis"
 )
 
 func TestSchemaValidation(t *testing.T) {
@@ -114,7 +116,7 @@ func TestSchemaValidation(t *testing.T) {
 			}
 			tmpFile.Close()
 
-			_, err = readJSONFile(tmpFile.Name())
+			_, err = analysis.ReadJSONFile(tmpFile.Name())
 
 			if tt.wantErr {
 				if err == nil {
@@ -159,7 +161,7 @@ func TestSchemaValidation_AllExistingProfiles(t *testing.T) {
 
 	for _, jsonFile := range jsonFiles {
 		t.Run(jsonFile, func(t *testing.T) {
-			if _, err := readJSONFile(jsonFile); err != nil {
+			if _, err := analysis.ReadJSONFile(jsonFile); err != nil {
 				t.Errorf("Validation failed: %v", err)
 			}
 		})

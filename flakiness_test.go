@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/DataDog/profiler-correctness/v1/analysis"
 )
 
 // TestFlakiness runs a single scenario N times in parallel to detect flaky tests.
@@ -97,7 +99,7 @@ func TestFlakiness(t *testing.T) {
 						t.Fatalf("Container failed to run: %v", res.err)
 					}
 					t.Logf("Analyzing results in %s", res.pprofDir)
-					AnalyzeResults(t, config.jsonFilePath, res.pprofDir)
+					analysis.AnalyzeResults(t, config.jsonFilePath, res.pprofDir)
 				})
 				if ok {
 					passed++
