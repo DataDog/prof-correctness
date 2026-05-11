@@ -457,6 +457,7 @@ func analyzeProfDataWithFailureHandling(r Reporter, prof []StackSample, typedSta
 
 		matching := assertStackWithFailureHandling(r, prof, regexpStack, valueOpt, percent, errorMargin, stack.Labels, allowFailure, &hasFailures)
 		matchingSum += matching
+		// TODO: add an assertion on counts (e.g. number of allocations), not just summed values.
 	}
 
 	if expectedSum, ok := typedStacks.ValueMatchingSum.Value(); ok {
