@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/DataDog/profiler-correctness/v1/analysis"
 )
 
 func retrieveCurrentCommand(imageID string) ([]string, error) {
@@ -54,7 +56,7 @@ func testScenarios(t *testing.T, scenarioRegexp string) {
 			tag := buildTestApp(t, config)
 			t.Log("Built test app with:", tag)
 			pprof_folder := runTestApp(t, tag, config.folder)
-			AnalyzeResults(t, config.jsonFilePath, pprof_folder)
+			analysis.AnalyzeResults(t, config.jsonFilePath, pprof_folder)
 		})
 	}
 }
@@ -66,7 +68,7 @@ var (
 
 func TestAnalyze(t *testing.T) {
 	flag.Parse()
-	AnalyzeResults(t, *expectedJson, *pprofPath)
+	analysis.AnalyzeResults(t, *expectedJson, *pprofPath)
 }
 
 func TestDDProfScenarios(t *testing.T) {
