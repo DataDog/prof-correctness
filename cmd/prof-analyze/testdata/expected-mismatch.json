@@ -1,0 +1,12 @@
+{
+  "test_name": "prof-analyze-cli-mismatch",
+  "note": "deliberately wrong value — used to exercise the exit-code-1 path",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        { "regular_expression": "^hot_function$", "value": 12345, "error_margin": 0 }
+      ]
+    }
+  ]
+}

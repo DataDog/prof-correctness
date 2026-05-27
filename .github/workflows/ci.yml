@@ -16,6 +16,8 @@ jobs:
         run: go test -v -run TestSchemaValidation
       - name: Run analyzer public API tests
         run: go test -v ./analysis/...
+      - name: Run prof-analyze CLI tests
+        run: go test -v ./cmd/prof-analyze/...
   ruff:
     runs-on: ubuntu-latest
     steps:
