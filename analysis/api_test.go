@@ -246,3 +246,134 @@ func TestCaptureProfData_KeepsLongTail(t *testing.T) {
 		t.Error("expected fn_0 (smallest stack) in captured JSON; it was dropped")
 	}
 }
+
+// writeRepeatedStackWithLabelsPprof writes a pprof where the SAME stack
+// appears N times, with the same stable label (thread_name) but every sample
+// carrying a different ephemeral label (end_timestamp_ns). After capture and
+// label-stripping, all N samples should collapse into a single entry whose
+// value is the sum.
+func writeRepeatedStackWithLabelsPprof(t *testing.T, dir string, nSamples int) string {
+	t.Helper()
+	fn := &profile.Function{ID: 1, Name: "hot"}
+	loc := &profile.Location{ID: 1, Line: []profile.Line{{Function: fn}}}
+	p := &profile.Profile{
+		SampleType: []*profile.ValueType{{Type: "cpu-time", Unit: "nanoseconds"}},
+		PeriodType: &profile.ValueType{Type: "cpu-time", Unit: "nanoseconds"},
+		Period:     10_000_000,
+		Function:   []*profile.Function{fn},
+		Location:   []*profile.Location{loc},
+	}
+	for i := 0; i < nSamples; i++ {
+		p.Sample = append(p.Sample, &profile.Sample{
+			Value:    []int64{int64(i + 1)},
+			Location: []*profile.Location{loc},
+			Label: map[string][]string{
+				"thread_name": {"worker"},
+			},
+			NumLabel: map[string][]int64{
+				"end_timestamp_ns": {int64(1_000_000_000 + i)},
+				"thread id":        {int64(100 + i)},
+			},
+		})
+	}
+	var buf bytes.Buffer
+	if err := p.Write(&buf); err != nil {
+		t.Fatalf("write pprof: %v", err)
+	}
+	path := filepath.Join(dir, "profile.pprof")
+	if err := os.WriteFile(path, buf.Bytes(), 0644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+	return path
+}
+
+// TestCaptureProfData_GroupsByStackAndStableLabels confirms ephemeral labels
+// (end_timestamp_ns, thread id, process_id, …) are stripped and samples
+// sharing the same (stack, stable-labels) signature collapse into one entry
+// whose value is the sum of the source samples.
+func TestCaptureProfData_GroupsByStackAndStableLabels(t *testing.T) {
+	const nSamples = 50
+	dir := t.TempDir()
+	writeRepeatedStackWithLabelsPprof(t, dir, nSamples)
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "capture-groups",
+		"stacks": [{
+			"profile-type": "cpu-time",
+			"stack-content": [{"regular_expression": ".*", "percent": 100, "error_margin": 100}]
+		}]
+	}`)
+
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResults(r, jsonPath, dir)
+	})
+	if r.Failed() {
+		t.Fatal("analyzer reported failure on permissive expected file")
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, "profile.json"))
+	if err != nil {
+		t.Fatalf("read captured json: %v", err)
+	}
+
+	var captured struct {
+		Stacks []struct {
+			ProfileType  string `json:"profile-type"`
+			StackContent []struct {
+				Value  int64 `json:"value"`
+				Labels []struct {
+					Key    string   `json:"key"`
+					Values []string `json:"values"`
+				} `json:"labels"`
+			} `json:"stack-content"`
+		} `json:"stacks"`
+	}
+	if err := json.Unmarshal(raw, &captured); err != nil {
+		t.Fatalf("unmarshal captured json: %v", err)
+	}
+
+	var cpuStack *struct {
+		ProfileType  string `json:"profile-type"`
+		StackContent []struct {
+			Value  int64 `json:"value"`
+			Labels []struct {
+				Key    string   `json:"key"`
+				Values []string `json:"values"`
+			} `json:"labels"`
+		} `json:"stack-content"`
+	}
+	for i := range captured.Stacks {
+		if captured.Stacks[i].ProfileType == "cpu-time" {
+			cpuStack = &captured.Stacks[i]
+			break
+		}
+	}
+	if cpuStack == nil {
+		t.Fatal("cpu-time stack missing from capture")
+	}
+
+	if got := len(cpuStack.StackContent); got != 1 {
+		t.Fatalf("expected 1 grouped entry (same stack + same stable labels), got %d", got)
+	}
+
+	want := int64(nSamples * (nSamples + 1) / 2) // 1+2+…+nSamples
+	if got := cpuStack.StackContent[0].Value; got != want {
+		t.Errorf("expected summed value %d, got %d", want, got)
+	}
+
+	// Labels should contain thread_name=worker and nothing else.
+	gotLabels := cpuStack.StackContent[0].Labels
+	if len(gotLabels) != 1 {
+		t.Fatalf("expected exactly one kept label (thread_name), got %d: %+v", len(gotLabels), gotLabels)
+	}
+	if gotLabels[0].Key != "thread_name" || len(gotLabels[0].Values) != 1 || gotLabels[0].Values[0] != "worker" {
+		t.Errorf("expected thread_name=worker, got %+v", gotLabels[0])
+	}
+
+	// Sanity: ephemeral keys should NOT appear in the captured JSON.
+	for _, banned := range []string{"end_timestamp_ns", "thread id", "process_id", "span id", "local root span id"} {
+		if strings.Contains(string(raw), `"key": "`+banned+`"`) {
+			t.Errorf("ephemeral label %q leaked into captured JSON", banned)
+		}
+	}
+}
