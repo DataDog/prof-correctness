@@ -377,3 +377,74 @@ func TestCaptureProfData_GroupsByStackAndStableLabels(t *testing.T) {
 		}
 	}
 }
+
+// TestCaptureProfData_LowCountRateNotTruncated guards against per-sample
+// rate scaling: two samples of value 1 over a 2 s profile must group to a
+// rate of 1, not 0. Scaling each sample individually (int64(1.0/2.0)=0)
+// before summing would truncate to 0; raw values must be summed first.
+func TestCaptureProfData_LowCountRateNotTruncated(t *testing.T) {
+	dir := t.TempDir()
+
+	fn := &profile.Function{ID: 1, Name: "rare"}
+	loc := &profile.Location{ID: 1, Line: []profile.Line{{Function: fn}}}
+	p := &profile.Profile{
+		SampleType:    []*profile.ValueType{{Type: "cpu-samples", Unit: "count"}},
+		PeriodType:    &profile.ValueType{Type: "cpu-time", Unit: "nanoseconds"},
+		Period:        10_000_000,
+		DurationNanos: 2_000_000_000, // 2 seconds — triggers rate scaling
+		Function:      []*profile.Function{fn},
+		Location:      []*profile.Location{loc},
+		Sample: []*profile.Sample{
+			{Value: []int64{1}, Location: []*profile.Location{loc}},
+			{Value: []int64{1}, Location: []*profile.Location{loc}},
+		},
+	}
+	var buf bytes.Buffer
+	if err := p.Write(&buf); err != nil {
+		t.Fatalf("write pprof: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "profile.pprof"), buf.Bytes(), 0644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "low-count-rate",
+		"scale_by_duration": true,
+		"stacks": [{
+			"profile-type": "cpu-samples",
+			"stack-content": [{"regular_expression": ".*", "percent": 100, "error_margin": 100}]
+		}]
+	}`)
+
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResults(r, jsonPath, dir)
+	})
+	if r.Failed() {
+		t.Fatal("analyzer reported failure on permissive expected file")
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, "profile.json"))
+	if err != nil {
+		t.Fatalf("read captured json: %v", err)
+	}
+	var captured struct {
+		Stacks []struct {
+			ProfileType  string `json:"profile-type"`
+			StackContent []struct {
+				Value int64 `json:"value"`
+			} `json:"stack-content"`
+		} `json:"stacks"`
+	}
+	if err := json.Unmarshal(raw, &captured); err != nil {
+		t.Fatalf("unmarshal captured json: %v", err)
+	}
+
+	if len(captured.Stacks) != 1 || len(captured.Stacks[0].StackContent) != 1 {
+		t.Fatalf("expected exactly one captured entry, got %+v", captured)
+	}
+	// 2 raw samples summed = 2, scaled by 2s duration = 1 sample/sec.
+	if got := captured.Stacks[0].StackContent[0].Value; got != 1 {
+		t.Errorf("expected grouped rate value=1 (2 samples / 2s), got %d — pre-grouping scaling truncated", got)
+	}
+}

@@ -270,6 +270,11 @@ func captureProfData(r Reporter, prof *profile.Profile, path string, testName st
 		groupedIdx := map[aggKey]int{}
 		var totalVal int64
 
+		// Accumulate raw values; defer rate scaling until after grouping.
+		// Per-sample scaling before summing truncates low-count integers
+		// to 0 (e.g. two samples of 1 over a 2 s profile each scale to
+		// int64(0.5)=0, summing to 0 instead of the correct grouped rate
+		// of 1).
 		for _, ss := range typedProf {
 			var labels []Labels
 			for key, value := range ss.Labels {
@@ -279,35 +284,39 @@ func captureProfData(r Reporter, prof *profile.Profile, path string, testName st
 				labels = append(labels, Labels{Key: key, Values: value})
 			}
 
-			val := ss.Val
-			if profileDuration > 0 {
-				// NOTE: When profile duration is bigger than 0, all values represent rates.
-				val = int64(float64(val) / profileDuration)
-			}
-
 			k := aggKey{stack: ss.Stack, labels: labelsKey(labels)}
 			if idx, ok := groupedIdx[k]; ok {
 				cur, _ := typedStack.StackContent[idx].Value.Value()
-				typedStack.StackContent[idx].Value = NewOptionalFrom(cur + val)
+				typedStack.StackContent[idx].Value = NewOptionalFrom(cur + ss.Val)
 			} else {
 				typedStack.StackContent = append(typedStack.StackContent, StackContent{
-					Value:             NewOptionalFrom(val),
+					Value:             NewOptionalFrom(ss.Val),
 					RegularExpression: "^" + regexp.QuoteMeta(ss.Stack) + "$",
 					Labels:            labels,
 				})
 				groupedIdx[k] = len(typedStack.StackContent) - 1
 			}
-			totalVal += val
+			totalVal += ss.Val
 		}
 
-		// Annotate each entry with its percentage of the total. Every stack
-		// is kept; pre-filtering here would silently drop long-tail entries
-		// the curator might want to assert on.
+		// Annotate each entry with its percentage of the total. Computed on
+		// raw values — ratios are unaffected by the rate scaling that may
+		// follow. Every stack is kept; pre-filtering here would silently
+		// drop long-tail entries the curator might want to assert on.
 		if totalVal != 0 {
 			for idx := range typedStack.StackContent {
 				if val, ok := typedStack.StackContent[idx].Value.Value(); ok {
 					pct := (val * 100) / totalVal
 					typedStack.StackContent[idx].Percent = NewOptionalFrom(pct)
+				}
+			}
+		}
+
+		// Scale grouped values to rates once, post-aggregation.
+		if profileDuration > 0 {
+			for idx := range typedStack.StackContent {
+				if val, ok := typedStack.StackContent[idx].Value.Value(); ok {
+					typedStack.StackContent[idx].Value = NewOptionalFrom(int64(float64(val) / profileDuration))
 				}
 			}
 		}
