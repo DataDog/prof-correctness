@@ -205,15 +205,6 @@ func relDiff(actual, reference float64) float64 {
 	return math.Abs((actual - reference) / math.Max(reference, math.SmallestNonzeroFloat64) * 100.0)
 }
 
-func contains(s []int, v int) bool {
-	for _, i := range s {
-		if i == v {
-			return true
-		}
-	}
-	return false
-}
-
 func containsStr(s []string, v string) bool {
 	for _, i := range s {
 		if i == v {
@@ -265,27 +256,18 @@ func captureProfData(r Reporter, prof *profile.Profile, path string, testName st
 			typedStack.StackContent = append(typedStack.StackContent, stackContent)
 			totalVal += int(ss.Val)
 		}
-		// filter out and add significance (%)
-		var newStackContent []StackContent
+		// Annotate each entry with its percentage of the total. No filtering —
+		// users (and LLMs) curating an expected_profile.json from this output
+		// want to see every stack, including the long tail, so they can decide
+		// what's meaningful instead of having that decided for them.
 		if totalVal != 0 {
-			var idxToRemove []int
 			for idx := range typedStack.StackContent {
 				if val, ok := typedStack.StackContent[idx].Value.Value(); ok {
 					pct := (val * 100) / int64(totalVal)
 					typedStack.StackContent[idx].Percent = NewOptionalFrom(pct)
-					if pct < typedStack.ErrorMargin {
-						idxToRemove = append(idxToRemove, idx)
-					}
-				}
-			}
-			// rebuild a new table without the elements that have a low percentage
-			for idx, content := range typedStack.StackContent {
-				if !contains(idxToRemove, idx) {
-					newStackContent = append(newStackContent, content)
 				}
 			}
 		}
-		typedStack.StackContent = newStackContent
 
 		capturedData.Stacks = append(capturedData.Stacks, typedStack)
 	}

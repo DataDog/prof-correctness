@@ -5,8 +5,11 @@ package analysis_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/google/pprof/profile"
@@ -156,3 +159,90 @@ func TestPublicAPI_ReadJSONFile(t *testing.T) {
 // can pass `t` straight through (the existing test files in package main rely
 // on this — locking it in here protects external consumers too).
 var _ analysis.Reporter = (*testing.T)(nil)
+
+// writeManyStacksPprof writes a pprof with N distinct stacks, one sample each
+// (different value per sample). Used to verify captureProfData captures every
+// stack, including ones whose individual share is well under 1%.
+func writeManyStacksPprof(t *testing.T, dir string, nStacks int) string {
+	t.Helper()
+	p := &profile.Profile{
+		SampleType: []*profile.ValueType{{Type: "cpu-time", Unit: "nanoseconds"}},
+		PeriodType: &profile.ValueType{Type: "cpu-time", Unit: "nanoseconds"},
+		Period:     10_000_000,
+	}
+	for i := 0; i < nStacks; i++ {
+		fn := &profile.Function{ID: uint64(i + 1), Name: "fn_" + strconv.Itoa(i)}
+		loc := &profile.Location{ID: uint64(i + 1), Line: []profile.Line{{Function: fn}}}
+		p.Function = append(p.Function, fn)
+		p.Location = append(p.Location, loc)
+		p.Sample = append(p.Sample, &profile.Sample{
+			Value:    []int64{int64(i + 1)},
+			Location: []*profile.Location{loc},
+		})
+	}
+	var buf bytes.Buffer
+	if err := p.Write(&buf); err != nil {
+		t.Fatalf("write pprof: %v", err)
+	}
+	path := filepath.Join(dir, "profile.pprof")
+	if err := os.WriteFile(path, buf.Bytes(), 0644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+	return path
+}
+
+// TestCaptureProfData_KeepsLongTail confirms captureProfData no longer drops
+// stacks below 1% of the profile. We feed in 200 distinct stacks (each ~0.5%)
+// and expect every one to appear in the captured JSON.
+func TestCaptureProfData_KeepsLongTail(t *testing.T) {
+	const nStacks = 200
+	dir := t.TempDir()
+	writeManyStacksPprof(t, dir, nStacks)
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "capture-keeps-long-tail",
+		"stacks": [{
+			"profile-type": "cpu-time",
+			"stack-content": [{"regular_expression": ".*", "percent": 100, "error_margin": 100}]
+		}]
+	}`)
+
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResults(r, jsonPath, dir)
+	})
+	if r.Failed() {
+		t.Fatal("analyzer reported failure on permissive expected file")
+	}
+
+	// captureProfData drops the JSON next to the pprof, with the pprof's last
+	// extension replaced by .json.
+	captured := filepath.Join(dir, "profile.json")
+	raw, err := os.ReadFile(captured)
+	if err != nil {
+		t.Fatalf("read captured json: %v", err)
+	}
+
+	var captureData struct {
+		Stacks []struct {
+			ProfileType  string `json:"profile-type"`
+			StackContent []any  `json:"stack-content"`
+		} `json:"stacks"`
+	}
+	if err := json.Unmarshal(raw, &captureData); err != nil {
+		t.Fatalf("unmarshal captured json: %v", err)
+	}
+
+	var got int
+	for _, s := range captureData.Stacks {
+		if s.ProfileType == "cpu-time" {
+			got = len(s.StackContent)
+		}
+	}
+	if got != nStacks {
+		t.Errorf("expected %d captured stacks (no filter), got %d", nStacks, got)
+	}
+	// Spot-check the lowest-percentage stack (fn_0, val=1) is present.
+	if !strings.Contains(string(raw), "fn_0") {
+		t.Error("expected fn_0 (smallest stack) in captured JSON; it was dropped")
+	}
+}
