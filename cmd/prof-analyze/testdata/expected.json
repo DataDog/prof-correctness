@@ -1,0 +1,19 @@
+{
+  "test_name": "prof-analyze-cli-smoke",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        { "regular_expression": "^hot_function$",  "value": 90000000, "error_margin": 0 },
+        { "regular_expression": "^cold_function$", "value": 10000000, "error_margin": 0 }
+      ]
+    },
+    {
+      "profile-type": "cpu-samples",
+      "stack-content": [
+        { "regular_expression": "^hot_function$",  "value": 9, "error_margin": 0 },
+        { "regular_expression": "^cold_function$", "value": 1, "error_margin": 0 }
+      ]
+    }
+  ]
+}
