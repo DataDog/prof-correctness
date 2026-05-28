@@ -205,15 +205,6 @@ func relDiff(actual, reference float64) float64 {
 	return math.Abs((actual - reference) / math.Max(reference, math.SmallestNonzeroFloat64) * 100.0)
 }
 
-func contains(s []int, v int) bool {
-	for _, i := range s {
-		if i == v {
-			return true
-		}
-	}
-	return false
-}
-
 func containsStr(s []string, v string) bool {
 	for _, i := range s {
 		if i == v {
@@ -223,10 +214,42 @@ func containsStr(s []string, v string) bool {
 	return false
 }
 
-func captureProfData(r Reporter, prof *profile.Profile, path string, testName string, profileDuration float64) {
-	// labels to ignore
-	keysToIgnore := []string{"thread native id"}
+// captureKeysToIgnore lists label keys stripped before grouping samples for
+// the bootstrap JSON. They either vary every sample (timestamps), vary every
+// run (PIDs, OS thread IDs, trace IDs), or are otherwise unstable. Strip them
+// so two samples sharing the same stack+meaningful-labels collapse into one
+// entry instead of producing a separate JSON line each.
+var captureKeysToIgnore = []string{
+	"thread native id",
+	"thread id",
+	"process_id",
+	"end_timestamp_ns",
+	"span id",
+	"local root span id",
+}
 
+// labelsKey produces a stable string key from a label set (which has already
+// had ignored keys removed). Used as a map key to group samples by their
+// kept-labels signature.
+func labelsKey(labels []Labels) string {
+	if len(labels) == 0 {
+		return ""
+	}
+	sort.Slice(labels, func(i, j int) bool { return labels[i].Key < labels[j].Key })
+	var b strings.Builder
+	for _, l := range labels {
+		b.WriteString(l.Key)
+		b.WriteByte('=')
+		for _, v := range l.Values { // Values is already sorted by getProfileType
+			b.WriteString(v)
+			b.WriteByte(',')
+		}
+		b.WriteByte(';')
+	}
+	return b.String()
+}
+
+func captureProfData(r Reporter, prof *profile.Profile, path string, testName string, profileDuration float64) {
 	var capturedData StackTestData
 	capturedData.TestName = testName
 
@@ -236,56 +259,67 @@ func captureProfData(r Reporter, prof *profile.Profile, path string, testName st
 		typedStack.ErrorMargin = 1
 
 		typedProf := getProfileType(r, prof, sampleType.Type)
-		// drop the content to a file to allow a comparison
-		var totalVal int = 0
+
+		// Group samples by (stack, kept-labels) and sum their values. Without
+		// this, ephemeral labels like end_timestamp_ns produce one entry per
+		// raw sample even after the unstable keys are stripped from output.
+		type aggKey struct {
+			stack  string
+			labels string
+		}
+		groupedIdx := map[aggKey]int{}
+		var totalVal int64
+
+		// Accumulate raw values; defer rate scaling until after grouping.
+		// Per-sample scaling before summing truncates low-count integers
+		// to 0 (e.g. two samples of 1 over a 2 s profile each scale to
+		// int64(0.5)=0, summing to 0 instead of the correct grouped rate
+		// of 1).
 		for _, ss := range typedProf {
 			var labels []Labels
-
 			for key, value := range ss.Labels {
-				if containsStr(keysToIgnore, key) {
+				if containsStr(captureKeysToIgnore, key) {
 					continue
 				}
-				labels = append(labels, Labels{
-					Key:    key,
-					Values: value,
+				labels = append(labels, Labels{Key: key, Values: value})
+			}
+
+			k := aggKey{stack: ss.Stack, labels: labelsKey(labels)}
+			if idx, ok := groupedIdx[k]; ok {
+				cur, _ := typedStack.StackContent[idx].Value.Value()
+				typedStack.StackContent[idx].Value = NewOptionalFrom(cur + ss.Val)
+			} else {
+				typedStack.StackContent = append(typedStack.StackContent, StackContent{
+					Value:             NewOptionalFrom(ss.Val),
+					RegularExpression: "^" + regexp.QuoteMeta(ss.Stack) + "$",
+					Labels:            labels,
 				})
+				groupedIdx[k] = len(typedStack.StackContent) - 1
 			}
-
-			if profileDuration > 0 {
-				// NOTE: When profile duration is bigger than 0, all values represent rates.
-				ss.Val = int64(float64(ss.Val) / profileDuration)
-			}
-
-			stackContent := StackContent{
-				Value: NewOptionalFrom(ss.Val),
-				// protect any charact
-				RegularExpression: "^" + regexp.QuoteMeta(ss.Stack) + "$",
-				Labels:            labels,
-			}
-			typedStack.StackContent = append(typedStack.StackContent, stackContent)
-			totalVal += int(ss.Val)
+			totalVal += ss.Val
 		}
-		// filter out and add significance (%)
-		var newStackContent []StackContent
+
+		// Annotate each entry with its percentage of the total. Computed on
+		// raw values — ratios are unaffected by the rate scaling that may
+		// follow. Every stack is kept; pre-filtering here would silently
+		// drop long-tail entries the curator might want to assert on.
 		if totalVal != 0 {
-			var idxToRemove []int
 			for idx := range typedStack.StackContent {
 				if val, ok := typedStack.StackContent[idx].Value.Value(); ok {
-					pct := (val * 100) / int64(totalVal)
+					pct := (val * 100) / totalVal
 					typedStack.StackContent[idx].Percent = NewOptionalFrom(pct)
-					if pct < typedStack.ErrorMargin {
-						idxToRemove = append(idxToRemove, idx)
-					}
-				}
-			}
-			// rebuild a new table without the elements that have a low percentage
-			for idx, content := range typedStack.StackContent {
-				if !contains(idxToRemove, idx) {
-					newStackContent = append(newStackContent, content)
 				}
 			}
 		}
-		typedStack.StackContent = newStackContent
+
+		// Scale grouped values to rates once, post-aggregation.
+		if profileDuration > 0 {
+			for idx := range typedStack.StackContent {
+				if val, ok := typedStack.StackContent[idx].Value.Value(); ok {
+					typedStack.StackContent[idx].Value = NewOptionalFrom(int64(float64(val) / profileDuration))
+				}
+			}
+		}
 
 		capturedData.Stacks = append(capturedData.Stacks, typedStack)
 	}

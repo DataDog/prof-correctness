@@ -5,8 +5,11 @@ package analysis_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/google/pprof/profile"
@@ -156,3 +159,292 @@ func TestPublicAPI_ReadJSONFile(t *testing.T) {
 // can pass `t` straight through (the existing test files in package main rely
 // on this — locking it in here protects external consumers too).
 var _ analysis.Reporter = (*testing.T)(nil)
+
+// writeManyStacksPprof writes a pprof with N distinct stacks, one sample each
+// (different value per sample). Used to verify captureProfData captures every
+// stack, including ones whose individual share is well under 1%.
+func writeManyStacksPprof(t *testing.T, dir string, nStacks int) string {
+	t.Helper()
+	p := &profile.Profile{
+		SampleType: []*profile.ValueType{{Type: "cpu-time", Unit: "nanoseconds"}},
+		PeriodType: &profile.ValueType{Type: "cpu-time", Unit: "nanoseconds"},
+		Period:     10_000_000,
+	}
+	for i := 0; i < nStacks; i++ {
+		fn := &profile.Function{ID: uint64(i + 1), Name: "fn_" + strconv.Itoa(i)}
+		loc := &profile.Location{ID: uint64(i + 1), Line: []profile.Line{{Function: fn}}}
+		p.Function = append(p.Function, fn)
+		p.Location = append(p.Location, loc)
+		p.Sample = append(p.Sample, &profile.Sample{
+			Value:    []int64{int64(i + 1)},
+			Location: []*profile.Location{loc},
+		})
+	}
+	var buf bytes.Buffer
+	if err := p.Write(&buf); err != nil {
+		t.Fatalf("write pprof: %v", err)
+	}
+	path := filepath.Join(dir, "profile.pprof")
+	if err := os.WriteFile(path, buf.Bytes(), 0644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+	return path
+}
+
+// TestCaptureProfData_KeepsLongTail confirms captureProfData no longer drops
+// stacks below 1% of the profile. We feed in 200 distinct stacks (each ~0.5%)
+// and expect every one to appear in the captured JSON.
+func TestCaptureProfData_KeepsLongTail(t *testing.T) {
+	const nStacks = 200
+	dir := t.TempDir()
+	writeManyStacksPprof(t, dir, nStacks)
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "capture-keeps-long-tail",
+		"stacks": [{
+			"profile-type": "cpu-time",
+			"stack-content": [{"regular_expression": ".*", "percent": 100, "error_margin": 100}]
+		}]
+	}`)
+
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResults(r, jsonPath, dir)
+	})
+	if r.Failed() {
+		t.Fatal("analyzer reported failure on permissive expected file")
+	}
+
+	// captureProfData drops the JSON next to the pprof, with the pprof's last
+	// extension replaced by .json.
+	captured := filepath.Join(dir, "profile.json")
+	raw, err := os.ReadFile(captured)
+	if err != nil {
+		t.Fatalf("read captured json: %v", err)
+	}
+
+	var captureData struct {
+		Stacks []struct {
+			ProfileType  string `json:"profile-type"`
+			StackContent []any  `json:"stack-content"`
+		} `json:"stacks"`
+	}
+	if err := json.Unmarshal(raw, &captureData); err != nil {
+		t.Fatalf("unmarshal captured json: %v", err)
+	}
+
+	var got int
+	for _, s := range captureData.Stacks {
+		if s.ProfileType == "cpu-time" {
+			got = len(s.StackContent)
+		}
+	}
+	if got != nStacks {
+		t.Errorf("expected %d captured stacks (no filter), got %d", nStacks, got)
+	}
+	// Spot-check the lowest-percentage stack (fn_0, val=1) is present.
+	if !strings.Contains(string(raw), "fn_0") {
+		t.Error("expected fn_0 (smallest stack) in captured JSON; it was dropped")
+	}
+}
+
+// writeRepeatedStackWithLabelsPprof writes a pprof where the SAME stack
+// appears N times, with the same stable label (thread_name) but every sample
+// carrying a different ephemeral label (end_timestamp_ns). After capture and
+// label-stripping, all N samples should collapse into a single entry whose
+// value is the sum.
+func writeRepeatedStackWithLabelsPprof(t *testing.T, dir string, nSamples int) string {
+	t.Helper()
+	fn := &profile.Function{ID: 1, Name: "hot"}
+	loc := &profile.Location{ID: 1, Line: []profile.Line{{Function: fn}}}
+	p := &profile.Profile{
+		SampleType: []*profile.ValueType{{Type: "cpu-time", Unit: "nanoseconds"}},
+		PeriodType: &profile.ValueType{Type: "cpu-time", Unit: "nanoseconds"},
+		Period:     10_000_000,
+		Function:   []*profile.Function{fn},
+		Location:   []*profile.Location{loc},
+	}
+	for i := 0; i < nSamples; i++ {
+		p.Sample = append(p.Sample, &profile.Sample{
+			Value:    []int64{int64(i + 1)},
+			Location: []*profile.Location{loc},
+			Label: map[string][]string{
+				"thread_name": {"worker"},
+			},
+			NumLabel: map[string][]int64{
+				"end_timestamp_ns": {int64(1_000_000_000 + i)},
+				"thread id":        {int64(100 + i)},
+			},
+		})
+	}
+	var buf bytes.Buffer
+	if err := p.Write(&buf); err != nil {
+		t.Fatalf("write pprof: %v", err)
+	}
+	path := filepath.Join(dir, "profile.pprof")
+	if err := os.WriteFile(path, buf.Bytes(), 0644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+	return path
+}
+
+// TestCaptureProfData_GroupsByStackAndStableLabels confirms ephemeral labels
+// (end_timestamp_ns, thread id, process_id, …) are stripped and samples
+// sharing the same (stack, stable-labels) signature collapse into one entry
+// whose value is the sum of the source samples.
+func TestCaptureProfData_GroupsByStackAndStableLabels(t *testing.T) {
+	const nSamples = 50
+	dir := t.TempDir()
+	writeRepeatedStackWithLabelsPprof(t, dir, nSamples)
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "capture-groups",
+		"stacks": [{
+			"profile-type": "cpu-time",
+			"stack-content": [{"regular_expression": ".*", "percent": 100, "error_margin": 100}]
+		}]
+	}`)
+
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResults(r, jsonPath, dir)
+	})
+	if r.Failed() {
+		t.Fatal("analyzer reported failure on permissive expected file")
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, "profile.json"))
+	if err != nil {
+		t.Fatalf("read captured json: %v", err)
+	}
+
+	var captured struct {
+		Stacks []struct {
+			ProfileType  string `json:"profile-type"`
+			StackContent []struct {
+				Value  int64 `json:"value"`
+				Labels []struct {
+					Key    string   `json:"key"`
+					Values []string `json:"values"`
+				} `json:"labels"`
+			} `json:"stack-content"`
+		} `json:"stacks"`
+	}
+	if err := json.Unmarshal(raw, &captured); err != nil {
+		t.Fatalf("unmarshal captured json: %v", err)
+	}
+
+	var cpuStack *struct {
+		ProfileType  string `json:"profile-type"`
+		StackContent []struct {
+			Value  int64 `json:"value"`
+			Labels []struct {
+				Key    string   `json:"key"`
+				Values []string `json:"values"`
+			} `json:"labels"`
+		} `json:"stack-content"`
+	}
+	for i := range captured.Stacks {
+		if captured.Stacks[i].ProfileType == "cpu-time" {
+			cpuStack = &captured.Stacks[i]
+			break
+		}
+	}
+	if cpuStack == nil {
+		t.Fatal("cpu-time stack missing from capture")
+	}
+
+	if got := len(cpuStack.StackContent); got != 1 {
+		t.Fatalf("expected 1 grouped entry (same stack + same stable labels), got %d", got)
+	}
+
+	want := int64(nSamples * (nSamples + 1) / 2) // 1+2+…+nSamples
+	if got := cpuStack.StackContent[0].Value; got != want {
+		t.Errorf("expected summed value %d, got %d", want, got)
+	}
+
+	// Labels should contain thread_name=worker and nothing else.
+	gotLabels := cpuStack.StackContent[0].Labels
+	if len(gotLabels) != 1 {
+		t.Fatalf("expected exactly one kept label (thread_name), got %d: %+v", len(gotLabels), gotLabels)
+	}
+	if gotLabels[0].Key != "thread_name" || len(gotLabels[0].Values) != 1 || gotLabels[0].Values[0] != "worker" {
+		t.Errorf("expected thread_name=worker, got %+v", gotLabels[0])
+	}
+
+	// Sanity: ephemeral keys should NOT appear in the captured JSON.
+	for _, banned := range []string{"end_timestamp_ns", "thread id", "process_id", "span id", "local root span id"} {
+		if strings.Contains(string(raw), `"key": "`+banned+`"`) {
+			t.Errorf("ephemeral label %q leaked into captured JSON", banned)
+		}
+	}
+}
+
+// TestCaptureProfData_LowCountRateNotTruncated guards against per-sample
+// rate scaling: two samples of value 1 over a 2 s profile must group to a
+// rate of 1, not 0. Scaling each sample individually (int64(1.0/2.0)=0)
+// before summing would truncate to 0; raw values must be summed first.
+func TestCaptureProfData_LowCountRateNotTruncated(t *testing.T) {
+	dir := t.TempDir()
+
+	fn := &profile.Function{ID: 1, Name: "rare"}
+	loc := &profile.Location{ID: 1, Line: []profile.Line{{Function: fn}}}
+	p := &profile.Profile{
+		SampleType:    []*profile.ValueType{{Type: "cpu-samples", Unit: "count"}},
+		PeriodType:    &profile.ValueType{Type: "cpu-time", Unit: "nanoseconds"},
+		Period:        10_000_000,
+		DurationNanos: 2_000_000_000, // 2 seconds — triggers rate scaling
+		Function:      []*profile.Function{fn},
+		Location:      []*profile.Location{loc},
+		Sample: []*profile.Sample{
+			{Value: []int64{1}, Location: []*profile.Location{loc}},
+			{Value: []int64{1}, Location: []*profile.Location{loc}},
+		},
+	}
+	var buf bytes.Buffer
+	if err := p.Write(&buf); err != nil {
+		t.Fatalf("write pprof: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "profile.pprof"), buf.Bytes(), 0644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "low-count-rate",
+		"scale_by_duration": true,
+		"stacks": [{
+			"profile-type": "cpu-samples",
+			"stack-content": [{"regular_expression": ".*", "percent": 100, "error_margin": 100}]
+		}]
+	}`)
+
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResults(r, jsonPath, dir)
+	})
+	if r.Failed() {
+		t.Fatal("analyzer reported failure on permissive expected file")
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, "profile.json"))
+	if err != nil {
+		t.Fatalf("read captured json: %v", err)
+	}
+	var captured struct {
+		Stacks []struct {
+			ProfileType  string `json:"profile-type"`
+			StackContent []struct {
+				Value int64 `json:"value"`
+			} `json:"stack-content"`
+		} `json:"stacks"`
+	}
+	if err := json.Unmarshal(raw, &captured); err != nil {
+		t.Fatalf("unmarshal captured json: %v", err)
+	}
+
+	if len(captured.Stacks) != 1 || len(captured.Stacks[0].StackContent) != 1 {
+		t.Fatalf("expected exactly one captured entry, got %+v", captured)
+	}
+	// 2 raw samples summed = 2, scaled by 2s duration = 1 sample/sec.
+	if got := captured.Stacks[0].StackContent[0].Value; got != 1 {
+		t.Errorf("expected grouped rate value=1 (2 samples / 2s), got %d — pre-grouping scaling truncated", got)
+	}
+}
