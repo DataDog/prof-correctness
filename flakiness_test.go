@@ -9,7 +9,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/DataDog/profiler-correctness/v1/analysis"
+	"github.com/DataDog/prof-correctness/analysis"
 )
 
 // TestFlakiness runs a single scenario N times in parallel to detect flaky tests.
