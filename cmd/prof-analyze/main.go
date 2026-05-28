@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/DataDog/profiler-correctness/v1/analysis"
+	"github.com/DataDog/prof-correctness/analysis"
 )
 
 func main() {

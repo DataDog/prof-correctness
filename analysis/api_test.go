@@ -14,7 +14,7 @@ import (
 
 	"github.com/google/pprof/profile"
 
-	"github.com/DataDog/profiler-correctness/v1/analysis"
+	"github.com/DataDog/prof-correctness/analysis"
 )
 
 // writeMinimalPprof writes a tiny but well-formed cpu-time pprof to dir. The

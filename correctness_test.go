@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/profiler-correctness/v1/analysis"
+	"github.com/DataDog/prof-correctness/analysis"
 )
 
 func retrieveCurrentCommand(imageID string) ([]string, error) {

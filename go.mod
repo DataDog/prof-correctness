@@ -1,4 +1,4 @@
-module github.com/DataDog/profiler-correctness/v1
+module github.com/DataDog/prof-correctness
 
 go 1.25.1
 

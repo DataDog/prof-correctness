@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DataDog/profiler-correctness/v1/analysis"
+	"github.com/DataDog/prof-correctness/analysis"
 )
 
 func TestSchemaValidation(t *testing.T) {
