@@ -21,8 +21,13 @@
       "stack-content": [
         {
           "regular_expression": ".*cpu_spike",
-          "percent": 90,
-          "error_margin": 10
+          "percent": 99,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*sleep_period",
+          "percent": 0,
+          "error_margin": 5
         }
       ]
     }
