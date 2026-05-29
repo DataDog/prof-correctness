@@ -1,0 +1,16 @@
+{
+  "test_name": "python_deep_stack",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": "[0-9]+ frames omitted\u003e;(recurse;){50,}burn",
+          "percent": 100,
+          "error_margin": 10
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
