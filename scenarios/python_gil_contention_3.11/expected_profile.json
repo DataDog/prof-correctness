@@ -1,0 +1,42 @@
+{
+  "test_name": "python_gil_contention",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*spin",
+          "value": 1000000000,
+          "error_margin": 5
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*spin",
+          "percent": 12,
+          "error_margin": 6,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["spin-0"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*spin",
+          "value": 8000000000,
+          "error_margin": 5
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": true
+}
