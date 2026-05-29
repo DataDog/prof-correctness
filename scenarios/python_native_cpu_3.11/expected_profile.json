@@ -1,0 +1,66 @@
+{
+  "test_name": "python_native_cpu",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*hash_work",
+          "percent": 20,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*compress_work",
+          "percent": 20,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*factorial_work",
+          "percent": 20,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*regex_work",
+          "percent": 20,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*crc_work",
+          "percent": 20,
+          "error_margin": 5
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*hash_work",
+          "percent": 20,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*compress_work",
+          "percent": 20,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*factorial_work",
+          "percent": 20,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*regex_work",
+          "percent": 20,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*crc_work",
+          "percent": 20,
+          "error_margin": 5
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
