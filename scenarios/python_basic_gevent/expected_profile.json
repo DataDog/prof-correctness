@@ -8,9 +8,9 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^run$",
-          "value": 2000000000,
-          "error_margin": 25,
+          "regular_expression": "^Hub\\.run;loop\\.run$",
+          "value": 900000000,
+          "error_margin": 30,
           "labels": [
             {
               "key": "task name",
