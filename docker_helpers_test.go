@@ -195,12 +195,12 @@ func runTestAppSafe(dockerTag string, folder string) (string, error) {
 
 	var args []string
 	if strings.Contains(folder, "full_host") {
-		args = []string{"run", "-v", mountOption, "--pid=host", "--privileged", "--security-opt", "seccomp=unconfined"}
+		args = []string{"run", "--rm", "-v", mountOption, "--pid=host", "--privileged", "--security-opt", "seccomp=unconfined"}
 		args = append(args, "--cap-add=SYS_ADMIN", "--cap-add=SYS_PTRACE", "--cap-add=SYS_RESOURCE")
 		args = append(args, "-v", "/sys/kernel/debug:/sys/kernel/debug:ro")
 		args = append(args, "-v", "/sys/kernel/tracing:/sys/kernel/tracing:ro")
 	} else {
-		args = []string{"run", "-v", mountOption, "-u", userOption, "--security-opt", "seccomp=unconfined"}
+		args = []string{"run", "--rm", "-v", mountOption, "-u", userOption, "--security-opt", "seccomp=unconfined"}
 	}
 
 	if DURATION_SET {
