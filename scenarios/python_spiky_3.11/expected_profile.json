@@ -1,0 +1,31 @@
+{
+  "test_name": "python_spiky",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*cpu_spike",
+          "percent": 50,
+          "error_margin": 10
+        },
+        {
+          "regular_expression": ".*sleep_period",
+          "percent": 50,
+          "error_margin": 10
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*cpu_spike",
+          "percent": 90,
+          "error_margin": 10
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
