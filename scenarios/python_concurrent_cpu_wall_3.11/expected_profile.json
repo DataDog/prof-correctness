@@ -1,0 +1,48 @@
+{
+  "test_name": "python_concurrent_cpu_wall",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*busy_loop",
+          "percent": 95,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["busy"]
+            }
+          ]
+        },
+        {
+          "regular_expression": ".*busy_loop",
+          "percent": 0,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["idle"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*busy_loop",
+          "percent": 33,
+          "error_margin": 12
+        },
+        {
+          "regular_expression": ".*idle_wait",
+          "percent": 33,
+          "error_margin": 12
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
