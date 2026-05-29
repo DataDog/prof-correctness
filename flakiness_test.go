@@ -16,7 +16,7 @@ import (
 //
 // Usage:
 //
-//	TEST_SCENARIOS="python_basic_3.11" FLAKINESS_RUNS=10 go test -v -timeout 30m -run TestFlakiness
+//	TEST_SCENARIOS="python_basic_3.12" FLAKINESS_RUNS=10 go test -v -timeout 30m -run TestFlakiness
 //
 // Environment variables:
 //   - TEST_SCENARIOS: regex matching the scenario to test (required, should match exactly one)
