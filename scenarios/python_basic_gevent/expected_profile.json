@@ -9,8 +9,8 @@
       "stack-content": [
         {
           "regular_expression": "^Hub\\.run;loop\\.run$",
-          "value": 900000000,
-          "error_margin": 30,
+          "value": 2000000000,
+          "error_margin": 25,
           "labels": [
             {
               "key": "task name",
