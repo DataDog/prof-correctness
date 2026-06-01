@@ -26,4 +26,4 @@ RUN chmod 777 /app/rubyspec_temp
 RUN useradd -u 1000 -ms /bin/bash someuser
 RUN useradd -u 1001 -ms /bin/bash someuser2
 
-CMD bundle exec ddprofrb exec ruby mspec-master/bin/mspec-run --config mspec_config.rb spec-master/core/dir/
+CMD bundle exec ddprofrb exec ruby mspec-master/bin/mspec-run --config mspec_config.rb spec-7240267784230e3e0bb9181dd4ea82216d136956/core/dir/
