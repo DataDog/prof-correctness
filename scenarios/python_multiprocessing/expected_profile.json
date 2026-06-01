@@ -1,0 +1,17 @@
+{
+  "test_name": "python_multiprocessing",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*work",
+          "comment": "Every process (parent + the forked children) spends nearly all of its CPU in work. A correct, work-dominated profile from each forked child proves the sampler restarted cleanly after fork. Asserted as a percentage so it is robust to the host core count.",
+          "percent": 95,
+          "error_margin": 10
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
