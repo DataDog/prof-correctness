@@ -1,8 +1,8 @@
 ARG BASE_IMAGE="prof-python-3.11"
 FROM $BASE_IMAGE
 
-COPY ./scenarios/python_many_threads_3.11/main.py \
-    ./scenarios/python_many_threads_3.11/requirements.txt \
+COPY ./scenarios/python_many_threads/main.py \
+    ./scenarios/python_many_threads/requirements.txt \
     /app/
 RUN chmod 644 /app/*
 
