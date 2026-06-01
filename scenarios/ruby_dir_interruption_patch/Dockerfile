@@ -9,9 +9,11 @@ RUN chmod 755 /app/*
 WORKDIR /app
 RUN bundle install
 
-RUN wget https://github.com/ruby/spec/archive/refs/heads/master.zip -O spec-master.zip
+# The `DirMonkeyPatch` issue does not affect Ruby 3.4+. We thus pin to this spec version, to avoid breakages from
+# ruby-spec changes for newer Rubies (and to avoid issues once ruby-spec drops 3.3 support).
+RUN wget https://github.com/ruby/spec/archive/7240267784230e3e0bb9181dd4ea82216d136956.zip -O spec.zip
 RUN wget https://github.com/ruby/mspec/archive/refs/heads/master.zip -O mspec-master.zip
-RUN unzip spec-master.zip
+RUN unzip spec.zip
 RUN unzip mspec-master.zip
 
 # Since we aggressively drop permissions when running, we need to manually create a folder for rubyspec to use
