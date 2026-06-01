@@ -19,18 +19,24 @@ def worker(barrier: threading.Barrier, end: float) -> None:
 
 if __name__ == "__main__":
     prof = Profiler()
-    prof.start()
 
     execution_time = float(os.environ.get("EXECUTION_TIME_SEC", "30"))
     end = time() + execution_time
 
-    barrier = threading.Barrier(NUM_WORKERS)
+    barrier = threading.Barrier(NUM_WORKERS + 1)
     threads: list[threading.Thread] = [
         threading.Thread(target=worker, args=(barrier, end), name=f"worker-{i}") for i in range(NUM_WORKERS)
     ]
 
     for t in threads:
         t.start()
+
+    prof.start()
+
+    # Every worker is now alive and parked on the barrier, so the profiler has
+    # registered all 20 threads before any work begins. Release them together
+    # so no thread misses early sampling cycles.
+    barrier.wait()
 
     for t in threads:
         t.join()
