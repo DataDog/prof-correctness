@@ -17,7 +17,9 @@ on:
 
 jobs:
   docker-scenarios:
-    runs-on: ubuntu-latest
+    # Larger runner (dedicated VM per job) to reduce scheduling noise that
+    # skews profiler error margins.
+    runs-on: ubuntu-8-core-latest
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
     - name: Set up Go
