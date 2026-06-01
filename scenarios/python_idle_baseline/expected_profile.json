@@ -1,0 +1,22 @@
+{
+  "test_name": "python_idle_baseline",
+  "stacks": [
+    {
+      "profile-type": "wall-samples",
+      "stack-content": [
+        {
+          "regular_expression": ".*idle_wait",
+          "comment": "With the baseline floor the idle app keeps sampling at ~1kHz (~9-10k wall-samples over 10s); with the baseline disabled the sampler backs off to the max interval (~130 samples). The floor of 1000 sits well above the backed-off level, so it fails if the baseline floor stops working.",
+          "min_value": 1000,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["MainThread"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}

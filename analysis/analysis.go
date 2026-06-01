@@ -58,6 +58,8 @@ var expectedProfileSchema = `{
                 "regular_expression": { "type": "string", "minLength": 1 },
                 "value": { "type": "integer" },
                 "percent": { "type": "integer" },
+                "min_value": { "type": "integer" },
+                "max_value": { "type": "integer" },
                 "error_margin": { "type": "integer" },
                 "labels": { "type": "array" }
               }
@@ -122,8 +124,15 @@ type StackContent struct {
 	// NOTE: When the corresponding profile has a duration > 0, this value represents a rate (x/sec).
 	//       If the corresponding profile is a snapshot (i.e. duration == 0), then this value represents
 	//       an absolute/raw/scalar value independent of time.
-	Value       Optional[int64] `json:"value"`
-	Percent     Optional[int64] `json:"percent"`
+	Value   Optional[int64] `json:"value"`
+	Percent Optional[int64] `json:"percent"`
+	// MinValue/MaxValue assert that the summed value of the matching samples is
+	// at least / at most the given bound. Like Value, they are interpreted as a
+	// rate (x/sec) when the profile duration is > 0 and ScaleByDuration is set,
+	// otherwise as an absolute/raw value. Combined with a count profile-type
+	// (e.g. "wall-samples") they express a minimum/maximum sample count.
+	MinValue    Optional[int64] `json:"min_value,omitempty"`
+	MaxValue    Optional[int64] `json:"max_value,omitempty"`
 	ErrorMargin Optional[int64] `json:"error_margin,omitempty"`
 	Labels      []Labels        `json:"labels"`
 }
@@ -163,8 +172,10 @@ func (s *StackTestData) Validate() error {
 		for j, content := range stack.StackContent {
 			_, hasValue := content.Value.Value()
 			_, hasPercent := content.Percent.Value()
-			if !hasValue && !hasPercent {
-				return fmt.Errorf("stacks[%d].stack-content[%d]: must have 'value' or 'percent' (or parent must have 'value-matching-sum')", i, j)
+			_, hasMin := content.MinValue.Value()
+			_, hasMax := content.MaxValue.Value()
+			if !hasValue && !hasPercent && !hasMin && !hasMax {
+				return fmt.Errorf("stacks[%d].stack-content[%d]: must have 'value', 'percent', 'min_value' or 'max_value' (or parent must have 'value-matching-sum')", i, j)
 			}
 		}
 	}
@@ -420,7 +431,7 @@ func checkLabels(r Reporter, labels map[string][]string, expectedLabels []Labels
 	return true
 }
 
-func assertStackWithFailureHandling(r Reporter, prof []StackSample, regexpStack string, valueOpt Optional[float64], pctOpt Optional[int64], epsilonPct int64, labels []Labels, allowFailure bool, hasFailures *bool) (matching int64) {
+func assertStackWithFailureHandling(r Reporter, prof []StackSample, regexpStack string, valueOpt Optional[float64], pctOpt Optional[int64], minOpt Optional[float64], maxOpt Optional[float64], epsilonPct int64, labels []Labels, allowFailure bool, hasFailures *bool) (matching int64) {
 	rx, err := regexp.Compile(regexpStack)
 	if err != nil {
 		r.Fatalf("Error compiling regex: %v, %s", err, regexpStack)
@@ -467,6 +478,32 @@ func assertStackWithFailureHandling(r Reporter, prof []StackSample, regexpStack 
 			r.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is %d%% +/- %d%% of the profile (was %d%% with %d%% error)\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
 		}
 	}
+
+	if minValue, ok := minOpt.Value(); ok {
+		if float64(matching) < minValue {
+			if allowFailure {
+				r.Logf("\033[33mAssertion failed (allowed): stack '%s' (labels=%v) should have been at least %.1f but was %d\033[0m", regexpStack, labels, minValue, matching)
+				*hasFailures = true
+			} else {
+				r.Errorf("\033[31mAssertion failed: stack '%s' (labels=%v) should have been at least %.1f but was %d\033[0m", regexpStack, labels, minValue, matching)
+			}
+		} else {
+			r.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is at least %.1f (was %d)\033[0m", regexpStack, labels, minValue, matching)
+		}
+	}
+
+	if maxValue, ok := maxOpt.Value(); ok {
+		if float64(matching) > maxValue {
+			if allowFailure {
+				r.Logf("\033[33mAssertion failed (allowed): stack '%s' (labels=%v) should have been at most %.1f but was %d\033[0m", regexpStack, labels, maxValue, matching)
+				*hasFailures = true
+			} else {
+				r.Errorf("\033[31mAssertion failed: stack '%s' (labels=%v) should have been at most %.1f but was %d\033[0m", regexpStack, labels, maxValue, matching)
+			}
+		} else {
+			r.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is at most %.1f (was %d)\033[0m", regexpStack, labels, maxValue, matching)
+		}
+	}
 	return
 }
 
@@ -478,9 +515,14 @@ func analyzeProfDataWithFailureHandling(r Reporter, prof []StackSample, typedSta
 		regexpStack := stack.RegularExpression
 		// Do not scale values for profiles with a duration of 0 (eg. Node.js heap profiles)
 		valueOpt := MapOptional(stack.Value, func(v int64) float64 { return float64(v) })
+		minOpt := MapOptional(stack.MinValue, func(v int64) float64 { return float64(v) })
+		maxOpt := MapOptional(stack.MaxValue, func(v int64) float64 { return float64(v) })
 		if durationSecs > 0 {
 			// NOTE: When profile duration is bigger than 0, all values represent rates.
-			valueOpt = MapOptional(valueOpt, func(v float64) float64 { return v * durationSecs }) // value for total duration
+			scale := func(v float64) float64 { return v * durationSecs } // value for total duration
+			valueOpt = MapOptional(valueOpt, scale)
+			minOpt = MapOptional(minOpt, scale)
+			maxOpt = MapOptional(maxOpt, scale)
 		}
 		percent := stack.Percent // percentage within the profile
 
@@ -489,7 +531,7 @@ func analyzeProfDataWithFailureHandling(r Reporter, prof []StackSample, typedSta
 			errorMargin = stackErrorMargin
 		}
 
-		matching := assertStackWithFailureHandling(r, prof, regexpStack, valueOpt, percent, errorMargin, stack.Labels, allowFailure, &hasFailures)
+		matching := assertStackWithFailureHandling(r, prof, regexpStack, valueOpt, percent, minOpt, maxOpt, errorMargin, stack.Labels, allowFailure, &hasFailures)
 		matchingSum += matching
 		// TODO: add an assertion on counts (e.g. number of allocations), not just summed values.
 	}

@@ -101,6 +101,54 @@ func TestPublicAPI_FailingAssertion(t *testing.T) {
 	}
 }
 
+// TestPublicAPI_MinMaxValue_Pass confirms min_value/max_value bounds pass when
+// the matched value sits within the bounds.
+func TestPublicAPI_MinMaxValue_Pass(t *testing.T) {
+	dir := t.TempDir()
+	writeMinimalPprof(t, dir, "hot_function", 10_000_000)
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "api-minmax-pass",
+		"stacks": [{
+			"profile-type": "cpu-time",
+			"stack-content": [
+				{"regular_expression": "^hot_function$", "min_value": 5000000, "max_value": 20000000}
+			]
+		}]
+	}`)
+
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResults(r, jsonPath, dir)
+	})
+	if r.Failed() {
+		t.Fatal("expected Failed()=false when value is within [min_value, max_value]")
+	}
+}
+
+// TestPublicAPI_MinValue_Fail confirms a min_value bound fails when the matched
+// value falls below the floor (the assertion idle_baseline relies on).
+func TestPublicAPI_MinValue_Fail(t *testing.T) {
+	dir := t.TempDir()
+	writeMinimalPprof(t, dir, "hot_function", 10_000_000)
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "api-min-fail",
+		"stacks": [{
+			"profile-type": "cpu-time",
+			"stack-content": [
+				{"regular_expression": "^hot_function$", "min_value": 20000000}
+			]
+		}]
+	}`)
+
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResults(r, jsonPath, dir)
+	})
+	if !r.Failed() {
+		t.Fatal("expected Failed()=true when value is below min_value")
+	}
+}
+
 // TestPublicAPI_FatalfRecovers confirms Run() catches Fatalf panics so the
 // caller can inspect Failed() and exit normally — instead of the panic
 // propagating out of the library.
