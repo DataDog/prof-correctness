@@ -14,9 +14,36 @@ on:
         required: false
         type: string
         default: ''
+      num_jobs:
+        description: 'Number of parallel jobs to split scenarios across'
+        required: false
+        type: number
+        default: 1
 
 jobs:
+  compute-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 1.25.1
+      - name: Compute job matrix
+        id: matrix
+        run: |
+          matrix=$(go run ./cmd/make-matrix \
+            -pattern "${{ inputs.test_scenarios }}" \
+            -num-jobs "${{ inputs.num_jobs }}")
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
   docker-scenarios:
+    needs: compute-matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.compute-matrix.outputs.matrix) }}
     # Larger runner (dedicated VM per job) to reduce scheduling noise that
     # skews profiler error margins.
     runs-on: ubuntu-8-core-latest
@@ -32,15 +59,13 @@ jobs:
     - name: Run Docker scenarios
       run: go test -timeout 20m -v -run TestScenarios
       env:
-        TEST_SCENARIOS: ${{ inputs.test_scenarios }}
+        TEST_SCENARIOS: ${{ matrix.scenarios }}
         DDTRACE_INSTALL_URL: ${{ inputs.ddtrace_install_url }}
     - name: Create unique artifact name
       id: artifact_name
       if: failure()
       run: |
-        # Replace special characters with underscores to make it artifact-name safe
-        SAFE_NAME=$(echo "${{ inputs.test_scenarios }}" | sed 's/[^a-zA-Z0-9]/_/g')
-        echo "name=docker_scenario_test_data_${SAFE_NAME}_${{ github.run_id }}" >> $GITHUB_OUTPUT
+        echo "name=docker_scenario_test_data_${{ matrix.index }}_${{ github.run_id }}" >> $GITHUB_OUTPUT
     - name: Upload test files
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       if: failure()
@@ -52,4 +77,4 @@ jobs:
       run: |
         curl -X POST "${{ secrets.SLACK_WEBHOOK }}" \
              -H 'Content-Type: application/json' \
-             -d "{'scenarios': '${{ inputs.test_scenarios }}', 'failed_run_url': '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'}"
+             -d "{'scenarios': '${{ matrix.scenarios }}', 'failed_run_url': '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'}"
