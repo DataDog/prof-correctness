@@ -10,7 +10,7 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
-ENV EXECUTION_TIME_SEC="30"
+ENV EXECUTION_TIME_SEC="60"
 
 ENV DD_PROFILING_ENABLED="true"
 
@@ -25,5 +25,8 @@ ENV _DD_PROFILING_STACK_MAX_THREADS="5"
 # many threads. By reducing the interval, we get more samples and less noise.
 ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED=1
 ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_MAX_INTERVAL_US="10000"
+
+# Make sure we don't upload around the one minute mark.
+ENV DD_PROFILING_UPLOAD_INTERVAL=120
 
 CMD python main.py
