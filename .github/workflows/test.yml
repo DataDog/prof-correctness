@@ -58,7 +58,7 @@ jobs:
     # Perf event paranoid setting: Not useful to everyone
     - name: Update perf_event_paranoid settings
       run: sudo sysctl kernel.perf_event_paranoid=1
-    - name: Run Docker scenario
+    - name: Run Docker scenarios
       run: go test -timeout 20m -v -run TestScenarios
       env:
         # The matrix entry's regex is path-anchored (emitted by list-scenarios).
