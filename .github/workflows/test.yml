@@ -81,4 +81,4 @@ jobs:
       run: |
         curl -X POST "${{ secrets.SLACK_WEBHOOK }}" \
              -H 'Content-Type: application/json' \
-             -d "{'scenarios': '${{ matrix.regex }}', 'failed_run_url': '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'}"
+             -d "{'scenarios': '${{ matrix.names }}', 'failed_run_url': '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'}"

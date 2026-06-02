@@ -27,8 +27,16 @@ import (
 )
 
 type matrixEntry struct {
+	// Shard is a short human-readable label like "3/9". Used for the job name.
 	Shard string `json:"shard"`
+	// Regex is the path-anchored regex consumed by the Go test runner via
+	// TEST_SCENARIOS. It matches against filepath.Dir(dockerfile), e.g.
+	// "scenarios/python_cpu", so a bare name would substring-match.
 	Regex string `json:"regex"`
+	// Names is the comma-separated list of scenario directory names in this
+	// chunk. Used for human-facing surfaces (Slack notifications, artifact
+	// names) where the regex blob is unreadable.
+	Names string `json:"names"`
 }
 
 func run(pattern, scenariosDir string, chunkSize int) ([]matrixEntry, error) {
@@ -72,6 +80,7 @@ func run(pattern, scenariosDir string, chunkSize int) ([]matrixEntry, error) {
 		out[i] = matrixEntry{
 			Shard: fmt.Sprintf("%d/%d", i+1, len(chunks)),
 			Regex: "(^|/)(" + strings.Join(c, "|") + ")$",
+			Names: strings.Join(c, ", "),
 		}
 	}
 	return out, nil
