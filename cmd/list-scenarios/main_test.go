@@ -46,10 +46,12 @@ func TestRun_ChunksAlphabetically(t *testing.T) {
 		{
 			Shard: "1/2",
 			Regex: "(^|/)(python_asyncio_3.11|python_basic_3.10|python_basic_3.11)$",
+			Names: "python_asyncio_3.11, python_basic_3.10, python_basic_3.11",
 		},
 		{
 			Shard: "2/2",
 			Regex: "(^|/)(python_cpu|python_deep_stack_3.11)$",
+			Names: "python_cpu, python_deep_stack_3.11",
 		},
 	}
 	if !reflect.DeepEqual(got, want) {
@@ -72,6 +74,9 @@ func TestRun_SingleChunkWhenSmall(t *testing.T) {
 	}
 	if got[0].Regex != "(^|/)(dotnet_alloc|dotnet_wall)$" {
 		t.Errorf("regex: got %q", got[0].Regex)
+	}
+	if got[0].Names != "dotnet_alloc, dotnet_wall" {
+		t.Errorf("names: got %q", got[0].Names)
 	}
 }
 
