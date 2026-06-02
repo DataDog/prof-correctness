@@ -64,6 +64,15 @@ jobs:
         # The matrix entry's regex is path-anchored (emitted by list-scenarios).
         TEST_SCENARIOS: ${{ matrix.regex }}
         DDTRACE_INSTALL_URL: ${{ inputs.ddtrace_install_url }}
+        # Ship per-assertion/per-scenario metrics to Datadog staging only for
+        # main-branch pushes and the nightly schedule. PR runs stay silent so
+        # they don't pollute the timeseries with branch noise.
+        DD_PROF_CORRECTNESS_REPORT: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'schedule' }}
+        DD_API_KEY_STAGING: ${{ secrets.DD_API_KEY_STAGING }}
+        DD_SITE: datad0g.com
+        RUNNER_LABEL: ubuntu-8-core-latest
+        GIT_REPO: ${{ github.repository }}
+        GIT_BRANCH: ${{ github.ref_name }}
     - name: Create unique artifact name
       id: artifact_name
       if: failure()
