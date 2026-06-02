@@ -16,7 +16,36 @@ on:
         default: ''
 
 jobs:
+  list-scenarios:
+    runs-on: ubuntu-latest
+    outputs:
+      scenarios: ${{ steps.list.outputs.scenarios }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 1.25.1
+      - name: Compute matrix
+        id: list
+        # ./cmd/list-scenarios emits a JSON array of {shard, regex} entries,
+        # chunking scenarios CHUNK_SIZE at a time. Chunking (vs one-per-scenario)
+        # trades a bit of head-of-line blocking inside a chunk for:
+        #   - fewer runner-provisioning hits (paid once per chunk, not per scenario)
+        #   - free local-daemon layer caching: buildBaseImages runs once per chunk,
+        #     and the chunk's scenarios reuse the built base image.
+        run: |
+          matrix=$(go run ./cmd/list-scenarios -pattern '${{ inputs.test_scenarios }}' -chunk-size 3)
+          echo "scenarios=$matrix" >> "$GITHUB_OUTPUT"
+
   docker-scenarios:
+    needs: list-scenarios
+    name: scenarios ${{ matrix.shard }}
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        include: ${{ fromJSON(needs.list-scenarios.outputs.scenarios) }}
     # Larger runner (dedicated VM per job) to reduce scheduling noise that
     # skews profiler error margins.
     runs-on: ubuntu-8-core-latest
@@ -32,15 +61,15 @@ jobs:
     - name: Run Docker scenarios
       run: go test -timeout 20m -v -run TestScenarios
       env:
-        TEST_SCENARIOS: ${{ inputs.test_scenarios }}
+        # The matrix entry's regex is path-anchored (emitted by list-scenarios).
+        TEST_SCENARIOS: ${{ matrix.regex }}
         DDTRACE_INSTALL_URL: ${{ inputs.ddtrace_install_url }}
     - name: Create unique artifact name
       id: artifact_name
       if: failure()
       run: |
-        # Replace special characters with underscores to make it artifact-name safe
-        SAFE_NAME=$(echo "${{ inputs.test_scenarios }}" | sed 's/[^a-zA-Z0-9]/_/g')
-        echo "name=docker_scenario_test_data_${SAFE_NAME}_${{ github.run_id }}" >> $GITHUB_OUTPUT
+        SAFE_SHARD=$(echo "${{ matrix.shard }}" | sed 's/[^a-zA-Z0-9]/_/g')
+        echo "name=docker_scenario_test_data_${SAFE_SHARD}_${{ github.run_id }}" >> $GITHUB_OUTPUT
     - name: Upload test files
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       if: failure()
@@ -52,4 +81,4 @@ jobs:
       run: |
         curl -X POST "${{ secrets.SLACK_WEBHOOK }}" \
              -H 'Content-Type: application/json' \
-             -d "{'scenarios': '${{ inputs.test_scenarios }}', 'failed_run_url': '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'}"
+             -d "{'scenarios': '${{ matrix.regex }}', 'failed_run_url': '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'}"
