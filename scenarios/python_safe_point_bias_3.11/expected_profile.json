@@ -1,0 +1,21 @@
+{
+  "test_name": "python_safe_point_bias",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*slow_method",
+          "percent": 100,
+          "error_margin": 5
+        },
+        {
+          "regular_expression": ".*empty_method",
+          "percent": 0,
+          "error_margin": 5
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": true
+}

@@ -1,0 +1,326 @@
+{
+  "test_name": "python_many_threads",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-0"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-1"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-2"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-3"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-4"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-5"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-6"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-7"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+                "values": ["worker-8"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-9"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-10"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-11"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-12"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-13"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-14"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-15"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-16"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-17"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-18"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*worker",
+          "value": 1000000000,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": ["worker-19"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": true
+}

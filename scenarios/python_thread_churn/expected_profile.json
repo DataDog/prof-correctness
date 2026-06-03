@@ -1,0 +1,64 @@
+{
+  "test_name": "python_thread_churn",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*churn_worker",
+          "percent": 99,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "churn"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*",
+          "percent": 0,
+          "error_margin": 3,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Main Thread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*churn_worker",
+          "comment": "We only run that thread, so it should be 1s/s. However due to sampling errors, we need to allow for some margin. When running locally, we easily get 0.85s/s, but CI is much lower for some reason (0.65s/s) so I have to allow for that.",
+          "value": 1000000000,
+          "error_margin": 40,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "churn"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": true
+}
