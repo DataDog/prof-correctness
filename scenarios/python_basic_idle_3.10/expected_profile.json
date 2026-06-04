@@ -1,5 +1,5 @@
 {
-  "test_name": "python_basic",
+  "test_name": "python_basic_idle_3.10",
   "pprof-regex": "",
   "stacks": [
     {
@@ -8,8 +8,8 @@
       "stack-content": [
         {
           "regular_expression": "^\u003cmodule\u003e;target$",
-          "value": 1000000000,
-          "error_margin": 15,
+          "value": 2000000000,
+          "error_margin": 20,
           "labels": [
             {
               "key": "thread name",
@@ -22,8 +22,8 @@
         },
         {
           "regular_expression": ".*run;target$",
-          "value": 500000000,
-          "error_margin": 15,
+          "value": 1000000000,
+          "error_margin": 25,
           "labels": [
             {
               "key": "thread name",
@@ -37,5 +37,5 @@
       ]
     }
   ],
-  "scale_by_duration": true
+  "scale_by_duration": false
 }

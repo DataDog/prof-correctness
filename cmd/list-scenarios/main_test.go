@@ -29,9 +29,9 @@ func mkScenarios(t *testing.T, names []string) string {
 func TestRun_ChunksAlphabetically(t *testing.T) {
 	root := mkScenarios(t, []string{
 		// Intentionally unsorted to verify run() sorts before chunking.
-		"python_basic_3.11",
+		"python_basic_idle_3.11",
 		"python_asyncio_3.11",
-		"python_basic_3.10",
+		"python_basic_idle_3.10",
 		"python_cpu",
 		"python_deep_stack_3.11",
 		"node_heap", // must be filtered out by the pattern
@@ -45,8 +45,8 @@ func TestRun_ChunksAlphabetically(t *testing.T) {
 	want := []matrixEntry{
 		{
 			Shard: "1/2",
-			Regex: "(^|/)(python_asyncio_3.11|python_basic_3.10|python_basic_3.11)$",
-			Names: "python_asyncio_3.11, python_basic_3.10, python_basic_3.11",
+			Regex: "(^|/)(python_asyncio_3.11|python_basic_idle_3.10|python_basic_idle_3.11)$",
+			Names: "python_asyncio_3.11, python_basic_idle_3.10, python_basic_idle_3.11",
 		},
 		{
 			Shard: "2/2",
@@ -138,7 +138,7 @@ func TestRun_RegexMatchesIntendedDirAndOnlyThat(t *testing.T) {
 	root := mkScenarios(t, []string{
 		"python_cpu",
 		"python_cpu_sleep_sync_3.12",
-		"python_basic_3.11",
+		"python_basic_idle_3.11",
 	})
 	got, err := run("python.*", root, 3)
 	if err != nil {
@@ -155,7 +155,7 @@ func TestRun_RegexMatchesIntendedDirAndOnlyThat(t *testing.T) {
 	}{
 		{"scenarios/python_cpu", true},
 		{"scenarios/python_cpu_sleep_sync_3.12", true},
-		{"scenarios/python_basic_3.11", true},
+		{"scenarios/python_basic_idle_3.11", true},
 		// substring within another name must NOT match
 		{"scenarios/python_cpu_something_else", false},
 		// completely unrelated

@@ -2,8 +2,8 @@ ARG BASE_IMAGE="prof-python-3.11"
 FROM $BASE_IMAGE
 
 # Copy the Python target into the container
-COPY ./scenarios/python_basic_3.11/main.py \
-    ./scenarios/python_basic_3.11/requirements.txt \
+COPY ./scenarios/python_basic_idle_3.11/main.py \
+    ./scenarios/python_basic_idle_3.11/requirements.txt \
     /app/
 RUN chmod 644 /app/*
 
