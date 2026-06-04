@@ -14,6 +14,7 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 
 ENV EXECUTION_TIME_SEC="2"
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED=0
 
 # Run the program when the container starts
 CMD python main.py
