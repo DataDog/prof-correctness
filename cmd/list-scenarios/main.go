@@ -41,7 +41,7 @@ type matrixEntry struct {
 
 func run(pattern, scenariosDir string, chunkSize int) ([]matrixEntry, error) {
 	// Anchor the user pattern so e.g. "python" doesn't accidentally match
-	// "python_basic_3.10". The non-capturing group preserves precedence of
+	// "python_basic_idle_3.10". The non-capturing group preserves precedence of
 	// any alternation inside the user pattern.
 	re, err := regexp.Compile(`^(?:` + pattern + `)$`)
 	if err != nil {
