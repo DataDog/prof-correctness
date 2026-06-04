@@ -1,1 +1,41 @@
-../python_basic_3.11/expected_profile.json
+{
+  "test_name": "python_basic_3.10",
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;target$",
+          "value": 1000000000,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ],
+              "values_regex": ""
+            }
+          ]
+        },
+        {
+          "regular_expression": ".*run;target$",
+          "value": 500000000,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "Thread-1 (target)"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": true
+}
