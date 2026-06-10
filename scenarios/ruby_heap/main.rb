@@ -143,6 +143,12 @@ puts "Reshuffles enabled?: #{disable_reshuffle ? 'no' : 'yes'}"
 reshuffle_secs = 0.5
 gc_every_secs = 1
 sleep_budget = 0
+
+# Let Ruby clean all garbage and the dynamic sampling rate settle down before we start the benchmark to reduce
+# variance during the assertions
+GC.start
+sleep 1
+
 while (start = Process.clock_gettime(Process::CLOCK_MONOTONIC)) < end_time
   # Shift allocationg ordering a bit. In a real app there would naturally be some
   # variance to requests/tasks but here each loop looks much the same as the one before.
