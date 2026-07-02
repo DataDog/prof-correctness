@@ -1,17 +1,7 @@
 # jfr2pprof mapping for the Datadog java-profiler.
 #
-# Staged here (java-profiler repo) per PROF-15289 pending PROF-15290, which will
-# land the actual prof-correctness scenario and move/reference this file from
-# its Dockerfile. Consumed by the vendor-neutral `jfr2pprof` tool in
-# btraceio/jafar (PROF-15286): `jfr2pprof --config datadog.yaml --output out.pprof rec.jfr`
-#
-# Ground truth verified against:
-#  - ddprof-lib/src/main/cpp/jfrMetadata.cpp (event/field definitions, authoritative)
-#  - ddprof-lib/src/main/cpp/event.h, itimer.cpp, objectSampler.cpp, flightRecorder.cpp
-#    (weight semantics)
-#  - a real recording taken with agent options
-#    `cpu=10ms,wall=50ms,memory=524288:aL` against a live CPU+alloc workload,
-#    inspected via jafar's JFR MCP tools (jfr_list_types/jfr_query).
+# Consumed by the vendor-neutral `jfr2pprof` tool in btraceio/jafar (PROF-15286):
+# `jfr2pprof --config datadog.yaml --output out.pprof rec.jfr`
 #
 # IMPORTANT: the scenario that uses this mapping MUST start the profiler with
 # cpu=10ms and wall=50ms to match the `scale` constants below. If the scenario
