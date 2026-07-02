@@ -1,0 +1,39 @@
+{
+  "test_name": "java_cpu_alloc",
+  "scale_by_duration": true,
+  "note": "Validates the datadog.yaml jfr2pprof mapping (PROF-15289) end-to-end: cpu-samples and alloc-samples are the two profile types confirmed against a real recording; wall-time and live-heap are not asserted here (see datadog.yaml caveats). Stack regexes are method-qualified per frame.format ('{class}.{method}'); requires jfr2pprof >= 0.26.1 (fix for https://github.com/btraceio/jafar/issues/105, which had dropped method names from pprof Function.Name).",
+  "stacks": [
+    {
+      "profile-type": "cpu-samples",
+      "stack-content": [
+        {
+          "regular_expression": "^Workload\\$CpuBurner\\.run;Workload\\$CpuBurner\\.spin$",
+          "percent": 100,
+          "error_margin": 20,
+          "labels": [
+            {
+              "key": "thread name",
+              "values_regex": "cpu-burner"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-samples",
+      "stack-content": [
+        {
+          "regular_expression": "^Workload\\$AllocGenerator\\.run;Workload\\$AllocGenerator\\.allocate$",
+          "percent": 100,
+          "error_margin": 20,
+          "labels": [
+            {
+              "key": "thread name",
+              "values_regex": "alloc-generator"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

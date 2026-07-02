@@ -1,0 +1,137 @@
+# jfr2pprof mapping for the Datadog java-profiler.
+#
+# Staged here (java-profiler repo) per PROF-15289 pending PROF-15290, which will
+# land the actual prof-correctness scenario and move/reference this file from
+# its Dockerfile. Consumed by the vendor-neutral `jfr2pprof` tool in
+# btraceio/jafar (PROF-15286): `jfr2pprof --config datadog.yaml --output out.pprof rec.jfr`
+#
+# Ground truth verified against:
+#  - ddprof-lib/src/main/cpp/jfrMetadata.cpp (event/field definitions, authoritative)
+#  - ddprof-lib/src/main/cpp/event.h, itimer.cpp, objectSampler.cpp, flightRecorder.cpp
+#    (weight semantics)
+#  - a real recording taken with agent options
+#    `cpu=10ms,wall=50ms,memory=524288:aL` against a live CPU+alloc workload,
+#    inspected via jafar's JFR MCP tools (jfr_list_types/jfr_query).
+#
+# IMPORTANT: the scenario that uses this mapping MUST start the profiler with
+# cpu=10ms and wall=50ms to match the `scale` constants below. If the scenario
+# changes those intervals, the `scale` values here must be updated to match
+# (jfr2pprof has no way to read jdk.ActiveSetting at runtime; scale is a fixed
+# per-mapping constant, not derived from the recording).
+
+frame:
+  format: "{class}.{method}"
+  includeLineNumbers: false
+
+profiles:
+  - type: cpu-time
+    event: datadog.ExecutionSample
+    stackField: stackTrace
+    values:
+      - name: cpu-samples
+        unit: count
+        field: "@count"
+      # CPU weight is always 1 (ITimer/CTimer/perf_events never set
+      # ExecutionEvent::_weight — see event.h default and itimer.cpp/
+      # ctimer_linux.cpp/perfEvents_linux.cpp, none assign _weight). One
+      # sample == one configured cpu interval of attributed CPU time.
+      - name: cpu-time
+        unit: nanoseconds
+        field: weight
+        scale: 10000000 # 10ms, must match the scenario's `cpu=` interval
+    labels:
+      - jfr: eventThread.osThreadId
+        pprof: "thread id"
+      - jfr: eventThread.javaName
+        pprof: "thread name"
+
+  - type: wall-time
+    event: datadog.MethodSample
+    stackField: stackTrace
+    values:
+      - name: wall-samples
+        unit: count
+        field: "@count"
+      # Unlike CPU, wall weight CAN exceed 1 (wallClock.cpp coalesces
+      # multiple missed intervals for blocked/waiting threads into a single
+      # recorded sample via consumeUnownedBlockedWeight()). Treating weight
+      # as a plain multiplier of the interval is an approximation of actual
+      # wall time represented, not an exact figure.
+      #
+      # CAVEAT: not empirically observed firing in the local macOS PoC
+      # recording (0 datadog.MethodSample events were produced despite
+      # wall=50ms being active — both workload threads stayed RUNNABLE for
+      # the whole run, so WallClock had no blocked/waiting samples to
+      # attribute). Field names/shape below are schema-verified against
+      # jfrMetadata.cpp only; re-validate weight values once this fires on a
+      # thread with genuine blocking (e.g. add I/O or lock contention to the
+      # scenario workload, or run on Linux CI).
+      - name: wall-time
+        unit: nanoseconds
+        field: weight
+        scale: 50000000 # 50ms, must match the scenario's `wall=` interval
+    labels:
+      - jfr: eventThread.osThreadId
+        pprof: "thread id"
+      - jfr: eventThread.javaName
+        pprof: "thread name"
+
+  - type: allocation
+    event: datadog.ObjectSample
+    stackField: stackTrace
+    values:
+      - name: alloc-samples
+        unit: count
+        field: "@count"
+      # KNOWN LIMITATION: the true unbiased allocation-volume estimator is
+      # `size * weight`, where weight = 1 / (1 - exp(-size / interval)) is
+      # the inverse-transform Poisson-thinning correction applied in
+      # objectSampler.cpp (larger objects are sampled more often, so their
+      # contribution must be down-weighted to estimate total bytes
+      # allocated). jfr2pprof's ValueSpec only supports a single field path
+      # times a static scale constant — it cannot multiply two runtime
+      # fields together. Mapping to raw `size` here is therefore a
+      # DIRECTIONALLY-CORRECT PROXY, not a bias-corrected byte estimate; it
+      # systematically undercounts allocation volume for larger object
+      # classes relative to `size * weight`. Revisit once jfr2pprof supports
+      # a product-of-fields value spec (tracked as a follow-up, not yet
+      # filed as a sub-task).
+      - name: alloc-size
+        unit: bytes
+        field: size
+    labels:
+      - jfr: eventThread.osThreadId
+        pprof: "thread id"
+      - jfr: eventThread.javaName
+        pprof: "thread name"
+      - jfr: objectClass.name.string
+        pprof: "class"
+
+  - type: live-heap
+    event: datadog.HeapLiveObject
+    stackField: stackTrace
+    values:
+      - name: live-objects
+        unit: count
+        field: "@count"
+      # Same product-of-fields limitation as allocation above: HeapLiveObject
+      # carries its own `weight` (float, computed in flightRecorder.cpp as
+      # (alloc.weight * alloc.size + skipped) / alloc.size — an average
+      # retained-weight per survivor, not directly bytes). Mapping to raw
+      # `size` is the same directionally-correct, bias-uncorrected proxy.
+      #
+      # CAVEAT: datadog.HeapLiveObject had 0 events in the local PoC
+      # recording (8s run, memory=524288:aL) — liveness tracking needs
+      # allocations to survive past a GC/liveness epoch, which the short
+      # workload didn't reach. Schema is verified against jfrMetadata.cpp
+      # only; re-validate field values on a longer-running scenario.
+      - name: live-size
+        unit: bytes
+        field: size
+    labels:
+      - jfr: eventThread.osThreadId
+        pprof: "thread id"
+      - jfr: eventThread.javaName
+        pprof: "thread name"
+      - jfr: objectClass.name.string
+        pprof: "class"
