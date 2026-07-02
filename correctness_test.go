@@ -75,6 +75,10 @@ func TestDDProfScenarios(t *testing.T) {
 	testScenarios(t, ".*ddprof.*")
 }
 
+func TestJFRScenarios(t *testing.T) {
+	testScenarios(t, ".*jfr.*")
+}
+
 func TestPHPScenarios(t *testing.T) {
 	testScenarios(t, ".*php.*")
 }
