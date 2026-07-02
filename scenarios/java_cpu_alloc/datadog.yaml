@@ -1,6 +1,6 @@
 # jfr2pprof mapping for the Datadog java-profiler.
 #
-# Consumed by the vendor-neutral `jfr2pprof` tool in btraceio/jafar (PROF-15286):
+# Consumed by the vendor-neutral `jfr2pprof` tool in btraceio/jafar:
 # `jfr2pprof --config datadog.yaml --output out.pprof rec.jfr`
 #
 # IMPORTANT: the scenario that uses this mapping MUST start the profiler with

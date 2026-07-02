@@ -1,7 +1,7 @@
 {
   "test_name": "java_cpu_alloc",
   "scale_by_duration": true,
-  "note": "Validates the datadog.yaml jfr2pprof mapping (PROF-15289) end-to-end: cpu-samples and alloc-samples are the two profile types confirmed against a real recording; wall-time and live-heap are not asserted here (see datadog.yaml caveats). Stack regexes are method-qualified per frame.format ('{class}.{method}'); requires jfr2pprof >= 0.26.1 (fix for https://github.com/btraceio/jafar/issues/105, which had dropped method names from pprof Function.Name).",
+  "note": "Validates the datadog.yaml jfr2pprof mapping end-to-end: cpu-samples and alloc-samples are the two profile types confirmed against a real recording; wall-time and live-heap are not asserted here (see datadog.yaml caveats). Stack regexes are method-qualified per frame.format ('{class}.{method}'); requires jfr2pprof >= 0.26.1 (fix for https://github.com/btraceio/jafar/issues/105, which had dropped method names from pprof Function.Name).",
   "stacks": [
     {
       "profile-type": "cpu-samples",

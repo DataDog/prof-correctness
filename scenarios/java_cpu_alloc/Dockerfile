@@ -1,11 +1,11 @@
 # Multi-stage scenario for the Datadog java-profiler.
 #
-# Stage 1 builds jfr2pprof (btraceio/jafar, PROF-15286) from source, pinned to a
+# Stage 1 builds jfr2pprof (btraceio/jafar) from source, pinned to a
 # known-good commit, since it is not yet published as a Maven Central artifact
 # or a GitHub release asset.
 # Stage 2 downloads the java-profiler native agent from a GitHub release,
 # compiles the workload, runs it under the agent to record a .jfr, then
-# converts that recording to pprof via jfr2pprof + datadog.yaml (PROF-15289).
+# converts that recording to pprof via jfr2pprof + datadog.yaml.
 FROM eclipse-temurin:25-jdk AS jfr2pprof-build
 
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates curl \
