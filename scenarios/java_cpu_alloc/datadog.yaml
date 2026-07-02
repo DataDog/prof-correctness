@@ -47,15 +47,6 @@ profiles:
       # recorded sample via consumeUnownedBlockedWeight()). Treating weight
       # as a plain multiplier of the interval is an approximation of actual
       # wall time represented, not an exact figure.
-      #
-      # CAVEAT: not empirically observed firing in the local macOS PoC
-      # recording (0 datadog.MethodSample events were produced despite
-      # wall=50ms being active — both workload threads stayed RUNNABLE for
-      # the whole run, so WallClock had no blocked/waiting samples to
-      # attribute). Field names/shape below are schema-verified against
-      # jfrMetadata.cpp only; re-validate weight values once this fires on a
-      # thread with genuine blocking (e.g. add I/O or lock contention to the
-      # scenario workload, or run on Linux CI).
       - name: wall-time
         unit: nanoseconds
         field: weight
@@ -109,12 +100,6 @@ profiles:
       # (alloc.weight * alloc.size + skipped) / alloc.size — an average
       # retained-weight per survivor, not directly bytes). Mapping to raw
       # `size` is the same directionally-correct, bias-uncorrected proxy.
-      #
-      # CAVEAT: datadog.HeapLiveObject had 0 events in the local PoC
-      # recording (8s run, memory=524288:aL) — liveness tracking needs
-      # allocations to survive past a GC/liveness epoch, which the short
-      # workload didn't reach. Schema is verified against jfrMetadata.cpp
-      # only; re-validate field values on a longer-running scenario.
       - name: live-size
         unit: bytes
         field: size
