@@ -7,7 +7,7 @@
       "profile-type": "cpu-samples",
       "stack-content": [
         {
-          "regular_expression": "^Workload\\$CpuBurner\\.run;Workload\\$CpuBurner\\.spin$",
+          "regular_expression": "^CpuAllocWorkload\\$CpuBurner\\.run;CpuAllocWorkload\\$CpuBurner\\.spin$",
           "percent": 100,
           "error_margin": 20,
           "labels": [
@@ -23,7 +23,7 @@
       "profile-type": "alloc-samples",
       "stack-content": [
         {
-          "regular_expression": "^Workload\\$AllocGenerator\\.run;Workload\\$AllocGenerator\\.allocate$",
+          "regular_expression": "^CpuAllocWorkload\\$AllocGenerator\\.run;CpuAllocWorkload\\$AllocGenerator\\.allocate$",
           "percent": 100,
           "error_margin": 20,
           "labels": [

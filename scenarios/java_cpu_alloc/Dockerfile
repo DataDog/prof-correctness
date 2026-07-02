@@ -45,8 +45,8 @@ RUN ./gradlew --no-daemon \
 
 FROM eclipse-temurin:25-jdk AS workload-build
 
-COPY ./scenarios/java_cpu_alloc/Workload.java /build/Workload.java
-RUN mkdir -p /build/classes && javac -d /build/classes /build/Workload.java
+COPY ./scenarios/java_cpu_alloc/CpuAllocWorkload.java /build/CpuAllocWorkload.java
+RUN mkdir -p /build/classes && javac -d /build/classes /build/CpuAllocWorkload.java
 
 FROM eclipse-temurin:25-jre AS runtime
 

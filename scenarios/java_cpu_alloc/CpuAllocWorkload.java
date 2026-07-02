@@ -1,3 +1,5 @@
+import java.util.concurrent.locks.LockSupport;
+
 /**
  * Deterministic two-thread workload for the java_cpu_alloc prof-correctness scenario.
  *
@@ -6,7 +8,7 @@
  * subclasses (not lambdas/anonymous classes) keep frame names stable across
  * JDK versions for the expected_profile.json regexes.
  */
-public class Workload {
+public class CpuAllocWorkload {
 
     static volatile boolean running = true;
     static volatile long sink = 0;
@@ -49,7 +51,7 @@ public class Workload {
                 for (int i = 0; i < BATCH_SIZE; i++) {
                     sink += allocate().length;
                 }
-                java.util.concurrent.locks.LockSupport.parkNanos(PARK_NANOS);
+                LockSupport.parkNanos(PARK_NANOS);
             }
         }
 
