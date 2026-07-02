@@ -1,0 +1,17 @@
+{
+  "test_name": "java_cpu_jfr",
+  "pprof-regex": ".*_cpu\\.pprof$",
+  "stacks": [
+    {
+      "profile-type": "cpu",
+      "stack-content": [
+        {
+          "regular_expression": ".*DummyApp\\.fibonacci.*",
+          "percent": 95,
+          "error_margin": 15
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
