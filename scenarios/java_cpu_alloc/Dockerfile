@@ -1,54 +1,16 @@
 # Multi-stage scenario for the Datadog java-profiler.
 #
-# Stage 1 builds jfr2pprof (btraceio/jafar) from source, pinned to a
-# known-good commit, since it is not yet published as a Maven Central artifact
-# or a GitHub release asset.
+# Stage 1 compiles the workload.
 # Stage 2 downloads the java-profiler native agent from a GitHub release,
-# compiles the workload, runs it under the agent to record a .jfr, then
-# converts that recording to pprof via jfr2pprof + datadog.yaml.
-FROM eclipse-temurin:25-jdk AS jfr2pprof-build
-
-RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# jfr2pprof's `parser` module dependency declares a Java 8 toolchain and
-# jfr2pprof itself declares Java 21; jafar's settings.gradle doesn't wire up
-# the foojay-resolver plugin, so Gradle can't auto-provision either -
-# install both explicitly and point Gradle at them below.
-RUN ARCH="$(dpkg --print-architecture)" \
-    && case "$ARCH" in \
-         amd64) JDK_ARCH=x64 ;; \
-         arm64) JDK_ARCH=aarch64 ;; \
-         *) echo "unsupported arch: $ARCH" >&2; exit 1 ;; \
-       esac \
-    && mkdir -p /opt/jdk8 /opt/jdk21 \
-    && curl -fsSL "https://api.adoptium.net/v3/binary/latest/8/ga/linux/${JDK_ARCH}/jdk/hotspot/normal/eclipse" \
-       | tar xz -C /opt/jdk8 --strip-components=1 \
-    && curl -fsSL "https://api.adoptium.net/v3/binary/latest/21/ga/linux/${JDK_ARCH}/jdk/hotspot/normal/eclipse" \
-       | tar xz -C /opt/jdk21 --strip-components=1
-
-WORKDIR /build
-# Pinned to the jafar release that fixes https://github.com/btraceio/jafar/issues/105
-# (frame.format was parsed but never applied to pprof Function.Name).
-ARG JAFAR_COMMIT=8dde4267210952b2e3347c72efd4cd54833e903d
-RUN git init . \
-    && git remote add origin https://github.com/btraceio/jafar.git \
-    && git fetch --depth 1 origin ${JAFAR_COMMIT} \
-    && git checkout FETCH_HEAD
-
-RUN ./gradlew --no-daemon \
-      -Porg.gradle.java.installations.paths=/opt/jdk8,/opt/jdk21 \
-      -Porg.gradle.java.installations.auto-detect=false \
-      -Porg.gradle.java.installations.auto-download=false \
-      :jfr2pprof:shadowJar \
-    && cp jfr2pprof/build/libs/jfr2pprof-*-all.jar /build/jfr2pprof.jar
-
+# runs the workload under the agent to record a .jfr, then converts that
+# recording to pprof via jfr2pprof (btraceio/jafar, launched through jbang's
+# jafar-tools-latest@btraceio alias) + datadog.yaml.
 FROM eclipse-temurin:25-jdk AS workload-build
 
 COPY ./scenarios/java_cpu_alloc/CpuAllocWorkload.java /build/CpuAllocWorkload.java
 RUN mkdir -p /build/classes && javac -d /build/classes /build/CpuAllocWorkload.java
 
-FROM eclipse-temurin:25-jre AS runtime
+FROM eclipse-temurin:25-jdk AS runtime
 
 WORKDIR /app
 
@@ -71,7 +33,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
     && curl -fsSL -o /app/libjavaProfiler.so \
        "https://github.com/DataDog/java-profiler/releases/download/${TAG}/libjavaProfiler_linux-${SO_ARCH}.so"
 
-COPY --from=jfr2pprof-build /build/jfr2pprof.jar /app/jfr2pprof.jar
+# jfr2pprof, via jbang's jafar-tools-latest@btraceio alias (btraceio/jbang-catalog).
+# Resolved at build time so run.sh doesn't need network access; jbang re-checks
+# for a newer snapshot on every `jbang app install`/first run of a given
+# coordinate but is otherwise offline once cached under JBANG_DIR.
+# JBANG_DIR is pinned to a fixed, world-writable path (rather than the
+# default ~/.jbang) because the container is run as an arbitrary non-root
+# uid:gid (see prof-correctness's -u flag), which has no /etc/passwd entry
+# and thus no writable $HOME. HOME is likewise repointed here since jbang's
+# Maven resolver falls back to $HOME/.m2 regardless of JBANG_DIR.
+ENV JBANG_DIR="/opt/jbang"
+ENV HOME="${JBANG_DIR}"
+RUN apt-get update && apt-get install -y --no-install-recommends unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -Ls https://sh.jbang.dev | bash -s - app setup \
+    && chmod -R a+rwX "${JBANG_DIR}"
+ENV PATH="${JBANG_DIR}/bin:${PATH}"
+# jfr2pprof has no --help; running it bare still resolves/caches the jbang
+# dependency, it just exits non-zero after printing its usage string.
+RUN jbang trust add https://github.com/btraceio/ \
+    && (jbang jafar-tools-latest@btraceio jfr2pprof || true) \
+    && chmod -R a+rwX "${JBANG_DIR}"
+
 COPY --from=workload-build /build/classes /app
 COPY ./scenarios/java_cpu_alloc/datadog.yaml /app/datadog.yaml
 COPY ./scenarios/java_cpu_alloc/run.sh /app/run.sh

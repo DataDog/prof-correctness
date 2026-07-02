@@ -9,4 +9,4 @@ REC=/tmp/rec.jfr
 java "-agentpath:/app/libjavaProfiler.so=start,cpu=10ms,memory=524288:aL,jfr,file=${REC}" \
     -cp /app CpuAllocWorkload
 
-java -jar /app/jfr2pprof.jar --config /app/datadog.yaml --output /app/data/profile.pprof "${REC}"
+jbang jafar-tools-latest@btraceio jfr2pprof --config /app/datadog.yaml --output /app/data/profile.pprof "${REC}"
