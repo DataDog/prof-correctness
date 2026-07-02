@@ -52,9 +52,13 @@ FROM eclipse-temurin:25-jre AS runtime
 
 WORKDIR /app
 
-# Datadog java-profiler native agent (must match a released libjavaProfiler.so).
-ARG JAVA_PROFILER_VERSION=1.45.0
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
+# Datadog java-profiler native agent. Defaults to the latest GitHub release;
+# pass --build-arg JAVA_PROFILER_TAG=v_1.45.0 to pin a specific candidate
+# (e.g. to bisect a regression), matching how the other prof-correctness
+# profilers (ddprof's latest-rc tag, dd-trace-py/-rb/-js's unpinned/master
+# dependencies) default to latest with an explicit pin as the escape hatch.
+ARG JAVA_PROFILER_TAG=""
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && ARCH="$(dpkg --print-architecture)" \
     && case "$ARCH" in \
@@ -62,8 +66,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
          arm64) SO_ARCH=arm64 ;; \
          *) echo "unsupported arch: $ARCH" >&2; exit 1 ;; \
        esac \
+    && TAG="${JAVA_PROFILER_TAG:-$(curl -fsSL https://api.github.com/repos/DataDog/java-profiler/releases/latest | grep -m1 '"tag_name"' | cut -d'"' -f4)}" \
+    && echo "Using java-profiler release ${TAG}" \
     && curl -fsSL -o /app/libjavaProfiler.so \
-       "https://github.com/DataDog/java-profiler/releases/download/v_${JAVA_PROFILER_VERSION}/libjavaProfiler_linux-${SO_ARCH}.so"
+       "https://github.com/DataDog/java-profiler/releases/download/${TAG}/libjavaProfiler_linux-${SO_ARCH}.so"
 
 COPY --from=jfr2pprof-build /build/jfr2pprof.jar /app/jfr2pprof.jar
 COPY --from=workload-build /build/classes /app
