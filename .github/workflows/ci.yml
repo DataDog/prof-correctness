@@ -60,6 +60,11 @@ jobs:
     with:
       test_scenarios: python.*
     secrets: inherit
+  java:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: java.*
+    secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
     with:
