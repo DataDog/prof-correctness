@@ -1,4 +1,4 @@
-FROM node:18-bullseye
+FROM node:22-bullseye
 
 # Give everyone write permissions in /app because profile is written here
 RUN mkdir /app && chmod a+rwX /app
