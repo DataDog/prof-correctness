@@ -77,6 +77,54 @@ func TestPublicAPI_HappyPath(t *testing.T) {
 	}
 }
 
+// fakeSink captures every assertion the analysis pipeline emits so tests can
+// assert that the metrics sink is wired correctly.
+type fakeSink struct {
+	events []analysis.AssertionEvent
+}
+
+func (f *fakeSink) RecordAssertion(ev analysis.AssertionEvent) {
+	f.events = append(f.events, ev)
+}
+
+func TestPublicAPI_MetricsSink_EmitsPerAssertion(t *testing.T) {
+	dir := t.TempDir()
+	writeMinimalPprof(t, dir, "hot_function", 10_000_000)
+	jsonPath := writeJSON(t, dir, `{
+		"test_name": "api-sink",
+		"stacks": [{
+			"profile-type": "cpu-time",
+			"stack-content": [
+				{"regular_expression": "^hot_function$", "value": 10000000, "error_margin": 0},
+				{"regular_expression": "^nope$", "value": 1, "error_margin": 0}
+			]
+		}]
+	}`)
+
+	sink := &fakeSink{}
+	r := analysis.NewStdReporter(os.Stdout, os.Stderr)
+	analysis.Run(r, func() {
+		analysis.AnalyzeResultsWithOpts(r, jsonPath, dir, analysis.AnalyzeOptions{
+			Sink: sink, Scenario: "unit-test", Language: "python",
+		})
+	})
+	if len(sink.events) != 2 {
+		t.Fatalf("expected 2 assertion events (one per stack-content entry); got %d", len(sink.events))
+	}
+	for _, ev := range sink.events {
+		if ev.Scenario != "unit-test" || ev.Language != "python" || ev.ProfileType != "cpu-time" || ev.Kind != "value" {
+			t.Errorf("unexpected event tags: %+v", ev)
+		}
+	}
+	// First assertion passes (exact match), second fails (expected value=1 vs actual ~10M).
+	if !sink.events[0].Passed {
+		t.Errorf("expected first assertion to pass; ev=%+v", sink.events[0])
+	}
+	if sink.events[1].Passed {
+		t.Errorf("expected second assertion to fail; ev=%+v", sink.events[1])
+	}
+}
+
 // TestPublicAPI_FailingAssertion confirms Failed() is set when the profile
 // doesn't match expectations (Errorf path, no Fatalf).
 func TestPublicAPI_FailingAssertion(t *testing.T) {

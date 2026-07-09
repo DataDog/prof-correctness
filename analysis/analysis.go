@@ -420,7 +420,7 @@ func checkLabels(r Reporter, labels map[string][]string, expectedLabels []Labels
 	return true
 }
 
-func assertStackWithFailureHandling(r Reporter, prof []StackSample, regexpStack string, valueOpt Optional[float64], pctOpt Optional[int64], epsilonPct int64, labels []Labels, allowFailure bool, hasFailures *bool) (matching int64) {
+func assertStackWithFailureHandling(r Reporter, prof []StackSample, regexpStack string, valueOpt Optional[float64], pctOpt Optional[int64], epsilonPct int64, labels []Labels, allowFailure bool, hasFailures *bool, profileType string, opts AnalyzeOptions) (matching int64) {
 	rx, err := regexp.Compile(regexpStack)
 	if err != nil {
 		r.Fatalf("Error compiling regex: %v, %s", err, regexpStack)
@@ -442,7 +442,8 @@ func assertStackWithFailureHandling(r Reporter, prof []StackSample, regexpStack 
 
 	if value, ok := valueOpt.Value(); ok {
 		errorPct := relDiff(float64(matching), value)
-		if errorPct > float64(epsilonPct) {
+		assertionPassed := errorPct <= float64(epsilonPct)
+		if !assertionPassed {
 			if allowFailure {
 				r.Logf("\033[33mAssertion failed (allowed): stack '%s' (labels=%v) should have been %.1f +/- %d%% of the profile but was %d with %.1f%% error\033[0m", regexpStack, labels, value, epsilonPct, matching, errorPct)
 				*hasFailures = true
@@ -452,11 +453,20 @@ func assertStackWithFailureHandling(r Reporter, prof []StackSample, regexpStack 
 		} else {
 			r.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is %.1f +/- %d%% of the profile (was %d with %.1f%% error)\033[0m", regexpStack, labels, value, epsilonPct, matching, errorPct)
 		}
+		if opts.Sink != nil {
+			opts.Sink.RecordAssertion(AssertionEvent{
+				Scenario: opts.Scenario, Language: opts.Language,
+				ProfileType: profileType, Kind: "value",
+				ErrorPct: errorPct, ErrorMargin: epsilonPct,
+				Passed: assertionPassed, AllowFailure: allowFailure,
+			})
+		}
 	}
 
 	if pct, ok := pctOpt.Value(); ok {
 		diff := absDiff(pct, actualPct)
-		if diff > epsilonPct {
+		assertionPassed := diff <= epsilonPct
+		if !assertionPassed {
 			if allowFailure {
 				r.Logf("\033[33mAssertion failed (allowed): stack '%s' (labels=%v) should have been %d%% +/- %d%% of the profile but was %d%% with %d%% error\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
 				*hasFailures = true
@@ -466,11 +476,19 @@ func assertStackWithFailureHandling(r Reporter, prof []StackSample, regexpStack 
 		} else {
 			r.Logf("\033[32mAssertion succeeded: stack '%s' (labels=%v) is %d%% +/- %d%% of the profile (was %d%% with %d%% error)\033[0m", regexpStack, labels, pct, epsilonPct, actualPct, diff)
 		}
+		if opts.Sink != nil {
+			opts.Sink.RecordAssertion(AssertionEvent{
+				Scenario: opts.Scenario, Language: opts.Language,
+				ProfileType: profileType, Kind: "percent",
+				ErrorPct: float64(diff), ErrorMargin: epsilonPct,
+				Passed: assertionPassed, AllowFailure: allowFailure,
+			})
+		}
 	}
 	return
 }
 
-func analyzeProfDataWithFailureHandling(r Reporter, prof []StackSample, typedStacks TypedStacks, durationSecs float64, allowFailure bool) {
+func analyzeProfDataWithFailureHandling(r Reporter, prof []StackSample, typedStacks TypedStacks, durationSecs float64, allowFailure bool, opts AnalyzeOptions) {
 	var matchingSum int64 = 0
 	var hasFailures bool = false
 
@@ -489,7 +507,7 @@ func analyzeProfDataWithFailureHandling(r Reporter, prof []StackSample, typedSta
 			errorMargin = stackErrorMargin
 		}
 
-		matching := assertStackWithFailureHandling(r, prof, regexpStack, valueOpt, percent, errorMargin, stack.Labels, allowFailure, &hasFailures)
+		matching := assertStackWithFailureHandling(r, prof, regexpStack, valueOpt, percent, errorMargin, stack.Labels, allowFailure, &hasFailures, typedStacks.ProfileType, opts)
 		matchingSum += matching
 		// TODO: add an assertion on counts (e.g. number of allocations), not just summed values.
 	}
@@ -501,7 +519,8 @@ func analyzeProfDataWithFailureHandling(r Reporter, prof []StackSample, typedSta
 			value = value * durationSecs
 		}
 		errorPct := relDiff(float64(matchingSum), value)
-		if errorPct > float64(typedStacks.ErrorMargin) {
+		assertionPassed := errorPct <= float64(typedStacks.ErrorMargin)
+		if !assertionPassed {
 			if allowFailure {
 				r.Logf("\033[33mAssertion failed (allowed): profile '%s' should have total matching sum of %1.f +/- %d%% but was %d with %.1f%% error\033[0m", typedStacks.ProfileType, value, typedStacks.ErrorMargin, matchingSum, errorPct)
 				hasFailures = true
@@ -510,6 +529,14 @@ func analyzeProfDataWithFailureHandling(r Reporter, prof []StackSample, typedSta
 			}
 		} else {
 			r.Logf("\033[32mAssertion succeeded: profile '%s' has total matching sum of %1.f +/- %d%% (was %d with %.1f%% error)\033[0m", typedStacks.ProfileType, value, typedStacks.ErrorMargin, matchingSum, errorPct)
+		}
+		if opts.Sink != nil {
+			opts.Sink.RecordAssertion(AssertionEvent{
+				Scenario: opts.Scenario, Language: opts.Language,
+				ProfileType: typedStacks.ProfileType, Kind: "matching_sum",
+				ErrorPct: errorPct, ErrorMargin: typedStacks.ErrorMargin,
+				Passed: assertionPassed, AllowFailure: allowFailure,
+			})
 		}
 	}
 
@@ -663,6 +690,11 @@ func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
 // stacks observed in the profile is written next to the pprof file (useful to
 // bootstrap an expected_profile.json).
 func AnalyzePprofFile(r Reporter, pprofFile string, typedStacks TypedStacks, testName string, captureData bool, scaleByDuration bool, allowFailure bool) {
+	analyzePprofFileWithSink(r, pprofFile, typedStacks, testName, captureData, scaleByDuration, allowFailure, AnalyzeOptions{})
+}
+
+// analyzePprofFileWithSink is the metrics-aware variant. opts.Sink may be nil.
+func analyzePprofFileWithSink(r Reporter, pprofFile string, typedStacks TypedStacks, testName string, captureData bool, scaleByDuration bool, allowFailure bool, opts AnalyzeOptions) {
 	prof, err := ReadPprofFile(pprofFile)
 	if err != nil {
 		r.Fatalf("Error reading file %s", pprofFile)
@@ -681,12 +713,48 @@ func AnalyzePprofFile(r Reporter, pprofFile string, typedStacks TypedStacks, tes
 		profileDuration = 0
 	}
 	typedProf := getProfileType(r, prof, typedStacks.ProfileType)
-	analyzeProfDataWithFailureHandling(r, typedProf, typedStacks, profileDuration, allowFailure)
+	analyzeProfDataWithFailureHandling(r, typedProf, typedStacks, profileDuration, allowFailure, opts)
+}
+
+// AssertionEvent is what the metrics sink receives per assertion. Defined
+// here (not in reporter/) so the analysis package has no outbound dep.
+type AssertionEvent struct {
+	Scenario     string
+	Language     string
+	ProfileType  string
+	Kind         string // "value" | "percent" | "matching_sum"
+	ErrorPct     float64
+	ErrorMargin  int64
+	Passed       bool
+	AllowFailure bool
+}
+
+// MetricsSink is the subset of `reporter.MetricsRecorder` that analysis
+// needs. Callers pass either a real recorder or nil; nil disables emission.
+type MetricsSink interface {
+	RecordAssertion(AssertionEvent)
+}
+
+// AnalyzeOptions carries optional context that the metrics sink needs in
+// order to tag each assertion with the right scenario/language.
+type AnalyzeOptions struct {
+	Sink     MetricsSink
+	Scenario string // e.g. "python_many_threads"
+	Language string // e.g. "python"
 }
 
 // AnalyzeResults loads the expected_profile.json at jsonFilePath and asserts
 // every pprof file under pprofFolder matches it. Failures are reported via r.
+//
+// This is the backwards-compatible wrapper used by external callers (e.g.
+// the GitHub Action entrypoint). It does not emit metrics.
 func AnalyzeResults(r Reporter, jsonFilePath string, pprofFolder string) {
+	AnalyzeResultsWithOpts(r, jsonFilePath, pprofFolder, AnalyzeOptions{})
+}
+
+// AnalyzeResultsWithOpts is the metrics-aware variant. When opts.Sink is nil,
+// behaviour is identical to AnalyzeResults.
+func AnalyzeResultsWithOpts(r Reporter, jsonFilePath, pprofFolder string, opts AnalyzeOptions) {
 	stackTestData, err := ReadJSONFile(jsonFilePath)
 	if err != nil {
 		r.Fatalf("Error opening file %s: %v", jsonFilePath, err)
@@ -736,7 +804,7 @@ func AnalyzeResults(r Reporter, jsonFilePath string, pprofFolder string) {
 					r.Logf("Analyzing first profile with failure tolerance enabled: %s", filepath.Base(file))
 				}
 
-				AnalyzePprofFile(r, file, typedStacks, stackTestData.TestName, !fileAlreadyProcessed, stackTestData.ScaleByDuration, allowFailure)
+				analyzePprofFileWithSink(r, file, typedStacks, stackTestData.TestName, !fileAlreadyProcessed, stackTestData.ScaleByDuration, allowFailure, opts)
 			}
 		}
 	}
