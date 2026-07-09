@@ -686,7 +686,12 @@ func AnalyzePprofFile(r Reporter, pprofFile string, typedStacks TypedStacks, tes
 
 // AnalyzeResults loads the expected_profile.json at jsonFilePath and asserts
 // every pprof file under pprofFolder matches it. Failures are reported via r.
+// Any *.jfr files in pprofFolder are converted to per-metric pprof files
+// before the analysis loop runs.
 func AnalyzeResults(r Reporter, jsonFilePath string, pprofFolder string) {
+	// Convert any JFR files to pprof before the analysis loop.
+	convertJFRFiles(r, pprofFolder)
+
 	stackTestData, err := ReadJSONFile(jsonFilePath)
 	if err != nil {
 		r.Fatalf("Error opening file %s: %v", jsonFilePath, err)
