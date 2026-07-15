@@ -1,0 +1,2 @@
+ddtrace
+gevent>=24.0

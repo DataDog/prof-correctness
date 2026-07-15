@@ -1,0 +1,21 @@
+{
+  "test_name": "python_cpu_sleep_gevent_3.12",
+  "scale_by_duration": true,
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*",
+          "value": 667000000,
+          "error_margin": 25
+        },
+        {
+          "regular_expression": ".*cpu_burst.*",
+          "percent": 80,
+          "error_margin": 10
+        }
+      ]
+    }
+  ]
+}
