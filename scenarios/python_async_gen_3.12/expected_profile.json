@@ -1,0 +1,16 @@
+{
+  "test_name": "python_async_gen_3.12",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*async_gen_work.*",
+          "percent": 50,
+          "error_margin": 100
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}

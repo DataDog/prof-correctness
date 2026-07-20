@@ -1,0 +1,12 @@
+# Policy for: .github/workflows/prof-correctness.yml in DataDog/dd-trace-py
+# Allows dd-trace-py GitHub Actions to trigger prof-correctness workflows
+# when profiling code changes, to run correctness tests against just-built wheels.
+issuer: https://token.actions.githubusercontent.com
+subject_pattern: repo:DataDog/dd-trace-py:.*
+
+claim_pattern:
+  job_workflow_ref: DataDog/dd-trace-py/.github/workflows/prof-correctness.yml@refs/heads/.*
+  ref_type: branch
+
+permissions:
+  actions: write
