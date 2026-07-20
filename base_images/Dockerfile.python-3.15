@@ -1,0 +1,10 @@
+FROM python:3.15.0b1 AS base
+
+ARG DDTRACE_INSTALL_URL=""
+RUN if [ -n "$DDTRACE_INSTALL_URL" ]; then \
+      curl -fsSL "$DDTRACE_INSTALL_URL" | bash; \
+    fi
+
+ENV DD_PROFILING_ENABLED=true
+ENV DD_TRACE_ENABLED=false
+ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"
