@@ -1,13 +1,23 @@
+import os
+import time
+
 from ddtrace.profiling import Profiler
 
+# Keep MEM-domain allocations live across heap snapshot uploads.
+LIVE: list[bytearray] = []
 
-def allocate_mem_domain_buffers() -> list[object]:
-    # On Python 3.13+, bytearray's internal buffer is allocated in PYMEM_DOMAIN_MEM.
-    return [bytearray(4096) for _ in range(256)]
+BUF_BYTES = 16 * 1024 * 1024
+
+
+def allocate_mem_domain_buffer() -> None:
+    LIVE.append(bytearray(BUF_BYTES))
 
 
 if __name__ == "__main__":
     prof = Profiler()
     prof.start()
-    _objs = allocate_mem_domain_buffers()
+
+    allocate_mem_domain_buffer()
+    time.sleep(int(os.environ.get("EXECUTION_TIME_SEC", "15")))
+
     prof.stop()
