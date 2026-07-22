@@ -58,7 +58,8 @@ jobs:
   python:
     uses: ./.github/workflows/test.yml
     with:
-      test_scenarios: python.*
+      # 3.15 migration scenarios require DDTRACE_INSTALL_URL (downstream only).
+      test_scenarios: 'python(?!.*_3\.15$).*'
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
