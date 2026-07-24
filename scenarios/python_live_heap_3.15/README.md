@@ -1,7 +1,9 @@
-## Live-Heap Profiling
+## Live-Heap Profiling (3.15 candidate)
 
 Validates that the Datadog Python profiler's **persistent live-heap profile**
-correctly reports the set of live (still-allocated) sampled objects.
+correctly reports the set of live (still-allocated) sampled objects. This is the
+**3.15 candidate** half of the `3.14 -> 3.15` migration pair (see
+`python_live_heap_3.14`).
 
 Unlike `alloc-space`/`alloc-samples` (which count every allocation over the
 interval), the live-heap profile is a running snapshot of what is *currently
@@ -21,11 +23,11 @@ differ only in count:
 Equal sizes mean the 80/20 split holds for both metrics the live-heap profile
 reports: `heap-space` (live bytes = count x size) and `heap-live-samples` (live
 object count). It uses `bytes` (`PyObject_Malloc`, the OBJ allocator domain) so
-the heap profiler tracks the objects identically on Python 3.12 and 3.13,
-independent of the `DD_PROFILING_MEMORY_MEM_DOMAIN_ENABLED` toggle (`bytearray`
-would be OBJ on 3.12 but MEM on 3.13). The objects are held alive while the
-process idles through several upload intervals (`DD_PROFILING_UPLOAD_INTERVAL=5`),
-so each exported heap snapshot contains the full live set.
+the heap profiler tracks the objects identically across versions, independent of
+the `DD_PROFILING_MEMORY_MEM_DOMAIN_ENABLED` toggle (`bytearray` moved OBJ -> MEM
+in 3.13). The objects are held alive while the process idles through several
+upload intervals (`DD_PROFILING_UPLOAD_INTERVAL=5`), so each exported heap
+snapshot contains the full live set.
 
 ## Expected Profile
 
@@ -43,6 +45,8 @@ before the live set is fully built.
 
 ## Notes
 
-The persistent live-heap profile is recent; run against a ddtrace build that
-includes it (e.g. via `DDTRACE_INSTALL_URL` pointing at a dd-trace-py S3 wheel)
-until it ships in a release.
+Requires a **dd-trace-py wheel** at image build time (set `DDTRACE_INSTALL_URL`,
+as `downstream-python.yml` does). Do **not** `pip install ddtrace` from PyPI —
+3.15 wheels may not be published yet. Excluded from prof-correctness `main` CI
+until 3.15 wheels are generally available; runs via the dd-trace-py downstream
+gate.

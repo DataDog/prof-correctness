@@ -14,8 +14,9 @@ LIVE: list = []
 #   - heap-space        (live bytes)  -> count * size  -> 80/20
 #   - heap-live-samples (live objects) -> count        -> 80/20
 # We use ``bytes`` (PyObject_Malloc / OBJ domain), which the heap profiler
-# tracks identically on 3.12 and 3.13, independent of the MEM-domain toggle
-# (``bytearray`` would be OBJ on 3.12 but MEM on 3.13).
+# tracks identically across Python versions and independent of the MEM-domain
+# toggle (``bytearray`` moved OBJ -> MEM in 3.13). This keeps the scenario a
+# clean live-heap check across the 3.14 -> 3.15 migration.
 OBJ_SIZE = 16384  # 16 KiB, well above the pymalloc small-object threshold
 N_MAJOR = 1600  # ~80% of the live set  (1600 * 16 KiB ~= 25 MiB)
 N_MINOR = 400  # ~20% of the live set  ( 400 * 16 KiB ~=  6 MiB)

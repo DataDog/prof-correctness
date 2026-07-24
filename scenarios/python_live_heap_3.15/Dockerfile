@@ -1,15 +1,11 @@
-ARG BASE_IMAGE="prof-python-3.13"
+ARG BASE_IMAGE="prof-python-3.15"
 FROM $BASE_IMAGE
 
-# Copy the Python target into the container
-COPY ./scenarios/python_live_heap_3.13/main.py \
-    ./scenarios/python_live_heap_3.13/requirements.txt \
-    /app/
-RUN chmod 644 /app/*
-
+# ddtrace is pre-installed in the base image when DDTRACE_INSTALL_URL is set
+# (dd-trace-py downstream CI). Do not pip-install here — PyPI wheels may not
+# exist for 3.15 yet, and the persistent live-heap profile is recent.
+COPY ./scenarios/python_live_heap_3.15/main.py /app/main.py
 WORKDIR /app
-
-RUN pip install --no-cache-dir -r requirements.txt
 
 ENV EXECUTION_TIME_SEC="15"
 # Enable the live-heap profiler and make the snapshot the deliverable.
@@ -25,5 +21,4 @@ ENV DD_PROFILING_UPLOAD_INTERVAL=5
 ENV DD_PROFILING_STACK_ENABLED=false
 ENV DD_PROFILING_LOCK_ENABLED=false
 
-# Run the program when the container starts
 CMD python main.py
