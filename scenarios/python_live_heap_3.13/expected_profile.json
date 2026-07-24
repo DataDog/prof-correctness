@@ -1,0 +1,43 @@
+{
+  "test_name": "python_live_heap",
+  "note": "Persistent live-heap profile. Assertions run against the separate heap snapshot pprof (<prefix>.<pid>.<seq>.heap.pprof), selected via pprof-regex. heap-space = live bytes, heap-live-samples = live object count. retain_major/retain_minor allocate equal-size objects in an 80/20 count split, so both metrics show the same ~80/20 proportions. Thread-name labels are intentionally not asserted: the heap profiler tags samples with the numeric OS thread id, which varies per run.",
+  "pprof-regex": ".*heap\\.pprof",
+  "scale_by_duration": false,
+  "allow_first_profile_failure": true,
+  "stacks": [
+    {
+      "profile-type": "heap-space",
+      "stack-content": [
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.retain_major$",
+          "percent": 80,
+          "error_margin": 10,
+          "labels": []
+        },
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.retain_minor$",
+          "percent": 20,
+          "error_margin": 10,
+          "labels": []
+        }
+      ]
+    },
+    {
+      "profile-type": "heap-live-samples",
+      "stack-content": [
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.retain_major$",
+          "percent": 80,
+          "error_margin": 12,
+          "labels": []
+        },
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.retain_minor$",
+          "percent": 20,
+          "error_margin": 12,
+          "labels": []
+        }
+      ]
+    }
+  ]
+}
