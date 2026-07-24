@@ -10,14 +10,28 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
-ENV EXECUTION_TIME_SEC="20"
+ENV EXECUTION_TIME_SEC="30"
 
-# Leave empty to use ddtrace defaults.
-# _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_TARGET_OVERHEAD controls the fraction of
-# CPU (0-100) the profiler is allowed to consume; lower means sparser sampling.
-# _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_MAX_INTERVAL_US is the hard upper bound
-# on the interval between stack samples in microseconds; higher means sparser sampling.
+ENV DD_PROFILING_ENABLED="true"
+
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED="true"
+ 
+# 1% of the app's own CPU time
 ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_TARGET_OVERHEAD="1"
-ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_MAX_INTERVAL_US="10000"
+
+# Maximum interval between stack samples in microseconds (max allowed is 100ms)
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_MAX_INTERVAL_US="100000"
+
+# 1% CPU regardless of what the app is using
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_BASELINE="1"
+
+# Lookback window of 60 seconds for CPU usage
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_P_STABLE_WINDOW_S="60"
+
+# Use the 95th percentile of the CPU usage over the window to determine CPU usage
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_P_STABLE_PERCENTILE="95"
+
+# Enable fast memory copying
+ENV _DD_PROFILING_STACK_FAST_COPY="true"
 
 CMD python main.py
