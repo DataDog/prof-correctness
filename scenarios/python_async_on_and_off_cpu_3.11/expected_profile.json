@@ -1,0 +1,43 @@
+{
+  "test_name": "python_async_on_and_off_cpu",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression2": ".*",
+          "regular_expression": ".*main.*off_cpu_task.*",
+          "percent": 99,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "off_cpu_task"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*main.*on_cpu_task.*",
+          "percent": 99,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "on_cpu_task"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
