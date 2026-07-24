@@ -1,0 +1,16 @@
+{
+  "test_name": "python_sample_count",
+  "stacks": [
+    {
+      "profile-type": "wall-samples",
+      "stack-content": [
+        {
+          "regular_expression": ".*"
+        }
+      ],
+      "value-matching-sum": 40000,
+      "error-margin": 20
+    }
+  ],
+  "scale_by_duration": true
+}
