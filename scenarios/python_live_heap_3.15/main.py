@@ -3,7 +3,6 @@ import time
 
 from ddtrace.profiling import Profiler
 
-
 # Allocations are held at module scope so they stay live for the whole process
 # and therefore appear in every live-heap snapshot the profiler exports.
 LIVE: list = []

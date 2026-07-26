@@ -58,8 +58,14 @@ jobs:
   python:
     uses: ./.github/workflows/test.yml
     with:
-      # 3.15 migration scenarios require DDTRACE_INSTALL_URL (downstream only).
-      test_scenarios: 'python(?!.*_3\.15$).*'
+      test_scenarios: 'python.*'
+      # Wheel-only scenarios need DDTRACE_INSTALL_URL (dd-trace-py downstream
+      # gate), so they can't run here against PyPI ddtrace: every *_3.15, plus
+      # python_live_heap_3.14 (persistent live-heap is not in a release yet).
+      # python_downstream_gate is an index README, not a runnable scenario.
+      # Go's regexp is RE2 (no negative lookahead), so this is an explicit
+      # exclude rather than a lookahead baked into test_scenarios.
+      test_scenarios_exclude: '_3\.15$|^python_live_heap_3\.14$|^python_downstream_gate$'
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml

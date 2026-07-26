@@ -50,6 +50,10 @@ ignore = [
 "**/__init__.py" = ["D104"]        # missing docstring in public package
 "**/test_*.py" = ["S101", "D"]     # allow assert in tests, skip docstrings
 "**/tests/**/*.py" = ["S101", "D"] # allow assert in tests, skip docstrings
+# The exceptions scenario deliberately raises + swallows an exception as its
+# profiled workload; the explicit string-literal raise and try/except/pass are
+# the point of the test, not style smells.
+"scenarios/python_exceptions_*/main.py" = ["EM101", "SIM105"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
