@@ -1,6 +1,6 @@
 # Python downstream gate (dd-trace-py)
 
-Six prof-correctness scenarios exercise the profiling stack on **3.14
+Eight prof-correctness scenarios exercise the profiling stack on **3.14
 (baseline)** and **3.15 (candidate)** for the same workloads. They are the
 default set when dd-trace-py triggers downstream CI on profiling changes.
 
@@ -8,6 +8,7 @@ default set when dd-trace-py triggers downstream CI on profiling changes.
 
 | Family | 3.14 (baseline) | 3.15 (candidate) |
 |--------|-------------------|------------------|
+| cpu (stack) | `python_cpu_3.14` | `python_cpu_3.15` |
 | exceptions | `python_exceptions_3.14` | `python_exceptions_3.15` |
 | async-gen | `python_async_gen_3.14` | `python_async_gen_3.15` |
 | lock | `python_lock_3.14` | `python_lock_3.15` |
@@ -16,17 +17,18 @@ default set when dd-trace-py triggers downstream CI on profiling changes.
 
 | Family | Profile type asserted | Collectors / setup |
 |--------|----------------------|--------------------|
+| cpu (stack) | `cpu-time` + `thread name` | Stack via `ddtrace-run`; memory off; CPU-bound loops |
 | exceptions | `exception-samples` + `exception type` | Exception profiler |
 | async-gen | `wall-time` | Full profiler via `ddtrace-run`; asyncio async-generator workload |
 | lock | `lock-acquire` + `lock-release` + `lock name` | Lock profiler; threaded lock churn |
 
-Feature-specific pairs (mem_domain, live_heap) and extended coverage (cpu, alloc,
+Feature-specific pairs (mem_domain, live_heap) and extended coverage (alloc,
 asyncio, …) land in follow-up PRs.
 
 ## Default downstream regexp
 
 ```
-python_(exceptions|async_gen|lock)_3\.(14|15)
+python_(cpu|exceptions|async_gen|lock)_3\.(14|15)
 ```
 
 Override via `workflow_dispatch` → `test_scenarios`, or when triggering
@@ -41,7 +43,7 @@ Override via `workflow_dispatch` → `test_scenarios`, or when triggering
 
 ```sh
 export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/<commit-sha>/install.sh"
-TEST_SCENARIOS='python_(exceptions|async_gen|lock)_3\.(14|15)' go test -v -run TestScenarios
+TEST_SCENARIOS='python_(cpu|exceptions|async_gen|lock)_3\.(14|15)' go test -v -run TestScenarios
 ```
 
 ## Further reading
