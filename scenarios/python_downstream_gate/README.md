@@ -1,6 +1,6 @@
 # Python downstream gate (dd-trace-py)
 
-Six prof-correctness scenarios exercise the profiling stack on **3.14
+Eight prof-correctness scenarios exercise the profiling stack on **3.14
 (baseline)** and **3.15 (candidate)** for the same workloads. They are the
 default set when dd-trace-py triggers downstream CI on profiling changes.
 
@@ -11,6 +11,7 @@ default set when dd-trace-py triggers downstream CI on profiling changes.
 | exceptions | `python_exceptions_3.14` | `python_exceptions_3.15` |
 | async-gen | `python_async_gen_3.14` | `python_async_gen_3.15` |
 | lock | `python_lock_3.14` | `python_lock_3.15` |
+| mem-domain | `python_mem_domain_3.14` | `python_mem_domain_3.15` |
 
 ## Profiler coverage
 
@@ -19,14 +20,15 @@ default set when dd-trace-py triggers downstream CI on profiling changes.
 | exceptions | `exception-samples` + `exception type` | Exception profiler |
 | async-gen | `wall-time` | Full profiler via `ddtrace-run`; asyncio async-generator workload |
 | lock | `lock-acquire` + `lock-release` + `lock name` | Lock profiler; threaded lock churn |
+| mem-domain | `heap-space` | MEM-domain heap profiler; wheel-only until PyPI ships the feature |
 
-Feature-specific pairs (mem_domain, live_heap) and extended coverage (cpu, alloc,
+Feature-specific pairs (live_heap, …) and extended coverage (cpu, alloc,
 asyncio, …) land in follow-up PRs.
 
 ## Default downstream regexp
 
 ```
-python_(exceptions|async_gen|lock)_3\.(14|15)
+python_(exceptions|async_gen|lock|mem_domain)_3\.(14|15)
 ```
 
 Override via `workflow_dispatch` → `test_scenarios`, or when triggering
@@ -57,7 +59,7 @@ the base image when downstream CI runs.
 
 ```sh
 export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/<commit-sha>/install.sh"
-TEST_SCENARIOS='python_(exceptions|async_gen|lock)_3\.(14|15)' go test -v -run TestScenarios
+TEST_SCENARIOS='python_(exceptions|async_gen|lock|mem_domain)_3\.(14|15)' go test -v -run TestScenarios
 ```
 
 ## Further reading

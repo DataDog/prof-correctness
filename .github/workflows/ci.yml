@@ -61,7 +61,7 @@ jobs:
       test_scenarios: 'python.*'
       # *_3.15 and python_downstream_gate need a dd-trace-py wheel, not PyPI
       # ddtrace in main CI. RE2 has no negative lookahead — exclude explicitly.
-      test_scenarios_exclude: '_3\.15$|^python_downstream_gate$'
+      test_scenarios_exclude: '_3\.15$|^python_mem_domain_3\.14$|^python_downstream_gate$'
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
