@@ -1,6 +1,6 @@
 # Python downstream gate (dd-trace-py)
 
-Eighteen scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI.
+Twenty-four scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI.
 
 | Family | 3.14 | 3.15 | Asserts |
 |--------|------|------|---------|
@@ -9,17 +9,20 @@ Eighteen scenarios (**3.14 baseline** / **3.15 candidate**) are the default set 
 | asyncio | `python_asyncio_3.14` | `python_asyncio_3.15` | wall-time + task name |
 | native-cpu | `python_native_cpu_3.14` | `python_native_cpu_3.15` | cpu-time + wall-time (C ext) |
 | deep-stack | `python_deep_stack_3.14` | `python_deep_stack_3.15` | cpu-time |
+| gil-contention | `python_gil_contention_3.14` | `python_gil_contention_3.15` | cpu-time + wall-time |
+| uvloop | `python_uvloop_3.14` | `python_uvloop_3.15` | wall-time |
+| gevent | `python_gevent_3.14` | `python_gevent_3.15` | wall-time + task name |
 | exceptions | `python_exceptions_3.14` | `python_exceptions_3.15` | exception-samples |
 | async-gen | `python_async_gen_3.14` | `python_async_gen_3.15` | wall-time |
 | lock | `python_lock_3.14` | `python_lock_3.15` | lock-acquire/release |
 | live-heap | `python_live_heap_3.14` | `python_live_heap_3.15` | heap-space + heap-live-samples (wheel-only) |
 
-Cross-cutting (gil, uvloop, gevent) and feature pairs (mem_domain) land in follow-up PRs.
+Feature-specific pairs (mem_domain) land in follow-up PRs.
 
 ## Default regexp
 
 ```
-python_(cpu|alloc|asyncio|native_cpu|deep_stack|exceptions|async_gen|lock|live_heap)_3\.(14|15)
+python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|gevent|exceptions|async_gen|lock|live_heap)_3\.(14|15)
 ```
 
 Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml`](../../.github/workflows/downstream-python.yml).
@@ -29,14 +32,14 @@ Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml
 Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.python-wheel) with `DDTRACE_INSTALL_URL` (S3 wheel from downstream CI).
 
 - `*_3.15` — excluded from `main` CI (`test_scenarios_exclude` in [ci.yml](../../.github/workflows/ci.yml))
-- Core `*_3.14` (cpu, alloc, asyncio, native_cpu, deep_stack, exceptions, async_gen, lock) — run on `main` CI (PyPI ddtrace)
+- Core `*_3.14` (cpu, alloc, asyncio, native_cpu, deep_stack, gil_contention, uvloop, gevent, exceptions, async_gen, lock) — run on `main` CI (PyPI ddtrace)
 - Wheel-only `*_3.14` (live_heap, …) — also in `test_scenarios_exclude` until PyPI ships the feature
 
 ## Local run
 
 ```sh
 export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/<commit-sha>/install.sh"
-TEST_SCENARIOS='python_(cpu|alloc|asyncio|native_cpu|deep_stack|exceptions|async_gen|lock|live_heap)_3\.(14|15)' go test -v -run TestScenarios
+TEST_SCENARIOS='python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|gevent|exceptions|async_gen|lock|live_heap)_3\.(14|15)' go test -v -run TestScenarios
 ```
 
 See [README](../../README.md#downstream-from-dd-trace-py).
