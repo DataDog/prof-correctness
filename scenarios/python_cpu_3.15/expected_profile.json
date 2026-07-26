@@ -1,0 +1,37 @@
+{
+  "test_name": "python_cpu_3.15",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": "<module>;.*main;.*b",
+          "percent": 66,
+          "error_margin": 100,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": "<module>;.*main;.*a",
+          "percent": 33,
+          "error_margin": 100,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": true
+}
