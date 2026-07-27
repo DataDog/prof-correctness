@@ -14,5 +14,5 @@ if [ "${#targets[@]}" -eq 0 ]; then
   targets=(".")
 fi
 
-ruff format "${targets[@]}"
 ruff check --fix "${targets[@]}"
+ruff format "${targets[@]}"
