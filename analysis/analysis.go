@@ -239,7 +239,7 @@ func labelsKey(labels []Labels) string {
 	for _, l := range labels {
 		b.WriteString(l.Key)
 		b.WriteByte('=')
-		for _, v := range l.Values { // Values is already sorted by getProfileType
+		for _, v := range l.Values { // Values is already sorted by the format adapter
 			b.WriteString(v)
 			b.WriteByte(',')
 		}

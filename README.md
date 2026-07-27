@@ -108,6 +108,47 @@ Describe what you expect in a json file within the same folder. *This data is ca
 }
 ```
 
+### Profile input formats (pprof and OTLP)
+
+The analyzer works on a small, format-independent model (a set of typed
+samples, each a folded stack + value + labels), and has one adapter per input
+format. Assertions in `expected_profile.json` are therefore written once and
+verified identically regardless of the format a profiler emits:
+
+- **google/pprof** (`.pprof`, optionally lz4/zstd compressed) — emitted by
+  ddprof, the standalone `dd-otel-host-profiler`, etc. Labels come from the
+  pprof sample `Label`/`NumLabel` maps.
+- **OpenTelemetry profiles / OTLP** — the wire format of the eBPF full-host /
+  datadog-agent host-profiler. Drop the `ExportProfilesServiceRequest` bytes as
+  `.otlp` (protobuf) or `.otlp.json` (OTLP JSON). This is read **natively**
+  (not converted through pprof): trace/span linkage comes from the OTLP
+  `LinkTable`, and other attributes from the per-sample / resource attribute
+  tables. One OTLP request may carry several profiles (e.g. `alloc_space`,
+  `alloc_objects`, cpu `samples`); each is addressed by `profile-type`.
+
+Format is chosen by filename suffix (`.otlp`/`.pb` → OTLP proto, `.otlp.json`
+→ OTLP JSON, otherwise pprof, with an OTLP fallback if pprof parsing fails),
+so `pprof-regex` can point at either.
+
+#### Canonical label vocabulary
+
+Different formats encode the same semantics differently (a span link is a pprof
+label, but an OTLP `LinkTable` entry). Each adapter normalizes native key names
+to one canonical vocabulary (see `canonKey` in `analysis/model.go`), so a single
+label assertion works across formats — e.g. both a pprof `span id` label and an
+OTLP trace/span link surface as key `span id`:
+
+```
+"stack-content": [{
+  "regular_expression": ".*myHandler.*",
+  "value": 1000,
+  "labels": [
+    { "key": "span id",  "values_regex": "^[0-9a-f]+$" },
+    { "key": "service", "values": ["checkout"] }
+  ]
+}]
+```
+
 ### Run your test
 
 ```
