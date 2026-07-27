@@ -1,5 +1,6 @@
 # Lightweight Python formatting/lint for scenario workloads. Matches the ruff job in ci.yml.
-# Install: pip install pre-commit && pre-commit install
+# Local: ./scripts/lint (check) or ./scripts/format (auto-fix)
+# Optional hooks (skipped when core.hooksPath is set): pip install pre-commit && pre-commit install
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.5

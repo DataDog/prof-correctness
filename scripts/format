@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$root"
+
+if ! command -v ruff >/dev/null 2>&1; then
+  echo "ruff not found; install with: pip install ruff==0.15.5" >&2
+  exit 1
+fi
+
+targets=("$@")
+if [ "${#targets[@]}" -eq 0 ]; then
+  targets=(".")
+fi
+
+ruff format "${targets[@]}"
+ruff check --fix "${targets[@]}"
