@@ -1,0 +1,2 @@
+# Python dev tools for repo-wide lint/format (ci.yml, scripts/lint, scripts/format, pre-commit).
+ruff==0.15.5

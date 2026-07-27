@@ -3,9 +3,10 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
+dev_requirements="$root/requirements-dev.txt"
 
 if ! command -v ruff >/dev/null 2>&1; then
-  echo "ruff not found; install with: pip install ruff==0.15.5" >&2
+  echo "ruff not found; install with: pip install -r $dev_requirements" >&2
   exit 1
 fi
 

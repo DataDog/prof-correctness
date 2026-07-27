@@ -1,10 +1,11 @@
-# Lightweight Python formatting/lint for scenario workloads. Matches the ruff job in ci.yml.
-# Local: ./scripts/lint (check) or ./scripts/format (auto-fix)
-# Optional hooks (skipped when core.hooksPath is set): pip install pre-commit && pre-commit install
+# Optional git hooks for Python scenario files (same checks as CI — see scripts/lint).
+# Setup: pip install -r requirements-dev.txt pre-commit && pre-commit install
+# On Datadog laptops with global core.hooksPath, use ./scripts/lint instead of pre-commit install.
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.5
+  - repo: local
     hooks:
       - id: ruff
-        args: [--fix]
-      - id: ruff-format
+        name: ruff (scripts/lint)
+        entry: scripts/lint
+        language: system
+        types: [python]
