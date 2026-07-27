@@ -608,18 +608,9 @@ func getMatchingFiles(folder string, filenameRegex *regexp.Regexp) ([]string, er
 	return matchingFiles, nil
 }
 
-// ReadPprofFile reads a pprof file from disk, transparently decompressing lz4
-// or zstd frames if present, and returns the parsed profile.
-func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
-	file, err := os.Open(pprofFile)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	content, err := io.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
+// decompressProfileBytes transparently decompresses lz4 or zstd frames if
+// present, returning the raw payload otherwise.
+func decompressProfileBytes(content []byte) ([]byte, error) {
 	if ok, _ := lz4.ValidFrameHeader(content); ok {
 		in := bytes.NewReader(content)
 		zr := lz4.NewReader(in)
@@ -633,6 +624,11 @@ func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
 		zr.Reset(nil)
 	}
 
+	// Handle zstd-compressed profiles (see below).
+	return decompressZstd(content)
+}
+
+func decompressZstd(content []byte) ([]byte, error) {
 	// Handle zstd-compressed profiles.
 	// RFC 8878 defines the zstd frame magic as little-endian 0xFD2FB528; the decoder expects this LE constant.
 	if len(content) >= 4 {
@@ -651,6 +647,19 @@ func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
 			content = decompressed
 		}
 	}
+	return content, nil
+}
+
+// ReadPprofFile reads a pprof file from disk, transparently decompressing lz4
+// or zstd frames if present, and returns the parsed profile.
+func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
+	content, err := os.ReadFile(pprofFile)
+	if err != nil {
+		return nil, err
+	}
+	if content, err = decompressProfileBytes(content); err != nil {
+		return nil, err
+	}
 	prof, err := profile.ParseData(content)
 	if err != nil {
 		return nil, err
@@ -658,14 +667,50 @@ func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
 	return prof, nil
 }
 
+// ReadProfileFile reads a profile from disk in either google/pprof or OTLP
+// (OpenTelemetry profiles) format and returns it as a *profile.Profile.
+//
+// Format is selected by filename suffix (see otlp.go: .otlp/.pb -> OTLP proto,
+// .otlp.json -> OTLP JSON); anything else is parsed as pprof, with an OTLP
+// fallback attempted if pprof parsing fails so callers need not know the
+// format up front.
+func ReadProfileFile(path string) (*profile.Profile, error) {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	if content, err = decompressProfileBytes(content); err != nil {
+		return nil, err
+	}
+
+	name := filepath.Base(path)
+	switch {
+	case isOTLPJSONName(name):
+		return parseOTLP(content, true)
+	case isOTLPProtoName(name):
+		return parseOTLP(content, false)
+	}
+
+	// Default: pprof, with OTLP fallbacks for mislabeled files.
+	if prof, perr := profile.ParseData(content); perr == nil {
+		return prof, nil
+	} else if prof, oerr := parseOTLP(content, false); oerr == nil {
+		return prof, nil
+	} else if prof, jerr := parseOTLP(content, true); jerr == nil {
+		return prof, nil
+	} else {
+		return nil, fmt.Errorf("could not parse %s as pprof (%v) or OTLP (%v / %v)", name, perr, oerr, jerr)
+	}
+}
+
 // AnalyzePprofFile reads a single pprof file and asserts the given typedStacks
 // expectations against it. If captureData is true, a JSON dump of the actual
 // stacks observed in the profile is written next to the pprof file (useful to
 // bootstrap an expected_profile.json).
 func AnalyzePprofFile(r Reporter, pprofFile string, typedStacks TypedStacks, testName string, captureData bool, scaleByDuration bool, allowFailure bool) {
-	prof, err := ReadPprofFile(pprofFile)
+	prof, err := ReadProfileFile(pprofFile)
 	if err != nil {
-		r.Fatalf("Error reading file %s", pprofFile)
+		r.Fatalf("Error reading file %s: %v", pprofFile, err)
 	}
 	r.Logf("Analyzing results in %s for profile type %s", pprofFile, typedStacks.ProfileType)
 

@@ -86,6 +86,34 @@ Describe what you expect in a json file within the same folder. *This data is ca
 }
 ```
 
+### Profile input formats (pprof and OTLP)
+
+The analyzer's internal representation is **google/pprof**. It accepts two
+on-disk input formats and converts OTLP into pprof so that assertions in
+`expected_profile.json` work identically regardless of the input:
+
+- **google/pprof** (`.pprof`, optionally lz4/zstd compressed) — the historical
+  format emitted by ddprof and the standalone `dd-otel-host-profiler`. Used
+  as-is.
+- **OpenTelemetry profiles / OTLP** — the wire format of the eBPF full-host
+  profiler and the datadog-agent host-profiler. Drop the
+  `ExportProfilesServiceRequest` bytes as `.otlp` (protobuf) or `.otlp.json`
+  (OTLP JSON). This is **converted to pprof** on read (see `analysis/otlp.go`):
+  it is not a native OTLP assertion path. One OTLP request may carry several
+  profiles (e.g. `alloc_space`, `alloc_objects`, `inuse_space`,
+  `inuse_objects`, cpu `samples`); they are merged into one pprof profile whose
+  sample-type columns are addressed by `profile-type` in the JSON.
+
+Format is chosen by filename suffix (`.otlp`/`.pb` → OTLP proto,
+`.otlp.json` → OTLP JSON, otherwise pprof); pprof files that fail to parse are
+retried as OTLP, so `pprof-regex` can point at either.
+
+> Note: because pprof is the intermediate model, anything the OTLP payload
+> carries that does not map onto pprof (resource/sample attribute tables,
+> span/trace links, per-sample timestamps) must be translated in the converter
+> or it is dropped. Attribute→label mapping is not yet implemented, so
+> label-based assertions currently only work for pprof inputs.
+
 ### Run your test
 
 ```
