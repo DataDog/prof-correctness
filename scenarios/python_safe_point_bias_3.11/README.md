@@ -10,6 +10,7 @@ Verifies that the Python profiler correctly attributes CPU time to `slow_method`
 def empty_method() -> None:
     pass
 
+
 def slow_method() -> None:
     while time() < end_time:
         x = "h" + "e" + "l" + "l" + "o" + ","
