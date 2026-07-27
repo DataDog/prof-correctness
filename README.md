@@ -30,8 +30,6 @@ pip install pre-commit
 pre-commit install
 ```
 
-Ruff version is pinned only in `requirements-dev.txt`.
-
 ### Running Tests
 
 ```sh

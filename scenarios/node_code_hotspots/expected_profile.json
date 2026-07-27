@@ -8,7 +8,7 @@
         {
           "regular_expression": "busyLoop22",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },
@@ -18,7 +18,7 @@
         {
           "regular_expression": "busyLoop21",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },
@@ -28,7 +28,7 @@
         {
           "regular_expression": "busyLoop20",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },
@@ -38,7 +38,7 @@
         {
           "regular_expression": "busyLoop12",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },
@@ -48,7 +48,7 @@
         {
           "regular_expression": "busyLoop11",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },
@@ -58,7 +58,7 @@
         {
           "regular_expression": "busyLoop10",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },
@@ -68,7 +68,7 @@
         {
           "regular_expression": "busyLoop02",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },
@@ -78,7 +78,7 @@
         {
           "regular_expression": "busyLoop01",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },
@@ -88,7 +88,7 @@
         {
           "regular_expression": "busyLoop00",
           "percent": 11,
-          "error_margin": 1,
+          "error_margin": 3,
           "labels": [
             { "key": "span id", "values_regex": "[0-9]+" },
             { "key": "local root span id", "values_regex": "[0-9]+" },

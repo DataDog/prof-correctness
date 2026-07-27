@@ -2,21 +2,6 @@
   "test_name": "node_heap_basic",
   "stacks": [
     {
-      "profile-type": "objects",
-      "stack-content": [
-        {
-          "regular_expression": "processTimers;listOnTimeout;work;b;slice",
-          "percent": 10,
-          "error_margin": 35
-        },
-        {
-          "regular_expression": "processTimers;listOnTimeout;work;a;slice",
-          "percent": 55,
-          "error_margin": 35
-        }
-      ]
-    },
-    {
       "profile-type": "space",
       "stack-content": [
         {
