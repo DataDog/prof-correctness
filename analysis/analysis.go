@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/google/pprof/profile"
@@ -249,16 +248,16 @@ func labelsKey(labels []Labels) string {
 	return b.String()
 }
 
-func captureProfData(r Reporter, prof *profile.Profile, path string, testName string, profileDuration float64) {
+func captureProfData(r Reporter, ps *ProfileSet, path string, testName string, profileDuration float64) {
 	var capturedData StackTestData
 	capturedData.TestName = testName
 
-	for _, sampleType := range prof.SampleType {
+	for _, sampleType := range ps.SampleTypes() {
 		var typedStack TypedStacks
-		typedStack.ProfileType = sampleType.Type
+		typedStack.ProfileType = sampleType
 		typedStack.ErrorMargin = 1
 
-		typedProf := getProfileType(r, prof, sampleType.Type)
+		typedProf, _ := ps.Samples(sampleType)
 
 		// Group samples by (stack, kept-labels) and sum their values. Without
 		// this, ephemeral labels like end_timestamp_ns produce one entry per
@@ -332,59 +331,6 @@ func captureProfData(r Reporter, prof *profile.Profile, path string, testName st
 	} else {
 		r.Logf("Results stored in %s", jsonPath)
 	}
-}
-
-func getProfileType(r Reporter, prof *profile.Profile, type_ string) []StackSample {
-	typeIdx := -1
-	for i, sampleType := range prof.SampleType {
-		if sampleType.Type == type_ {
-			typeIdx = i
-		}
-	}
-	if typeIdx == -1 {
-		r.Fatalf("Couldn't find sample type %s", type_)
-	}
-
-	if err := prof.Aggregate(true, true, false, false, false, false); err != nil {
-		r.Fatalf("Error aggregating profile samples: %v", err)
-	}
-	prof = prof.Compact()
-	sort.Slice(prof.Sample, func(i, j int) bool {
-		return prof.Sample[i].Value[0] > prof.Sample[j].Value[0]
-	})
-
-	var out []StackSample
-	for _, sample := range prof.Sample {
-		var frames []string
-		for i := range sample.Location {
-			loc := sample.Location[len(sample.Location)-i-1]
-			for j := range loc.Line {
-				line := loc.Line[len(loc.Line)-j-1]
-				name := line.Function.Name
-				frames = append(frames, name)
-			}
-		}
-		labels := make(map[string][]string)
-		for k, v := range sample.Label {
-			// ease the comparison by sorting string values
-			sort.Strings(v)
-			labels[k] = v
-		}
-		for k, v := range sample.NumLabel {
-			for _, i := range v {
-				labels[k] = append(labels[k], strconv.FormatInt(i, 10))
-			}
-			sort.Strings(labels[k])
-		}
-
-		ss := StackSample{
-			Stack:  strings.Join(frames, ";"),
-			Val:    sample.Value[typeIdx],
-			Labels: labels,
-		}
-		out = append(out, ss)
-	}
-	return out
 }
 
 func checkLabels(r Reporter, labels map[string][]string, expectedLabels []Labels) bool {
@@ -608,15 +554,10 @@ func getMatchingFiles(folder string, filenameRegex *regexp.Regexp) ([]string, er
 	return matchingFiles, nil
 }
 
-// ReadPprofFile reads a pprof file from disk, transparently decompressing lz4
-// or zstd frames if present, and returns the parsed profile.
-func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
-	file, err := os.Open(pprofFile)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	content, err := io.ReadAll(file)
+// readAndDecompress reads a profile file, transparently decompressing lz4 or
+// zstd frames if present, and returns the raw payload bytes.
+func readAndDecompress(path string) ([]byte, error) {
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -651,11 +592,18 @@ func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
 			content = decompressed
 		}
 	}
-	prof, err := profile.ParseData(content)
+	return content, nil
+}
+
+// ReadPprofFile reads a pprof file from disk (decompressing lz4/zstd if needed)
+// and returns the parsed google/pprof profile. Retained for consumers that
+// want the raw pprof model; the analyzer itself uses LoadProfileSet.
+func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
+	content, err := readAndDecompress(pprofFile)
 	if err != nil {
 		return nil, err
 	}
-	return prof, nil
+	return profile.ParseData(content)
 }
 
 // AnalyzePprofFile reads a single pprof file and asserts the given typedStacks
@@ -663,24 +611,27 @@ func ReadPprofFile(pprofFile string) (*profile.Profile, error) {
 // stacks observed in the profile is written next to the pprof file (useful to
 // bootstrap an expected_profile.json).
 func AnalyzePprofFile(r Reporter, pprofFile string, typedStacks TypedStacks, testName string, captureData bool, scaleByDuration bool, allowFailure bool) {
-	prof, err := ReadPprofFile(pprofFile)
+	ps, err := LoadProfileSet(pprofFile)
 	if err != nil {
-		r.Fatalf("Error reading file %s", pprofFile)
+		r.Fatalf("Error reading file %s: %v", pprofFile, err)
 	}
 	r.Logf("Analyzing results in %s for profile type %s", pprofFile, typedStacks.ProfileType)
 
-	profileDuration := float64(prof.DurationNanos) / 1000000000.0
+	profileDuration := ps.DurationSecs
 	r.Logf("Found a profile duration of %.1f seconds (in %s)", profileDuration, filepath.Base(pprofFile))
 
 	// Store current data in a json file to help users create their tests
 	if captureData {
-		captureProfData(r, prof, pprofFile, testName, profileDuration)
+		captureProfData(r, ps, pprofFile, testName, profileDuration)
 	}
 	if !scaleByDuration {
 		// ignore duration, values can be considered absolute
 		profileDuration = 0
 	}
-	typedProf := getProfileType(r, prof, typedStacks.ProfileType)
+	typedProf, ok := ps.Samples(typedStacks.ProfileType)
+	if !ok {
+		r.Fatalf("Couldn't find sample type %s", typedStacks.ProfileType)
+	}
 	analyzeProfDataWithFailureHandling(r, typedProf, typedStacks, profileDuration, allowFailure)
 }
 
