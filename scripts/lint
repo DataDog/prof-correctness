@@ -2,19 +2,9 @@
 set -euo pipefail
 
 # Matches the ruff job in .github/workflows/ci.yml (see also scripts/format).
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$root"
-dev_requirements="$root/requirements-dev.txt"
+source "$(dirname "${BASH_SOURCE[0]}")/ruff-common.sh"
+ruff_common_setup
+ruff_resolve_targets "$@"
 
-if ! command -v ruff >/dev/null 2>&1; then
-  echo "ruff not found; install with: pip install -r $dev_requirements" >&2
-  exit 1
-fi
-
-targets=("$@")
-if [ "${#targets[@]}" -eq 0 ]; then
-  targets=(".")
-fi
-
-ruff format --check "${targets[@]}"
-ruff check "${targets[@]}"
+ruff format --check "${RUFF_TARGETS[@]}"
+ruff check "${RUFF_TARGETS[@]}"
