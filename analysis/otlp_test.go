@@ -370,3 +370,43 @@ func TestFromOTLP_SumsMultipleValues(t *testing.T) {
 		t.Errorf("value = %+v, want summed 60", samp)
 	}
 }
+
+// TestFromOTLP_MixedDurationsSameType covers codex's concurrency case: two
+// same-type profiles with different durations (5 samples/5s and 10 samples/10s)
+// must aggregate to 2 samples/s, i.e. an effective duration of 15/2 = 7.5s, not
+// total/max(=10s)=1.5/s.
+func TestFromOTLP_MixedDurationsSameType(t *testing.T) {
+	b := newOTLPBuilder(t)
+	stk := b.stack(b.symLoc(b.fn("f")))
+	rp := b.p.ResourceProfiles().AppendEmpty()
+	sp := rp.ScopeProfiles().AppendEmpty()
+
+	add := func(nSamples int, durNano uint64) {
+		p := sp.Profiles().AppendEmpty()
+		p.SampleType().SetTypeStrindex(b.str("samples"))
+		p.SetDurationNano(durNano)
+		for i := 0; i < nSamples; i++ {
+			s := p.Samples().AppendEmpty()
+			s.SetStackIndex(stk)
+			s.Values().Append(1)
+		}
+	}
+	add(5, 5_000_000_000)   // 5 samples over 5s -> 1/s
+	add(10, 10_000_000_000) // 10 samples over 10s -> 1/s
+
+	ps := FromOTLP(b.p)
+	if got := ps.Duration("samples"); got != 7.5 {
+		t.Errorf("effective duration = %v, want 7.5 (so total/dur = 2/s)", got)
+	}
+	samp, _ := ps.Samples("samples")
+	var total int64
+	for _, s := range samp {
+		total += s.Val
+	}
+	if total != 15 {
+		t.Errorf("total = %d, want 15", total)
+	}
+	if rate := float64(total) / ps.Duration("samples"); rate != 2 {
+		t.Errorf("aggregate rate = %v/s, want 2/s", rate)
+	}
+}

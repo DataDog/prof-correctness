@@ -45,7 +45,9 @@ func TestFromPprof(t *testing.T) {
 		Sample: []*profile.Sample{{
 			Location: []*profile.Location{leaf, root},
 			Value:    []int64{3, 300},
-			Label:    map[string][]string{"span id": {"abc"}},
+			// "thread id" (string) and "thread.id" (numeric) both canonicalize to
+			// the LabelThreadID key: values must be merged, not overwritten.
+			Label:    map[string][]string{"span id": {"abc"}, "thread id": {"main"}},
 			NumLabel: map[string][]int64{"thread.id": {7}},
 		}},
 	}
@@ -74,7 +76,7 @@ func TestFromPprof(t *testing.T) {
 	if got := samp[0].Labels["span id"]; len(got) != 1 || got[0] != "abc" {
 		t.Errorf("span id label = %v, want [abc]", got)
 	}
-	if got := samp[0].Labels[LabelThreadID]; len(got) != 1 || got[0] != "7" {
-		t.Errorf("thread id label = %v, want [7]", got)
+	if got := samp[0].Labels[LabelThreadID]; len(got) != 2 || got[0] != "7" || got[1] != "main" {
+		t.Errorf("thread id label = %v, want [7 main] (string + numeric merged)", got)
 	}
 }

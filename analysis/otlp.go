@@ -72,17 +72,22 @@ func FromOTLP(profiles pprofile.Profiles) *ProfileSet {
 			for k := 0; k < pl.Len(); k++ {
 				op := pl.At(k)
 				profileType := d.profileType(op)
-				ps.setDuration(profileType, float64(op.DurationNano())/1e9)
 
 				samples := op.Samples()
+				var profileTotal int64
 				for si := 0; si < samples.Len(); si++ {
 					smp := samples.At(si)
+					val := sampleValue(smp)
+					profileTotal += val
 					ps.add(profileType, StackSample{
 						Stack:  d.foldStack(smp.StackIndex()),
-						Val:    sampleValue(smp),
+						Val:    val,
 						Labels: d.sampleLabels(smp, resLabels),
 					})
 				}
+				// Fold this profile's duration into the per-type aggregate so
+				// mixed same-type durations scale to the correct rate.
+				ps.addProfileDuration(profileType, profileTotal, float64(op.DurationNano())/1e9)
 			}
 		}
 	}

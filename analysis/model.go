@@ -71,13 +71,24 @@ func canonKey(k string) string {
 // alloc_space + alloc_objects, or a pprof profile with multiple sample types),
 // each with its own duration.
 type ProfileSet struct {
-	order     []string // sample-type names, in first-seen order
-	typed     map[string][]StackSample
-	durByType map[string]float64
+	order []string // sample-type names, in first-seen order
+	typed map[string][]StackSample
+	dur   map[string]*durAgg
+}
+
+// durAgg accumulates, per profile type, the total value and total rate
+// (Σ valueᵢ/durationᵢ) across every profile of that type in the file. The
+// effective duration is valueSum/rateSum, which makes total/duration equal the
+// true aggregate rate even when same-type profiles (e.g. concurrent per-PID
+// resources) have different durations. Only profiles with a positive duration
+// contribute; snapshots (duration 0) leave the type's duration at 0.
+type durAgg struct {
+	valueSum int64
+	rateSum  float64
 }
 
 func newProfileSet() *ProfileSet {
-	return &ProfileSet{typed: map[string][]StackSample{}, durByType: map[string]float64{}}
+	return &ProfileSet{typed: map[string][]StackSample{}, dur: map[string]*durAgg{}}
 }
 
 func (ps *ProfileSet) add(profileType string, s StackSample) {
@@ -87,18 +98,32 @@ func (ps *ProfileSet) add(profileType string, s StackSample) {
 	ps.typed[profileType] = append(ps.typed[profileType], s)
 }
 
-// setDuration records the duration (seconds) for a profile type, keeping the
-// largest seen if a type spans multiple profiles (e.g. per-PID resources).
-func (ps *ProfileSet) setDuration(profileType string, secs float64) {
-	if secs > ps.durByType[profileType] {
-		ps.durByType[profileType] = secs
+// addProfileDuration folds one profile's (total value, duration) into the
+// per-type duration aggregate. See durAgg. secs<=0 (a snapshot) is ignored.
+func (ps *ProfileSet) addProfileDuration(profileType string, totalValue int64, secs float64) {
+	if secs <= 0 {
+		return
 	}
+	a := ps.dur[profileType]
+	if a == nil {
+		a = &durAgg{}
+		ps.dur[profileType] = a
+	}
+	a.valueSum += totalValue
+	a.rateSum += float64(totalValue) / secs
 }
 
-// Duration returns the duration in seconds for a profile type (0 if unknown or
-// a snapshot). Kept per-type because one file can mix, e.g., a 10s allocation
-// profile and a 60s CPU profile.
-func (ps *ProfileSet) Duration(profileType string) float64 { return ps.durByType[profileType] }
+// Duration returns the effective duration in seconds for a profile type (0 if
+// unknown or a snapshot). Kept per-type because one file can mix, e.g., a 10s
+// allocation profile and a 60s CPU profile; for multiple same-type profiles it
+// is valueSum/rateSum so total/Duration is the correct aggregate rate.
+func (ps *ProfileSet) Duration(profileType string) float64 {
+	a := ps.dur[profileType]
+	if a == nil || a.rateSum == 0 {
+		return 0
+	}
+	return float64(a.valueSum) / a.rateSum
+}
 
 // SampleTypes returns the profile-type names present, in first-seen order.
 func (ps *ProfileSet) SampleTypes() []string { return ps.order }

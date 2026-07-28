@@ -20,37 +20,41 @@ func FromPprof(prof *profile.Profile) *ProfileSet {
 	_ = prof.Aggregate(true, true, false, false, false, false)
 	prof = prof.Compact()
 
-	// All sample types in a pprof profile share its single duration.
-	for _, st := range prof.SampleType {
-		ps.setDuration(st.Type, durSecs)
-	}
-
+	typeTotals := make([]int64, len(prof.SampleType))
 	for _, sample := range prof.Sample {
 		stack := foldPprofStack(sample)
 		labels := pprofLabels(sample)
 		for i, st := range prof.SampleType {
 			ps.add(st.Type, StackSample{Stack: stack, Val: sample.Value[i], Labels: labels})
+			typeTotals[i] += sample.Value[i]
 		}
+	}
+	// All sample types in a pprof profile share its single duration.
+	for i, st := range prof.SampleType {
+		ps.addProfileDuration(st.Type, typeTotals[i], durSecs)
 	}
 	return ps.finalize()
 }
 
 // pprofLabels flattens a sample's string and numeric labels into the canonical
-// label map (values sorted for stable comparison).
+// label map. Values are appended (not overwritten) so distinct raw keys that
+// canonicalize to the same key - e.g. a string "thread id" and a numeric
+// "thread.id" - both survive; each key's values are sorted for stable
+// comparison.
 func pprofLabels(sample *profile.Sample) map[string][]string {
 	labels := map[string][]string{}
 	for k, v := range sample.Label {
-		cp := append([]string(nil), v...)
-		sort.Strings(cp)
-		labels[canonKey(k)] = cp
+		key := canonKey(k)
+		labels[key] = append(labels[key], v...)
 	}
 	for k, v := range sample.NumLabel {
-		vals := make([]string, 0, len(v))
+		key := canonKey(k)
 		for _, n := range v {
-			vals = append(vals, strconv.FormatInt(n, 10))
+			labels[key] = append(labels[key], strconv.FormatInt(n, 10))
 		}
-		sort.Strings(vals)
-		labels[canonKey(k)] = vals
+	}
+	for k := range labels {
+		sort.Strings(labels[k])
 	}
 	return labels
 }

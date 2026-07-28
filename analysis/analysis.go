@@ -220,11 +220,12 @@ func containsStr(s []string, v string) bool {
 // entry instead of producing a separate JSON line each.
 var captureKeysToIgnore = []string{
 	"thread native id",
-	"thread id",
-	"process_id",
+	LabelThreadID,
+	LabelProcessID,
 	"end_timestamp_ns",
-	"span id",
-	"local root span id",
+	LabelTraceID,
+	LabelSpanID,
+	LabelLocalRootSID,
 }
 
 // labelsKey produces a stable string key from a label set (which has already
