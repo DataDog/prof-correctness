@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source "$(dirname "${BASH_SOURCE[0]}")/ruff-common.sh"
+ruff_common_setup
+ruff_resolve_targets "$@"
+
+ruff check --fix "${RUFF_TARGETS[@]}"
+ruff format "${RUFF_TARGETS[@]}"

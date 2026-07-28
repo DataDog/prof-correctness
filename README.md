@@ -10,6 +10,28 @@ Checkout #profiling-library-pager to get notified of test failures.
 Install go >= 1.25.1: `brew install go`, `choco install go`, etc.
 Install docker.
 
+### Python lint (scenario workloads)
+
+CI and local checks use [Ruff](https://docs.astral.sh/ruff/). Install once:
+
+```sh
+pip install -r requirements-dev.txt
+```
+
+```sh
+./scripts/lint          # check (matches the ci.yml ruff job)
+./scripts/format        # auto-fix formatting and lint
+```
+
+Optional git hooks (skip on Datadog laptops that use global `core.hooksPath` — run `./scripts/lint` manually instead):
+
+```sh
+pip install pre-commit
+pre-commit install
+```
+
+Ruff version is pinned only in `requirements-dev.txt`.
+
 ### Running Tests
 
 ```sh
