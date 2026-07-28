@@ -68,15 +68,16 @@ func canonKey(k string) string {
 
 // ProfileSet is the neutral, format-independent view of one profile file. A
 // single file may contain several profile types (e.g. an OTLP export carrying
-// alloc_space + alloc_objects, or a pprof profile with multiple sample types).
+// alloc_space + alloc_objects, or a pprof profile with multiple sample types),
+// each with its own duration.
 type ProfileSet struct {
-	DurationSecs float64
-	order        []string // sample-type names, in first-seen order
-	typed        map[string][]StackSample
+	order     []string // sample-type names, in first-seen order
+	typed     map[string][]StackSample
+	durByType map[string]float64
 }
 
 func newProfileSet() *ProfileSet {
-	return &ProfileSet{typed: map[string][]StackSample{}}
+	return &ProfileSet{typed: map[string][]StackSample{}, durByType: map[string]float64{}}
 }
 
 func (ps *ProfileSet) add(profileType string, s StackSample) {
@@ -85,6 +86,19 @@ func (ps *ProfileSet) add(profileType string, s StackSample) {
 	}
 	ps.typed[profileType] = append(ps.typed[profileType], s)
 }
+
+// setDuration records the duration (seconds) for a profile type, keeping the
+// largest seen if a type spans multiple profiles (e.g. per-PID resources).
+func (ps *ProfileSet) setDuration(profileType string, secs float64) {
+	if secs > ps.durByType[profileType] {
+		ps.durByType[profileType] = secs
+	}
+}
+
+// Duration returns the duration in seconds for a profile type (0 if unknown or
+// a snapshot). Kept per-type because one file can mix, e.g., a 10s allocation
+// profile and a 60s CPU profile.
+func (ps *ProfileSet) Duration(profileType string) float64 { return ps.durByType[profileType] }
 
 // SampleTypes returns the profile-type names present, in first-seen order.
 func (ps *ProfileSet) SampleTypes() []string { return ps.order }
@@ -105,10 +119,12 @@ func (ps *ProfileSet) finalize() *ProfileSet {
 }
 
 // LoadProfileSet reads a profile file (pprof or OTLP) and returns the neutral
-// ProfileSet. Format is chosen by filename suffix (.otlp/.pb -> OTLP proto,
-// .otlp.json -> OTLP JSON, else pprof) with an OTLP fallback if pprof parsing
-// fails, so callers need not know the format up front. The per-format parsing
-// lives in the respective adapter file (pprof.go / otlp.go).
+// ProfileSet. Format is chosen by filename suffix (.otlp/.otlp.pb -> OTLP
+// proto, .otlp.json -> OTLP JSON, else pprof) with an OTLP fallback if pprof
+// parsing fails. Ambiguous suffixes such as .pb (used by both pprof and OTLP)
+// go through the content-based fallback rather than being forced to a format.
+// The per-format parsing lives in the respective adapter file (pprof.go /
+// otlp.go).
 func LoadProfileSet(path string) (*ProfileSet, error) {
 	content, err := readAndDecompress(path)
 	if err != nil {

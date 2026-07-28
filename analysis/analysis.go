@@ -248,7 +248,7 @@ func labelsKey(labels []Labels) string {
 	return b.String()
 }
 
-func captureProfData(r Reporter, ps *ProfileSet, path string, testName string, profileDuration float64) {
+func captureProfData(r Reporter, ps *ProfileSet, path string, testName string) {
 	var capturedData StackTestData
 	capturedData.TestName = testName
 
@@ -256,6 +256,10 @@ func captureProfData(r Reporter, ps *ProfileSet, path string, testName string, p
 		var typedStack TypedStacks
 		typedStack.ProfileType = sampleType
 		typedStack.ErrorMargin = 1
+
+		// Rate-scale each type by its own duration (a file may mix, e.g., a
+		// 10s allocation profile with a 60s CPU profile).
+		profileDuration := ps.Duration(sampleType)
 
 		typedProf, _ := ps.Samples(sampleType)
 
@@ -323,7 +327,7 @@ func captureProfData(r Reporter, ps *ProfileSet, path string, testName string, p
 		capturedData.Stacks = append(capturedData.Stacks, typedStack)
 	}
 
-	jsonPath := filepath.Join(filepath.Dir(path), fileNameWithoutExt(filepath.Base(path))) + ".json"
+	jsonPath := captureJSONPath(path)
 
 	err := writeToJSONFile(capturedData, jsonPath)
 	if err != nil {
@@ -331,6 +335,21 @@ func captureProfData(r Reporter, ps *ProfileSet, path string, testName string, p
 	} else {
 		r.Logf("Results stored in %s", jsonPath)
 	}
+}
+
+// captureJSONPath is where captureProfData writes the observed-stacks JSON: the
+// profile's basename with its extension replaced by .json. It guards against
+// clobbering the source: inputs whose own extension is already .json (e.g.
+// foo.otlp.json) would otherwise resolve back to the input path, so a
+// .capture.json variant is used instead.
+func captureJSONPath(path string) string {
+	dir := filepath.Dir(path)
+	base := filepath.Base(path)
+	jsonPath := filepath.Join(dir, fileNameWithoutExt(base)+".json")
+	if jsonPath == path {
+		jsonPath = filepath.Join(dir, fileNameWithoutExt(base)+".capture.json")
+	}
+	return jsonPath
 }
 
 func checkLabels(r Reporter, labels map[string][]string, expectedLabels []Labels) bool {
@@ -617,12 +636,12 @@ func AnalyzePprofFile(r Reporter, pprofFile string, typedStacks TypedStacks, tes
 	}
 	r.Logf("Analyzing results in %s for profile type %s", pprofFile, typedStacks.ProfileType)
 
-	profileDuration := ps.DurationSecs
+	profileDuration := ps.Duration(typedStacks.ProfileType)
 	r.Logf("Found a profile duration of %.1f seconds (in %s)", profileDuration, filepath.Base(pprofFile))
 
 	// Store current data in a json file to help users create their tests
 	if captureData {
-		captureProfData(r, ps, pprofFile, testName, profileDuration)
+		captureProfData(r, ps, pprofFile, testName)
 	}
 	if !scaleByDuration {
 		// ignore duration, values can be considered absolute

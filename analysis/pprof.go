@@ -14,11 +14,16 @@ import (
 // the space-form keys Datadog pprof profilers already emit).
 func FromPprof(prof *profile.Profile) *ProfileSet {
 	ps := newProfileSet()
-	ps.DurationSecs = float64(prof.DurationNanos) / 1e9
+	durSecs := float64(prof.DurationNanos) / 1e9
 
 	// Merge identical locations/samples so counts are consistent.
 	_ = prof.Aggregate(true, true, false, false, false, false)
 	prof = prof.Compact()
+
+	// All sample types in a pprof profile share its single duration.
+	for _, st := range prof.SampleType {
+		ps.setDuration(st.Type, durSecs)
+	}
 
 	for _, sample := range prof.Sample {
 		stack := foldPprofStack(sample)

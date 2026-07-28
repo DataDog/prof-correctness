@@ -126,9 +126,11 @@ verified identically regardless of the format a profiler emits:
   tables. One OTLP request may carry several profiles (e.g. `alloc_space`,
   `alloc_objects`, cpu `samples`); each is addressed by `profile-type`.
 
-Format is chosen by filename suffix (`.otlp`/`.pb` → OTLP proto, `.otlp.json`
-→ OTLP JSON, otherwise pprof, with an OTLP fallback if pprof parsing fails),
-so `pprof-regex` can point at either.
+Format is chosen by filename suffix (`.otlp`/`.otlp.pb` → OTLP proto,
+`.otlp.json` → OTLP JSON, otherwise pprof, with an OTLP fallback if pprof
+parsing fails). Ambiguous suffixes shared by both formats (e.g. `.pb`) are
+content-sniffed rather than forced to one format, so `pprof-regex` can point at
+either.
 
 #### Canonical label vocabulary
 

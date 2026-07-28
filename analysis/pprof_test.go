@@ -51,8 +51,9 @@ func TestFromPprof(t *testing.T) {
 	}
 
 	ps := FromPprof(p)
-	if ps.DurationSecs != 2 {
-		t.Errorf("duration = %v, want 2", ps.DurationSecs)
+	// All pprof sample types share the profile's single duration.
+	if ps.Duration("samples") != 2 || ps.Duration("cpu") != 2 {
+		t.Errorf("durations = samples:%v cpu:%v, want 2/2", ps.Duration("samples"), ps.Duration("cpu"))
 	}
 
 	samp, ok := ps.Samples("samples")

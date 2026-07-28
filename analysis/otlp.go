@@ -17,7 +17,10 @@ import (
 
 // --- format detection & parsing --------------------------------------------
 
-var otlpProtoSuffixes = []string{".otlp", ".otlppb", ".otlp.pb", ".pb"}
+// Explicit OTLP-proto suffixes. Note ".pb" is intentionally absent: it is a
+// common google/pprof suffix too, so plain ".pb" is left to the content-based
+// fallback in LoadProfileSet rather than being forced to OTLP.
+var otlpProtoSuffixes = []string{".otlp", ".otlppb", ".otlp.pb"}
 
 func isOTLPProtoName(name string) bool {
 	n := strings.ToLower(name)
@@ -68,10 +71,8 @@ func FromOTLP(profiles pprofile.Profiles) *ProfileSet {
 			pl := sps.At(j).Profiles()
 			for k := 0; k < pl.Len(); k++ {
 				op := pl.At(k)
-				if secs := float64(op.DurationNano()) / 1e9; secs > ps.DurationSecs {
-					ps.DurationSecs = secs
-				}
 				profileType := d.profileType(op)
+				ps.setDuration(profileType, float64(op.DurationNano())/1e9)
 
 				samples := op.Samples()
 				for si := 0; si < samples.Len(); si++ {
@@ -88,13 +89,20 @@ func FromOTLP(profiles pprofile.Profiles) *ProfileSet {
 	return ps.finalize()
 }
 
-// sampleValue returns the sample's explicit value, or - for sampling profiles
-// that omit it - the number of timestamps (each timestamp is one occurrence).
+// sampleValue returns the sample's value for its (singular) profile type. All
+// entries in the repeated Values field belong to that type, so they are summed;
+// for sampling profiles that omit values the count is the number of timestamps
+// (each timestamp is one occurrence).
 func sampleValue(smp pprofile.Sample) int64 {
-	if vs := smp.Values(); vs.Len() > 0 {
-		return vs.At(0)
+	vs := smp.Values()
+	if vs.Len() == 0 {
+		return int64(smp.TimestampsUnixNano().Len())
 	}
-	return int64(smp.TimestampsUnixNano().Len())
+	var sum int64
+	for i := 0; i < vs.Len(); i++ {
+		sum += vs.At(i)
+	}
+	return sum
 }
 
 // otlpDict resolves the index-based OTLP ProfilesDictionary into strings,

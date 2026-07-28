@@ -249,8 +249,12 @@ func TestFromOTLP_StackFoldingAndValues(t *testing.T) {
 		t.Fatalf("load: %v", err)
 	}
 
-	if ps.DurationSecs != 7 {
-		t.Errorf("duration = %v, want 7", ps.DurationSecs)
+	// Duration is per-type: alloc_space carries 7s, the samples profile none.
+	if ps.Duration("alloc_space") != 7 {
+		t.Errorf("alloc_space duration = %v, want 7", ps.Duration("alloc_space"))
+	}
+	if ps.Duration("samples") != 0 {
+		t.Errorf("samples duration = %v, want 0", ps.Duration("samples"))
 	}
 	alloc, _ := ps.Samples("alloc_space")
 	if len(alloc) != 1 || alloc[0].Val != 500 {
@@ -344,5 +348,25 @@ func TestFromOTLP_MultipleResources(t *testing.T) {
 	}
 	if !seen["svc-a"] || !seen["svc-b"] {
 		t.Errorf("expected both services in per-resource labels, got %v", seen)
+	}
+}
+
+// TestFromOTLP_SumsMultipleValues covers that all entries in a sample's
+// repeated Values field (which all belong to the profile's single type) are
+// summed, not just the first.
+func TestFromOTLP_SumsMultipleValues(t *testing.T) {
+	b := newOTLPBuilder(t)
+	stk := b.stack(b.symLoc(b.fn("f")))
+	rp := b.p.ResourceProfiles().AppendEmpty()
+	p := rp.ScopeProfiles().AppendEmpty().Profiles().AppendEmpty()
+	p.SampleType().SetTypeStrindex(b.str("alloc_space"))
+	s := p.Samples().AppendEmpty()
+	s.SetStackIndex(stk)
+	s.Values().Append(10, 20, 30) // batched observations -> 60
+
+	ps := FromOTLP(b.p)
+	samp, _ := ps.Samples("alloc_space")
+	if len(samp) != 1 || samp[0].Val != 60 {
+		t.Errorf("value = %+v, want summed 60", samp)
 	}
 }
