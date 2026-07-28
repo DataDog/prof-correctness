@@ -1,6 +1,6 @@
 {
   "test_name": "java_cpu_jfr",
-  "pprof-regex": ".*_cpu\\.pprof$",
+  "pprof-regex": ".*\\.jfr$",
   "stacks": [
     {
       "profile-type": "cpu",
