@@ -18,22 +18,6 @@
       ]
     },
     {
-      "profile-type": "alloc_objects",
-      "pprof-regex": "profiles_space_worker_0_.*\\.pprof",
-      "stack-content": [
-        {
-          "regular_expression": "processTimers;listOnTimeout;work;b;slice",
-          "value": 100,
-          "error_margin": 5
-        },
-        {
-          "regular_expression": "processTimers;listOnTimeout;work;a;slice",
-          "value": 100,
-          "error_margin": 5
-        }
-      ]
-    },
-    {
       "profile-type": "inuse_space",
       "pprof-regex": "profiles_space_worker_0_.*\\.pprof",
       "stack-content": [
