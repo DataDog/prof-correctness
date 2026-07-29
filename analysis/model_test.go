@@ -213,3 +213,15 @@ func TestLoadProfileSet_PbUsesContentFallback(t *testing.T) {
 		t.Errorf(".otlp.pb should parse as OTLP, got %+v", samp)
 	}
 }
+
+// TestCaptureIgnoresVolatileOTLPKeys locks the capture exclusions for OTLP
+// resource/sample attributes that vary per sample or per run (observed via
+// cmd/prof-dump on real host-profiler output); leaving them in would split
+// otherwise-identical stacks in the bootstrap JSON.
+func TestCaptureIgnoresVolatileOTLPKeys(t *testing.T) {
+	for _, k := range []string{"cpu.logical_number", "container.id", "process.context.label.check_id"} {
+		if !containsStr(captureKeysToIgnore, k) {
+			t.Errorf("expected %q in captureKeysToIgnore", k)
+		}
+	}
+}

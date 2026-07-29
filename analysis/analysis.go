@@ -226,6 +226,11 @@ var captureKeysToIgnore = []string{
 	LabelTraceID,
 	LabelSpanID,
 	LabelLocalRootSID,
+	// OTLP resource/sample attributes that vary per sample or per run and would
+	// otherwise split otherwise-identical stacks in the bootstrap JSON.
+	"cpu.logical_number",             // per-sample: which CPU the sample hit
+	"container.id",                   // per-run
+	"process.context.label.check_id", // per-run
 }
 
 // labelsKey produces a stable string key from a label set (which has already
