@@ -2,7 +2,7 @@
  * Simple CPU-intensive app for JFR correctness testing.
  *
  * Continuously computes Fibonacci numbers to keep the CPU busy.
- * The JFR recording is started by the JVM flags passed on the command line;
+ * The Datadog Java profiler is started by the JVM flags passed on the command line;
  * this app just runs for the requested duration and exits.
  *
  * The EXECUTION_TIME_SEC environment variable (default: 30) controls how long
