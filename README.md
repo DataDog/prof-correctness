@@ -108,6 +108,22 @@ Describe what you expect in a json file within the same folder. *This data is ca
 }
 ```
 
+### Profile input formats
+
+The analyzer reads both **pprof** and **OTLP** (OpenTelemetry profiles), so the
+same `expected_profile.json` can be used whichever format a profiler emits.
+Drop OTLP files with a `.otlp` (protobuf) or `.otlp.json` suffix; everything
+else is treated as pprof.
+
+### Semantic differences between formats
+
+Formats express the same concept in different ways (for example a span link is
+a plain label in pprof but a `LinkTable` entry in OTLP). The goal is that one
+expectation in `expected_profile.json` works across formats, with each format's
+native encoding normalized to a shared set of label keys (see `canonKey` in
+`analysis/model.go`). This normalization is not complete yet, so some
+expectations may still need format-specific values.
+
 ### Run your test
 
 ```
