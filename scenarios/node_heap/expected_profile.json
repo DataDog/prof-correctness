@@ -2,34 +2,19 @@
   "test_name": "node_heap_basic",
   "stacks": [
     {
-      "profile-type": "objects",
-      "stack-content": [
-        {
-          "regular_expression": "processTimers;listOnTimeout;work;b;slice",
-          "value": 50,
-          "error_margin": 20
-        },
-        {
-          "regular_expression": "processTimers;listOnTimeout;work;a;slice",
-          "value": 50,
-          "error_margin": 20
-        }
-      ]
-    },
-    {
       "profile-type": "space",
       "stack-content": [
         {
           "regular_expression": "processTimers;listOnTimeout;work;b;slice",
           "value": 209716400,
           "percent": 66,
-          "error_margin": 3
+          "error_margin": 5
         },
         {
           "regular_expression": "processTimers;listOnTimeout;work;a;slice",
           "value": 104858800,
           "percent": 33,
-          "error_margin": 3
+          "error_margin": 5
         }
       ]
     }

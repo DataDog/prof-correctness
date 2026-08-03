@@ -30,8 +30,6 @@ pip install pre-commit
 pre-commit install
 ```
 
-Ruff version is pinned only in `requirements-dev.txt`.
-
 ### Running Tests
 
 ```sh
@@ -77,7 +75,7 @@ Both use [dd-octo-sts](https://github.com/DataDog/dd-octo-sts-action) (`dd-trace
 **Inputs:**
 
 - `dd_trace_py_commit_sha` — commit to test (required)
-- `test_scenarios` — regexp passed to `TEST_SCENARIOS` (dd-trace-py passes the [16-scenario 3.14/3.15 migration gate](scenarios/python_downstream_gate/README.md); the downstream workflow default alone is `python.*`)
+- `test_scenarios` — regexp passed to `TEST_SCENARIOS` (dd-trace-py passes the [22-scenario 3.14/3.15 migration gate](scenarios/python_downstream_gate/README.md); the downstream workflow default alone is `python.*`)
 
 ## Creating new tests 
 

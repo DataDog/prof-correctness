@@ -1,0 +1,43 @@
+{
+  "test_name": "python_gevent_3.14",
+  "scale_by_duration": false,
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^Hub\\.run;loop\\.run$",
+          "percent": 18,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Hub"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "percent": 75,
+          "error_margin": 20,
+          "labels": [
+            {
+              "key": "task name",
+              "values_regex": "Greenlet-[0-9]+"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
