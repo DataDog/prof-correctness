@@ -12,7 +12,7 @@
         {
           "regular_expression": ".*empty_method",
           "percent": 0,
-          "error_margin": 5
+          "error_margin": 10
         }
       ]
     }

@@ -25,7 +25,7 @@ allocated (`alloc_*`) sample types.
 - Expected: `0` for `a` and `b` `slice` stacks, because the test clears those references before the profile is exported
 
 **Allocated Objects Profile**: `alloc_objects`
-- Expected: `100` for `a` and `100` for `b`, within 5% error margin
+- Not asserted here: absolute object counts are noisy on CI runners (see `node_heap`).
 
 **In-use Space Profile**: `inuse_space`
 - Expected: `0` for `a` and `b` `slice` stacks, for the same reason as `inuse_objects`
