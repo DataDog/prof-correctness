@@ -3,7 +3,8 @@ module github.com/DataDog/prof-correctness
 go 1.25.1
 
 require (
-	github.com/google/pprof v0.0.0-20240528025155-186aa0362fba
+	github.com/google/pprof v0.0.0-20260507013755-92041b743c96
+	github.com/grafana/jfr-parser v0.17.1
 	github.com/klauspost/compress v1.18.4
 	github.com/pierrec/lz4/v4 v4.1.25
 	github.com/xeipuuv/gojsonschema v1.2.0
@@ -22,8 +23,10 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/text v0.39.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
 	google.golang.org/grpc v1.82.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
+
+replace github.com/grafana/jfr-parser => github.com/r1viollet/pyroscope-jfr-parser v0.0.0-20260803080954-eddc025c5c4e
