@@ -1,0 +1,38 @@
+{
+  "test_name": "python_lock_3.15",
+  "stacks": [
+    {
+      "profile-type": "lock-acquire",
+      "stack-content": [
+        {
+          "regular_expression": ".*lock_churn.*",
+          "percent": 50,
+          "error_margin": 100,
+          "labels": [
+            {
+              "key": "lock name",
+              "values_regex": "main\\.py:18:lock"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "lock-release",
+      "stack-content": [
+        {
+          "regular_expression": ".*lock_churn.*",
+          "percent": 50,
+          "error_margin": 100,
+          "labels": [
+            {
+              "key": "lock name",
+              "values_regex": "main\\.py:18:lock"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
