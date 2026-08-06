@@ -5,12 +5,13 @@
       "profile-type": "cpu-time",
       "stack-content": [
         {
-          "regular_expression": ".*true_main.*julia_a_.*",
+          "_comment": "Match any stack containing the Julia JIT-symbolized function. We deliberately do NOT anchor on outer frames such as true_main: unwinding through Julia's interpreter / dispatch trampolines is lossy (yields [incomplete] / [unknown mapping] frames), and that is a separate problem from JITDump symbolization. The assertion below fails if the JITDump file is not picked up (e.g. startup race), regardless of unwind quality above the JIT frames.",
+          "regular_expression": ".*julia_a_.*",
           "percent": 31,
           "error_margin": 10
         },
         {
-          "regular_expression": ".*true_main.*julia_b_.*",
+          "regular_expression": ".*julia_b_.*",
           "percent": 63,
           "error_margin": 10
         }
