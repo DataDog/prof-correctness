@@ -1,4 +1,4 @@
-# python_many_threads_3.11
+# python_many_threads_3.12
 
 Verifies that the stack sampler's reservoir sampling produces correct wall-time
 totals when the number of live threads exceeds the per-cycle sampling cap.

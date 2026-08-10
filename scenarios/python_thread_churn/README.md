@@ -1,4 +1,4 @@
-# python_thread_churn_3.11
+# python_thread_churn_3.12
 
 Verifies that work done in short-lived threads is still attributed correctly
 under constant thread creation and destruction. All other scenarios use
