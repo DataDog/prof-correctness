@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="prof-python-3.11"
+ARG BASE_IMAGE="prof-python-3.12"
 FROM $BASE_IMAGE
 
 COPY ./scenarios/python_greenlet_multithreaded_3.11/requirements.txt /app/
