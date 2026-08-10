@@ -21,6 +21,8 @@ def slow_method() -> None:
 ## Expected behavior
 
 - **cpu-time**: `slow_method` appears in ~100% of samples (inclusive), since all CPU work happens there.
-- **cpu-time**: `empty_method` appears in ~0% of samples; it is a no-op and should not be blamed for the CPU usage of its caller.
+- **cpu-time**: `empty_method` appears in at most 10% of samples. Its call and
+  return still consume some CPU, but the no-op should not receive a significant
+  share of its caller's CPU time.
 
-A profiler with a blame-attribution bug would incorrectly show `empty_method` consuming significant CPU time.
+A profiler with a blame-attribution bug would incorrectly show `empty_method` consuming a substantial share of CPU time.
