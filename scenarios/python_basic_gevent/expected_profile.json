@@ -8,7 +8,7 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^run$",
+          "regular_expression": "^Hub\\.run;loop\\.run$",
           "value": 2000000000,
           "error_margin": 25,
           "labels": [

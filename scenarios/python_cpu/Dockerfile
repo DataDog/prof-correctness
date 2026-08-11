@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="prof-python-3.11"
+ARG BASE_IMAGE="prof-python-3.12"
 FROM $BASE_IMAGE
 
 # Set the working directory in the container

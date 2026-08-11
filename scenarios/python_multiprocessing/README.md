@@ -5,7 +5,7 @@ profiles in forked child processes. The profiler is started in the parent and
 then `NUM_WORKERS` children are forked, so each child inherits the running
 native sampler and must restart it through the `pthread_atfork` handler
 (re-registering the surviving thread with a fresh clock id and clearing stale
-echion state). Only `python_gunicorn_3.11` touches forking today, and it does
+echion state). Only `python_gunicorn_3.12` touches forking today, and it does
 so as a web server with `allow_first_profile_failure`, so the pure-compute fork
 path is otherwise uncovered.
 
