@@ -10,7 +10,7 @@
       "stack-content": [
         {
           "regular_expression": ".+",
-          "percent": 50,
+          "value": 1000000000,
           "error_margin": 20,
           "labels": [
             {
@@ -29,7 +29,7 @@
       "stack-content": [
         {
           "regular_expression": ".*application;compute_big_number.*",
-          "percent": 42,
+          "value": 1000000000,
           "error_margin": 10
         }
       ]

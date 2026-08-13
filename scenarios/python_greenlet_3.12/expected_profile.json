@@ -1,6 +1,6 @@
 {
   "test_name": "python_greenlet_3.12",
-  "scale_by_duration": false,
+  "scale_by_duration": true,
   "pprof-regex": "",
   "stacks": [
     {
@@ -9,7 +9,7 @@
       "stack-content": [
         {
           "regular_expression": ".*work_a.*",
-          "percent": 50,
+          "value": 500000000,
           "error_margin": 15,
           "labels": [
             {
@@ -28,7 +28,7 @@
       "stack-content": [
         {
           "regular_expression": ".*work_b.*",
-          "percent": 50,
+          "value": 500000000,
           "error_margin": 15,
           "labels": [
             {

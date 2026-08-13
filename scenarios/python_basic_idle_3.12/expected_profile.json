@@ -7,7 +7,7 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;target;sleep$",
+          "regular_expression": "^\u003cmodule\u003e;target;time\\.sleep$",
           "value": 1000000000,
           "error_margin": 15,
           "labels": [
@@ -21,7 +21,7 @@
           ]
         },
         {
-          "regular_expression": ".*run;target;sleep$",
+          "regular_expression": ".*run;target;time\\.sleep$",
           "value": 500000000,
           "error_margin": 15,
           "labels": [
