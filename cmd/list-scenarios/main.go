@@ -13,6 +13,7 @@
 // Usage:
 //
 //	go run ./cmd/list-scenarios -pattern 'python.*' -chunk-size 3
+//	go run ./cmd/list-scenarios -pattern 'python.*' -exclude '_3\.15$' -chunk-size 3
 package main
 
 import (
@@ -39,13 +40,26 @@ type matrixEntry struct {
 	Names string `json:"names"`
 }
 
-func run(pattern, scenariosDir string, chunkSize int) ([]matrixEntry, error) {
+func run(pattern, exclude, scenariosDir string, chunkSize int) ([]matrixEntry, error) {
 	// Anchor the user pattern so e.g. "python" doesn't accidentally match
 	// "python_basic_idle_3.12". The non-capturing group preserves precedence of
 	// any alternation inside the user pattern.
 	re, err := regexp.Compile(`^(?:` + pattern + `)$`)
 	if err != nil {
 		return nil, fmt.Errorf("invalid -pattern: %w", err)
+	}
+
+	// Optional exclusion, applied to names that matched -pattern. Unlike
+	// -pattern this is NOT anchored, so a suffix like `_3\.15$` drops every
+	// name ending in that version. Go's regexp is RE2 (no lookahead), so
+	// "match python but not the wheel-only variants" must be expressed as a
+	// separate exclude rather than a negative lookahead in -pattern.
+	var excludeRe *regexp.Regexp
+	if exclude != "" {
+		excludeRe, err = regexp.Compile(exclude)
+		if err != nil {
+			return nil, fmt.Errorf("invalid -exclude: %w", err)
+		}
 	}
 
 	entries, err := os.ReadDir(scenariosDir)
@@ -55,14 +69,18 @@ func run(pattern, scenariosDir string, chunkSize int) ([]matrixEntry, error) {
 
 	var names []string
 	for _, e := range entries {
-		if e.IsDir() && re.MatchString(e.Name()) {
-			names = append(names, e.Name())
+		if !e.IsDir() || !re.MatchString(e.Name()) {
+			continue
 		}
+		if excludeRe != nil && excludeRe.MatchString(e.Name()) {
+			continue
+		}
+		names = append(names, e.Name())
 	}
 	sort.Strings(names)
 
 	if len(names) == 0 {
-		return nil, fmt.Errorf("no scenarios matched pattern %q in %s", pattern, scenariosDir)
+		return nil, fmt.Errorf("no scenarios matched pattern %q (exclude %q) in %s", pattern, exclude, scenariosDir)
 	}
 
 	// Pack into chunks of at most chunkSize, preserving sorted order.
@@ -88,6 +106,7 @@ func run(pattern, scenariosDir string, chunkSize int) ([]matrixEntry, error) {
 
 func main() {
 	pattern := flag.String("pattern", "", "regex selecting scenario directory names (anchored as ^pattern$)")
+	exclude := flag.String("exclude", "", "regex dropping matched names (unanchored, RE2); e.g. '_3\\.15$'")
 	scenariosDir := flag.String("scenarios-dir", "scenarios", "path to the scenarios directory")
 	chunkSize := flag.Int("chunk-size", 3, "max scenarios per matrix entry")
 	flag.Parse()
@@ -103,7 +122,7 @@ func main() {
 	}
 
 	abs, _ := filepath.Abs(*scenariosDir)
-	out, err := run(*pattern, *scenariosDir, *chunkSize)
+	out, err := run(*pattern, *exclude, *scenariosDir, *chunkSize)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v (resolved scenarios dir: %s)\n", err, abs)
 		os.Exit(1)
