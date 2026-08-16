@@ -8,8 +8,8 @@
       "stack-content": [
         {
           "regular_expression": ".*allocate_mem_domain_buffer.*",
-          "percent": 50,
-          "error_margin": 50
+          "percent": 99,
+          "error_margin": 0
         }
       ]
     }
