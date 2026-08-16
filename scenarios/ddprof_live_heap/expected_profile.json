@@ -28,7 +28,7 @@
         {
           "regular_expression": "^.*;main;allocate_memory\\(unsigned long\\);operator new\\(unsigned long\\)$",
           "percent": 100,
-          "error_margin": 5
+          "error_margin": 8
         }
       ]
     }

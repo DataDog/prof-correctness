@@ -8,3 +8,6 @@ https://github.com/DataDog/ddprof/pull/213
 
 Symbols are also interesting in Julia. Symbols are published in a .debug folder.
 Test case should be adapted once these are processed.
+
+`allow_first_profile_failure` tolerates the first CPU profile cycle when JIT
+symbols are not yet exported to `.debug/jit` on CI (stacks match 0%).
