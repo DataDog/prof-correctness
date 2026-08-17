@@ -22,6 +22,12 @@ see each PR for the current value.
 Override via `workflow_dispatch` → `test_scenarios`, or when triggering
 [`downstream-python.yml`](../../.github/workflows/downstream-python.yml) manually.
 
+## Base images
+
+Gate scenarios use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.python-wheel)
+with a `PYTHON_IMAGE` build arg (`python:3.14` / `python:3.15.0b1`) and optional
+`DDTRACE_INSTALL_URL` for wheel pre-install.
+
 ## Wheel install
 
 Every scenario builds against a **dd-trace-py wheel** via `DDTRACE_INSTALL_URL`
@@ -30,10 +36,11 @@ Every scenario builds against a **dd-trace-py wheel** via `DDTRACE_INSTALL_URL`
 the base image.
 
 - **All `*_3.15` folders** — PyPI wheels may not be published for 3.15 yet;
-  excluded from prof-correctness `main` CI (see `test_scenarios_exclude` in
+  excluded from prof-correctness `main` CI today (see `test_scenarios_exclude` in
   [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)).
-- **Wheel-only 3.14 folders** — scenarios that depend on unreleased ddtrace
-  features are also excluded from `main` CI until the feature ships.
+- **Wheel-only 3.14 folders** — as they land, add them to `test_scenarios_exclude`
+  in `ci.yml` until the feature ships on PyPI (not excluded in #165 — no such
+  scenarios yet).
 
 ## Local run
 

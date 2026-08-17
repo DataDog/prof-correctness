@@ -69,10 +69,10 @@ runs selected Python scenarios.
 
 | Source | When | Where to see results |
 |--------|------|----------------------|
-| **GitLab** `prof-correctness` job | After `upload all`; profiling path changes on `main` or MR | [prof-correctness Actions](https://github.com/DataDog/prof-correctness/actions/workflows/downstream-python.yml) — filter by commit SHA |
-| **GitHub** `.github/workflows/prof-correctness.yml` in dd-trace-py | Profiling path changes on PR/push; `workflow_dispatch` | Same Actions page |
+| **GitLab** [`prof-correctness` job](https://github.com/DataDog/dd-trace-py/blob/main/.gitlab-ci.yml#L575-L605) | After `upload all`; profiling path changes on `main` or MR | [prof-correctness Actions](https://github.com/DataDog/prof-correctness/actions/workflows/downstream-python.yml) — filter by commit SHA |
+| **GitHub** _(planned)_ `.github/workflows/prof-correctness.yml` in dd-trace-py | Profiling path changes on PR/push; `workflow_dispatch` | Same Actions page (once dd-trace-py wiring lands) |
 
-Both use [dd-octo-sts](https://github.com/DataDog/dd-octo-sts-action) (`dd-trace-py.gitlab.trigger-ci` / `dd-trace-py.github.trigger-ci`) to call `gh workflow run downstream-python.yml`.
+GitLab uses [dd-octo-sts](https://github.com/DataDog/dd-octo-sts-action) ([`dd-trace-py.gitlab.trigger-ci`](.github/chainguard/dd-trace-py.gitlab.trigger-ci.sts.yaml)) today. The GitHub policy ([`dd-trace-py.github.trigger-ci`](.github/chainguard/dd-trace-py.github.trigger-ci.sts.yaml)) is staged for the planned dd-trace-py workflow (not on `main` yet). Both call `gh workflow run downstream-python.yml`.
 
 **Inputs:**
 

@@ -115,19 +115,15 @@ func TestRun_ExactChunkSizeBoundary(t *testing.T) {
 }
 
 func TestRun_ExcludeDropsMatchedNames(t *testing.T) {
-	// Mirrors the CI python gate: run everything python except the wheel-only
-	// variants (every *_3.15 plus python_live_heap_3.14).
+	// Mirrors ci.yml python job: exclude *_3.15 and the gate index directory.
 	root := mkScenarios(t, []string{
 		"python_cpu",
 		"python_lock_3.14",
 		"python_lock_3.15",
-		"python_mem_domain_3.14",
-		"python_mem_domain_3.15",
-		"python_live_heap_3.14",
-		"python_live_heap_3.15",
+		"python_downstream_gate",
 	})
 
-	got, err := run("python.*", `_3\.15$|^python_live_heap_3\.14$`, root, 3)
+	got, err := run("python.*", `_3\.15$|^python_downstream_gate$`, root, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +133,7 @@ func TestRun_ExcludeDropsMatchedNames(t *testing.T) {
 		names = append(names, e.Names)
 	}
 	joined := strings.Join(names, ", ")
-	want := "python_cpu, python_lock_3.14, python_mem_domain_3.14"
+	want := "python_cpu, python_lock_3.14"
 	if joined != want {
 		t.Fatalf("excluded set wrong:\n got %q\nwant %q", joined, want)
 	}
