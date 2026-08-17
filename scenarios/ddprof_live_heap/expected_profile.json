@@ -26,9 +26,9 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^.*;main;allocate_memory\\(unsigned long\\);operator new\\(unsigned long\\)$",
+          "regular_expression": "^.*;main;(allocate_memory\\(unsigned long\\);operator new\\(unsigned long\\)|leak_function\\(int\\))$",
           "percent": 100,
-          "error_margin": 8
+          "error_margin": 5
         }
       ]
     }

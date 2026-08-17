@@ -7,5 +7,5 @@ A simple test that allocates/frees memory and periodically leaks (no free) memor
 Although the leak is the only "user" in-use memory, there are other allocations associated to the use of C++ (and exceptions).
 Depending on load order, these allocations will be visible.
 
-The alloc-space assertion uses an 8% margin; CI once measured ~94% for the
-target stack (C++ runtime overhead not in the regex).
+alloc-space includes both `allocate_memory→operator new` and `leak_function→malloc`;
+the assertion regex covers both paths.
