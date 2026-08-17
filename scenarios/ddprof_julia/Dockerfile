@@ -1,5 +1,5 @@
 # Pin Julia: :latest drift has caused JIT symbol export flakes on CI runners.
-FROM julia:1.11.5-bookworm
+FROM julia:1.11.5-bookworm@sha256:783a479a2487c1569080c13fb2be980f3aa194b36f64194a0a0e84697ba06a91
 
 RUN mkdir /app
 RUN mkdir /app/binaries
