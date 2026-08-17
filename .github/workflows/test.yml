@@ -10,7 +10,7 @@ on:
         type: string
         default: '.*'
       test_scenarios_exclude:
-        description: 'A regexp dropping scenarios matched by test_scenarios (RE2, unanchored)'
+        description: 'A regexp dropping scenarios matched by test_scenarios'
         required: false
         type: string
         default: ''
@@ -39,6 +39,8 @@ jobs:
         #   - fewer runner-provisioning hits (paid once per chunk, not per scenario)
         #   - free local-daemon layer caching: buildBaseImages runs once per chunk,
         #     and the chunk's scenarios reuse the built base image.
+        # Pass patterns via env vars (not inline ${{ inputs.* }}) so shell metacharacters
+        # in regexps are not reinterpreted by the runner shell.
         env:
           TEST_SCENARIOS_PATTERN: ${{ inputs.test_scenarios }}
           TEST_SCENARIOS_EXCLUDE: ${{ inputs.test_scenarios_exclude }}

@@ -6,7 +6,7 @@ data/*
 __pycache__/
 
 .idea
-.vscode
+.vscode/
 gems.locked
 
 .DS_Store
