@@ -39,8 +39,11 @@ jobs:
         #   - fewer runner-provisioning hits (paid once per chunk, not per scenario)
         #   - free local-daemon layer caching: buildBaseImages runs once per chunk,
         #     and the chunk's scenarios reuse the built base image.
+        env:
+          TEST_SCENARIOS_PATTERN: ${{ inputs.test_scenarios }}
+          TEST_SCENARIOS_EXCLUDE: ${{ inputs.test_scenarios_exclude }}
         run: |
-          matrix=$(go run ./cmd/list-scenarios -pattern '${{ inputs.test_scenarios }}' -exclude '${{ inputs.test_scenarios_exclude }}' -chunk-size 3)
+          matrix=$(go run ./cmd/list-scenarios -pattern "$TEST_SCENARIOS_PATTERN" -exclude "$TEST_SCENARIOS_EXCLUDE" -chunk-size 3)
           echo "scenarios=$matrix" >> "$GITHUB_OUTPUT"
 
   docker-scenarios:

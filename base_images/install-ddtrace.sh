@@ -6,5 +6,6 @@ if [ -n "${DDTRACE_INSTALL_URL:-}" ]; then
   apt-get update
   apt-get install -y --no-install-recommends curl ca-certificates
   rm -rf /var/lib/apt/lists/*
-  curl -fsSL "$DDTRACE_INSTALL_URL" | bash
+  curl -fsSLo /tmp/ddtrace-install.sh "$DDTRACE_INSTALL_URL"
+  bash /tmp/ddtrace-install.sh
 fi
