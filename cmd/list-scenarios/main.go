@@ -49,11 +49,7 @@ func run(pattern, exclude, scenariosDir string, chunkSize int) ([]matrixEntry, e
 		return nil, fmt.Errorf("invalid -pattern: %w", err)
 	}
 
-	// Optional exclusion, applied to names that matched -pattern. Unlike
-	// -pattern this is NOT anchored, so a suffix like `_3\.15$` drops every
-	// name ending in that version. Go's regexp is RE2 (no lookahead), so
-	// "match python but not the wheel-only variants" must be expressed as a
-	// separate exclude rather than a negative lookahead in -pattern.
+	// Drop matched names via unanchored regex (e.g. `_3\.15$`). RE2 has no lookahead.
 	var excludeRe *regexp.Regexp
 	if exclude != "" {
 		excludeRe, err = regexp.Compile(exclude)

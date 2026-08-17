@@ -59,13 +59,8 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python.*'
-      # Wheel-only scenarios need DDTRACE_INSTALL_URL (dd-trace-py downstream
-      # gate), so they can't run here against PyPI ddtrace: every *_3.15.
-      # python_downstream_gate is an index README, not a runnable scenario.
-      # Go's regexp is RE2 (no negative lookahead), so this is an explicit
-      # exclude rather than a lookahead baked into test_scenarios.
-      # Additional wheel-only 3.14 dirs (e.g. live_heap) are added to this list
-      # when those scenarios land.
+      # *_3.15 and python_downstream_gate need a dd-trace-py wheel, not PyPI
+      # ddtrace in main CI. RE2 has no negative lookahead — exclude explicitly.
       test_scenarios_exclude: '_3\.15$|^python_downstream_gate$'
     secrets: inherit
   full_host:
