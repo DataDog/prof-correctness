@@ -6,6 +6,3 @@ A simple test that allocates/frees memory and periodically leaks (no free) memor
 
 Although the leak is the only "user" in-use memory, there are other allocations associated to the use of C++ (and exceptions).
 Depending on load order, these allocations will be visible.
-
-alloc-space includes both `allocate_memory→operator new` and `leak_function→malloc`;
-the assertion regex covers both paths.
