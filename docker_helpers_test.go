@@ -131,16 +131,29 @@ func buildBaseImages(t *testing.T, configs []DockerTestConfig) {
 
 func buildBaseImage(rootDir string, baseImageName string, t *testing.T) {
 	baseImageDir := filepath.Join(rootDir, "base_images")
-	dockerfileName := "Dockerfile." + strings.TrimPrefix(baseImageName, "prof-")
-	dockerfilePath := filepath.Join(baseImageDir, dockerfileName)
+
+	pythonWheelImages := map[string]string{
+		"prof-python-3.14": "python:3.14",
+		"prof-python-3.15": "python:3.15.0b1",
+	}
+
+	var dockerfilePath string
+	args := []string{"build", "-t", baseImageName}
+
+	if pythonImage, ok := pythonWheelImages[baseImageName]; ok {
+		dockerfilePath = filepath.Join(baseImageDir, "Dockerfile.python-wheel")
+		args = append(args, "-f", dockerfilePath, "--build-arg", "PYTHON_IMAGE="+pythonImage)
+	} else {
+		dockerfileName := "Dockerfile." + strings.TrimPrefix(baseImageName, "prof-")
+		dockerfilePath = filepath.Join(baseImageDir, dockerfileName)
+		args = append(args, "-f", dockerfilePath)
+	}
 
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
 		t.Fatalf("Required base Dockerfile %s not found!", dockerfilePath)
 		return
 	}
 
-	tag := baseImageName
-	args := []string{"build", "-t", tag, "-f", dockerfilePath}
 	if u := os.Getenv("DDTRACE_INSTALL_URL"); u != "" {
 		args = append(args, "--build-arg", "DDTRACE_INSTALL_URL="+u)
 	}
@@ -150,9 +163,9 @@ func buildBaseImage(rootDir string, baseImageName string, t *testing.T) {
 	buildCmd.Stderr = os.Stderr
 	err := buildCmd.Run()
 	if err != nil {
-		t.Fatalf("Error building base image %s: %v", tag, err)
+		t.Fatalf("Error building base image %s: %v", baseImageName, err)
 	}
-	t.Logf("Built base image with tag: %s", tag)
+	t.Logf("Built base image with tag: %s", baseImageName)
 }
 
 // returns the tag for built docker app
