@@ -1,0 +1,15 @@
+# Policy for a planned dd-trace-py GitHub workflow
+# (.github/workflows/prof-correctness.yml — not on dd-trace-py main yet).
+# Downstream today runs from GitLab CI instead:
+#   https://github.com/DataDog/dd-trace-py/blob/main/.gitlab-ci.yml#L575-L605
+# (see dd-trace-py.gitlab.trigger-ci.sts.yaml). Staged here for the follow-up PR.
+issuer: https://token.actions.githubusercontent.com
+subject_pattern: repo:DataDog/dd-trace-py:.*
+
+claim_pattern:
+  # Allow any branch until the workflow lands; tighten to @refs/heads/main once it does.
+  job_workflow_ref: DataDog/dd-trace-py/.github/workflows/prof-correctness.yml@refs/heads/.*
+  ref_type: branch
+
+permissions:
+  actions: write
