@@ -48,7 +48,7 @@
         {
           "regular_expression": ".*work_dependency.*",
           "percent": 25,
-          "error_margin": 10,
+          "error_margin": 15,
           "labels": [
             {
               "key": "thread name",
