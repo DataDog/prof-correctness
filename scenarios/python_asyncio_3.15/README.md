@@ -1,4 +1,8 @@
-## Asyncio task-name labels (3.15 candidate)
+# Asyncio task labels gate (3.15 candidate)
 
-Wheel-only 3.15 candidate half of the asyncio task-name gate pair. See
-`python_asyncio_3.14`.
+Pair: `python_asyncio_3.14` / `python_asyncio_3.15`. Same workload as 3.14. **Wheel-only** — requires `DDTRACE_INSTALL_URL`; excluded from `main` CI.
+
+```sh
+export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/<sha>/install.sh"
+TEST_SCENARIOS='python_asyncio_3\.15' go test -v -run TestScenarios
+```
