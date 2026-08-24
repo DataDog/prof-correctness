@@ -1,1 +1,1 @@
-ddtrace
+../python_gate/requirements.txt
