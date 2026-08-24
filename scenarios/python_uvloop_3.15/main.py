@@ -32,7 +32,7 @@ async def main() -> None:
     execution_time_sec = int(os.environ.get("EXECUTION_TIME_SEC", "5"))
 
     # Run multiple concurrent tasks to exercise uvloop
-    tasks = [
+    tasks: list[asyncio.Task[None]] = [
         asyncio.create_task(cpu_bound_work(execution_time_sec * 0.3)),
         asyncio.create_task(mixed_workload(execution_time_sec * 0.2, execution_time_sec * 0.1)),
         asyncio.create_task(io_simulation(execution_time_sec * 0.4)),

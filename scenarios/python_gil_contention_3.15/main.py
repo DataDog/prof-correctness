@@ -4,8 +4,8 @@ import time
 
 from ddtrace.profiling import Profiler
 
-NUM_THREADS = 8
-NO_YIELD_TIME_MS = 100
+NUM_THREADS: int = 8
+NO_YIELD_TIME_MS: int = 100
 
 
 def spin(end: float) -> None:
@@ -21,7 +21,7 @@ def spin(end: float) -> None:
             next_yield_time = time.time() + (NO_YIELD_TIME_MS / 1000)
 
 
-if __name__ == "__main__":
+def main() -> None:
     prof = Profiler()
     prof.start()
 
@@ -35,3 +35,7 @@ if __name__ == "__main__":
         t.start()
     for t in threads:
         t.join()
+
+
+if __name__ == "__main__":
+    main()

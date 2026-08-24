@@ -7,7 +7,7 @@ import time  # noqa: E402
 from threading import Thread  # noqa: E402
 
 
-def target(n: int) -> None:
+def target(n: float) -> None:
     # Do actual work instead of just sleeping so profiler can capture it
     end_time = time.monotonic() + n
     count = 0
@@ -18,14 +18,20 @@ def target(n: int) -> None:
             time.sleep(0.01)
 
 
-if __name__ == "__main__":
-    EXECUTION_TIME_SEC = int(os.environ.get("EXECUTION_TIME_SEC", "2"))
+def main() -> None:
+    execution_time_sec = int(os.environ.get("EXECUTION_TIME_SEC", "2"))
 
-    threads = [Thread(target=target, args=(EXECUTION_TIME_SEC / 2,)) for _ in range(10)]
+    threads: list[Thread] = [
+        Thread(target=target, args=(execution_time_sec / 2,)) for _ in range(10)
+    ]
     for thread in threads:
         thread.start()
 
-    target(EXECUTION_TIME_SEC)
+    target(float(execution_time_sec))
 
     for thread in threads:
         thread.join()
+
+
+if __name__ == "__main__":
+    main()
