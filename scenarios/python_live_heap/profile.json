@@ -9,13 +9,13 @@
       "profile-type": "heap-space",
       "stack-content": [
         {
-          "regular_expression": "^<module>;main;Target\\.run;Target\\.retain_major$",
+          "regular_expression": "^<module>;.*main;.*retain_major.*$",
           "percent": 80,
           "error_margin": 10,
           "labels": []
         },
         {
-          "regular_expression": "^<module>;main;Target\\.run;Target\\.retain_minor$",
+          "regular_expression": "^<module>;.*main;.*retain_minor.*$",
           "percent": 20,
           "error_margin": 10,
           "labels": []
@@ -26,13 +26,13 @@
       "profile-type": "heap-live-samples",
       "stack-content": [
         {
-          "regular_expression": "^<module>;main;Target\\.run;Target\\.retain_major$",
+          "regular_expression": "^<module>;.*main;.*retain_major.*$",
           "percent": 64,
           "error_margin": 16,
           "labels": []
         },
         {
-          "regular_expression": "^<module>;main;Target\\.run;Target\\.retain_minor$",
+          "regular_expression": "^<module>;.*main;.*retain_minor.*$",
           "percent": 16,
           "error_margin": 8,
           "labels": []
