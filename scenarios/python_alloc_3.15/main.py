@@ -4,7 +4,7 @@ from ddtrace.profiling import Profiler
 class Target:
     def __init__(self) -> None:
         self.memory: list[bytearray | None] = []
-        self.index = 0
+        self.index: int = 0
         self.grow_list(target=int(1e6))
 
     def run(self) -> None:
