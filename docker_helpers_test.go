@@ -229,7 +229,7 @@ func buildTestApp(t *testing.T, config DockerTestConfig) string {
 	// we could use the docker client, though that makes it harder to do command lines manually
 	now_time := time.Now()
 	// Following arg helps forces to rerun steps after the arg (allows reinstallation of recent profiler) --build-arg CACHE_DATE=$(date +%Y-%m-%d_%H:%M:%S)
-	args := []string{"build", "-f", config.dockerfilePath, "--build-arg", now_time.Format("2006-01-02_15:04:05"), "-t", "test-app"}
+	args := []string{"build", "-f", config.dockerfilePath, "--build-arg", "CACHE_DATE=" + now_time.Format("2006-01-02_15:04:05"), "-t", "test-app"}
 	if baseImage, err := resolveBaseImage(config); err != nil {
 		t.Fatalf("Error resolving base image for %s: %v", config.folder, err)
 	} else if baseImage != "" && dockerfileDeclaresBaseImageArg(config.dockerfilePath) {
