@@ -8,22 +8,18 @@ from threading import Thread  # noqa: E402
 
 
 def target(n: float) -> None:
-    # Do actual work instead of just sleeping so profiler can capture it
     end_time = time.monotonic() + n
     count = 0
     while time.monotonic() < end_time:
         count += 1
         if count % 1000 == 0:
-            # Yield to gevent
             time.sleep(0.01)
 
 
 def main() -> None:
     execution_time_sec = int(os.environ.get("EXECUTION_TIME_SEC", "2"))
 
-    threads: list[Thread] = [
-        Thread(target=target, args=(execution_time_sec / 2,)) for _ in range(10)
-    ]
+    threads: list[Thread] = [Thread(target=target, args=(execution_time_sec / 2,)) for _ in range(10)]
     for thread in threads:
         thread.start()
 
