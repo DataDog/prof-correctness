@@ -4,6 +4,7 @@ import math
 import os
 import re
 import zlib
+from collections.abc import Callable
 from time import time
 
 from ddtrace.profiling import Profiler
@@ -49,17 +50,27 @@ def crc_work(duration: float) -> None:
         binascii.crc32(_DATA)
 
 
-if __name__ == "__main__":
+def main() -> None:
     prof = Profiler()
     prof.start()
 
     execution_time = float(os.environ.get("EXECUTION_TIME_SEC", "25"))
-    all_functions = [hash_work, compress_work, factorial_work, regex_work, crc_work]
+    all_functions: list[Callable[[float], None]] = [
+        hash_work,
+        compress_work,
+        factorial_work,
+        regex_work,
+        crc_work,
+    ]
 
-    runs = 3
+    runs: int = 3
     time_per_function = execution_time / len(all_functions)
     time_per_run = time_per_function / runs
 
     for _ in range(runs):
         for func in all_functions:
             func(time_per_run)
+
+
+if __name__ == "__main__":
+    main()

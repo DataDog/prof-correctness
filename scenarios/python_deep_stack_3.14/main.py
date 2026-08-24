@@ -4,7 +4,7 @@ from time import time
 
 from ddtrace.profiling import Profiler
 
-DEPTH = 400
+DEPTH: int = 400
 
 
 def burn(end: float) -> None:
@@ -21,7 +21,7 @@ def recurse(depth: int, end: float) -> None:
     recurse(depth - 1, end)
 
 
-if __name__ == "__main__":
+def main() -> None:
     sys.setrecursionlimit(10000)
 
     prof = Profiler()
@@ -30,3 +30,7 @@ if __name__ == "__main__":
     execution_time = float(os.environ.get("EXECUTION_TIME_SEC", "30"))
     end = time() + execution_time
     recurse(DEPTH, end)
+
+
+if __name__ == "__main__":
+    main()
