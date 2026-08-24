@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import time
 
@@ -5,7 +7,7 @@ from ddtrace.profiling import Profiler
 
 # Allocations are held at module scope so they stay live for the whole process
 # and therefore appear in every live-heap snapshot the profiler exports.
-LIVE: list = []
+LIVE: list[Target] = []
 
 # Two distinctly-named call sites that retain a known live set. Both allocate
 # the SAME object size and differ only in count, so the 80/20 split holds for
@@ -16,14 +18,14 @@ LIVE: list = []
 # tracks identically across Python versions and independent of the MEM-domain
 # toggle (``bytearray`` moved OBJ -> MEM in 3.13). This keeps the scenario a
 # clean live-heap check across the 3.14 -> 3.15 migration.
-OBJ_SIZE = 16384  # 16 KiB, well above the pymalloc small-object threshold
-N_MAJOR = 1600  # ~80% of the live set  (1600 * 16 KiB ~= 25 MiB)
-N_MINOR = 400  # ~20% of the live set  ( 400 * 16 KiB ~=  6 MiB)
+OBJ_SIZE: int = 16384  # 16 KiB, well above the pymalloc small-object threshold
+N_MAJOR: int = 1600  # ~80% of the live set  (1600 * 16 KiB ~= 25 MiB)
+N_MINOR: int = 400  # ~20% of the live set  ( 400 * 16 KiB ~=  6 MiB)
 
 
 class Target:
     def __init__(self) -> None:
-        self.live: list = []
+        self.live: list[bytes] = []
 
     def run(self, hold_seconds: float) -> None:
         self.retain_major()
@@ -43,7 +45,7 @@ class Target:
             self.live.append(bytes(OBJ_SIZE))
 
 
-if __name__ == "__main__":
+def main() -> None:
     prof = Profiler()
     prof.start()  # As early as possible so the allocations below are sampled.
 
@@ -53,3 +55,7 @@ if __name__ == "__main__":
     target.run(hold_seconds=execution_time)
 
     prof.stop()
+
+
+if __name__ == "__main__":
+    main()
