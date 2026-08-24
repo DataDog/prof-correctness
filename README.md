@@ -65,19 +65,18 @@ dd-trace-py triggers this repo after building wheels for a commit. The
 installs ddtrace from the S3 wheel for that SHA (`DDTRACE_INSTALL_URL`) and
 runs selected Python scenarios.
 
-**Triggers (non-blocking):**
+**Trigger (non-blocking):**
 
 | Source | When | Where to see results |
 |--------|------|----------------------|
 | **GitLab** [`prof-correctness` job](https://github.com/DataDog/dd-trace-py/blob/main/.gitlab-ci.yml#L575-L605) | After `upload all`; profiling path changes on `main` or MR | [prof-correctness Actions](https://github.com/DataDog/prof-correctness/actions/workflows/downstream-python.yml) — filter by commit SHA |
-| **GitHub** _(planned)_ `.github/workflows/prof-correctness.yml` in dd-trace-py | Profiling path changes on PR/push; `workflow_dispatch` | Same Actions page (once dd-trace-py wiring lands) |
 
-GitLab uses [dd-octo-sts](https://github.com/DataDog/dd-octo-sts-action) ([`dd-trace-py.gitlab.trigger-ci`](.github/chainguard/dd-trace-py.gitlab.trigger-ci.sts.yaml)) today. The GitHub policy ([`dd-trace-py.github.trigger-ci`](.github/chainguard/dd-trace-py.github.trigger-ci.sts.yaml)) is staged for the planned dd-trace-py workflow (not on `main` yet). Both call `gh workflow run downstream-python.yml`.
+GitLab uses [dd-octo-sts](https://github.com/DataDog/dd-octo-sts-action) ([`dd-trace-py.gitlab.trigger-ci`](.github/chainguard/dd-trace-py.gitlab.trigger-ci.sts.yaml)) to call `gh workflow run downstream-python.yml`. You can also trigger [`downstream-python.yml`](.github/workflows/downstream-python.yml) manually via `workflow_dispatch`.
 
 **Inputs:**
 
 - `dd_trace_py_commit_sha` — commit to test (required)
-- `test_scenarios` — regexp passed to `TEST_SCENARIOS` (see the [3.14/3.15 migration gate index](scenarios/python_downstream_gate/README.md); the downstream workflow default alone is `python.*`)
+- `test_scenarios` — regexp passed to `TEST_SCENARIOS` (dd-trace-py passes the [6-scenario 3.14/3.15 migration gate](scenarios/python_downstream_gate/README.md); the downstream workflow default alone is `python.*`)
 
 ## Creating new tests 
 
