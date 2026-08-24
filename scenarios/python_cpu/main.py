@@ -4,8 +4,8 @@ from time import time
 
 class CPUBurner:
     def __init__(self) -> None:
-        self.x = 0
-        self.i = 0
+        self.x: int = 0
+        self.i: int = 0
 
     def a(self) -> None:
         self.i = 0
