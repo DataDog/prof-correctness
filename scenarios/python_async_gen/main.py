@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import os
 from collections.abc import AsyncGenerator
 
@@ -17,7 +18,8 @@ async def async_gen_work() -> None:
 async def main() -> None:
     await asyncio.sleep(0.5)
     execution_time_sec = float(os.environ.get("EXECUTION_TIME_SEC", "8"))
-    await asyncio.wait_for(async_gen_work(), timeout=execution_time_sec)
+    with contextlib.suppress(TimeoutError):
+        await asyncio.wait_for(async_gen_work(), timeout=execution_time_sec)
 
 
 if __name__ == "__main__":
