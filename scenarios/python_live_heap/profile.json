@@ -1,0 +1,43 @@
+{
+  "test_name": "python_live_heap",
+  "note": "Live-heap snapshot (*.heap.pprof). retain_major/retain_minor: equal-size bytes, 80/20 count split.",
+  "pprof-regex": ".*heap\\.pprof",
+  "scale_by_duration": false,
+  "allow_first_profile_failure": true,
+  "stacks": [
+    {
+      "profile-type": "heap-space",
+      "stack-content": [
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.retain_major$",
+          "percent": 80,
+          "error_margin": 10,
+          "labels": []
+        },
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.retain_minor$",
+          "percent": 20,
+          "error_margin": 10,
+          "labels": []
+        }
+      ]
+    },
+    {
+      "profile-type": "heap-live-samples",
+      "stack-content": [
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.retain_major$",
+          "percent": 80,
+          "error_margin": 12,
+          "labels": []
+        },
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.retain_minor$",
+          "percent": 20,
+          "error_margin": 12,
+          "labels": []
+        }
+      ]
+    }
+  ]
+}
