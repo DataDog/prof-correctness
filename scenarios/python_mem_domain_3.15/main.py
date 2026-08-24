@@ -3,7 +3,7 @@ import time
 
 from ddtrace.profiling import Profiler
 
-# Keep MEM-domain allocations live across heap snapshot uploads.
+# Module-scope retention keeps MEM-domain buffer live across uploads.
 LIVE: list[bytearray] = []
 
 BUF_BYTES = 16 * 1024 * 1024
