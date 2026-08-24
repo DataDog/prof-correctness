@@ -1,1 +1,16 @@
-../python_async_gen/profile.json
+{
+  "test_name": "python_async_gen",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*async_gen_work.*",
+          "percent": 35,
+          "error_margin": 10
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}

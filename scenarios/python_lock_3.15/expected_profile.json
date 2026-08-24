@@ -1,1 +1,38 @@
-../python_lock/profile.json
+{
+  "test_name": "python_lock",
+  "stacks": [
+    {
+      "profile-type": "lock-acquire",
+      "stack-content": [
+        {
+          "regular_expression": ".*lock_churn.*",
+          "percent": 100,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "lock name",
+              "values_regex": "main\\.py:18:lock"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "lock-release",
+      "stack-content": [
+        {
+          "regular_expression": ".*lock_churn.*",
+          "percent": 100,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "lock name",
+              "values_regex": "main\\.py:18:lock"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
