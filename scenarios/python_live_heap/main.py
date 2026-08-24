@@ -14,13 +14,15 @@ N_MINOR: int = 400  # ~20%
 
 
 class Target:
+    live: list[bytes]
+
     def __init__(self) -> None:
-        self.live: list[bytes] = []
+        self.live = []
 
     def run(self, hold_seconds: float) -> None:
         self.retain_major()
         self.retain_minor()
-        deadline = time.monotonic() + hold_seconds
+        deadline: float = time.monotonic() + hold_seconds
         while time.monotonic() < deadline:
             time.sleep(0.5)
 
@@ -34,11 +36,11 @@ class Target:
 
 
 def main() -> None:
-    prof = Profiler()
+    prof: Profiler = Profiler()
     prof.start()
 
-    execution_time = int(os.environ.get("EXECUTION_TIME_SEC", "15"))
-    target = Target()
+    execution_time: int = int(os.environ.get("EXECUTION_TIME_SEC", "15"))
+    target: Target = Target()
     LIVE.append(target)
     target.run(hold_seconds=execution_time)
 
