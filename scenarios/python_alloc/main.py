@@ -6,7 +6,7 @@ Each loop iteration calls allocate_memory_1 (size bytes) and allocate_memory_2
 
 from ddtrace.profiling import Profiler
 
-# Capacity must be even: run() fills two slots per iteration.
+# run() fills two slots per iteration (pair count = len // 2).
 _CAPACITY = int(1e6)
 _ALLOC_SIZE = 1024
 
@@ -17,7 +17,7 @@ class Target:
         self.index: int = 0
 
     def run(self) -> None:
-        while self.index < len(self.memory):
+        for _ in range(len(self.memory) // 2):
             self.allocate_memory_1(_ALLOC_SIZE)
             self.allocate_memory_2(_ALLOC_SIZE)
 
