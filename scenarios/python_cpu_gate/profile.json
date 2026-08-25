@@ -5,9 +5,9 @@
       "profile-type": "cpu-time",
       "stack-content": [
         {
-          "regular_expression": "<module>;.*main;.*b",
+          "regular_expression": "^<module>;.*CPUBurner\\.main;CPUBurner\\.b$",
           "percent": 66,
-          "error_margin": 100,
+          "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
@@ -18,9 +18,9 @@
           ]
         },
         {
-          "regular_expression": "<module>;.*main;.*a",
+          "regular_expression": "^<module>;.*CPUBurner\\.main;CPUBurner\\.a$",
           "percent": 33,
-          "error_margin": 100,
+          "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
