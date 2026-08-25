@@ -1,0 +1,52 @@
+{
+  "test_name": "python_asyncio",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*my_coroutine.*",
+          "percent": 30,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "short_task"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*my_coroutine.*",
+          "percent": 61,
+          "error_margin": 5,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values_regex": "Task-[0-9]+"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
