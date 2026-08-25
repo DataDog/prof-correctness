@@ -8,7 +8,7 @@ async def my_coroutine(n: float) -> None:
 
 async def main() -> None:
     # Simple application that creates two Tasks with different durations:
-    # - "unnamed Task" runs my_coroutine() for 2 second
+    # - "unnamed Task" runs my_coroutine() for 2 seconds
     # - short_task runs my_coroutine() for 1 second
     # The profiler should capture both Tasks with their respective durations.
 
