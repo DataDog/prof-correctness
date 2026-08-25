@@ -10,7 +10,7 @@ from typing import Final
 
 from ddtrace.profiling import Profiler
 
-# 1 MB of compressible data shared across workers to avoid allocation overhead.
+# 1 MB of compressible data reused across work functions to avoid allocation overhead.
 _DATA: Final[bytes] = b"abcdefgh" * (128 * 1024)
 _TEXT: Final[str] = "the quick brown fox jumps over the lazy dog " * 5000
 _PATTERN: Final[re.Pattern[str]] = re.compile(r"\b\w+\b")

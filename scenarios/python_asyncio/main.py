@@ -7,15 +7,15 @@ async def my_coroutine(n: float) -> None:
 
 
 async def main() -> None:
-    # Simple application that creates two Tasks with different durations:
-    # - "unnamed Task" runs my_coroutine() for 2 seconds
-    # - short_task runs my_coroutine() for 1 second
-    # The profiler should capture both Tasks with their respective durations.
-
     # Give the Profiler some time to start up
     await asyncio.sleep(0.5)
 
     execution_time_sec: float = float(os.environ.get("EXECUTION_TIME_SEC", "5"))
+
+    # Two Tasks with different durations (EXECUTION_TIME_SEC default 5s in Dockerfiles):
+    # - unnamed Task runs my_coroutine() for execution_time_sec
+    # - short_task runs my_coroutine() for execution_time_sec / 2
+    # The profiler should capture both Tasks with their respective durations.
 
     short_task: asyncio.Task[None] = asyncio.create_task(my_coroutine(execution_time_sec / 2.0), name="short_task")
 
