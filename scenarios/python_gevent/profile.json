@@ -9,7 +9,7 @@
       "stack-content": [
         {
           "regular_expression": "^Hub\\.run;gevent\\.libev\\.corecext\\.loop\\.run$",
-          "value": 921000000,
+          "value": 2091809000,
           "error_margin": 5,
           "labels": [
             {
