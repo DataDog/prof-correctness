@@ -4,8 +4,8 @@ Pair: `python_cpu_3.14` / `python_cpu_3.15`. Asserts `cpu-time` on CPU-bound loo
 
 | Profile type | Stack | Expected % | Margin |
 |--------------|-------|------------|--------|
-| cpu-time | `main;.*b` | 66 | 5 |
-| cpu-time | `main;.*a` | 33 | 5 |
+| cpu-time | `<module>;.*main;.*b` | 66 | 5 |
+| cpu-time | `<module>;.*main;.*a` | 33 | 5 |
 
 `scale_by_duration`: true. Runs on `main` CI (PyPI ddtrace).
 
