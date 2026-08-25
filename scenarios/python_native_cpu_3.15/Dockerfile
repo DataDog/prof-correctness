@@ -1,7 +1,11 @@
 ARG BASE_IMAGE="prof-python-3.15"
 FROM $BASE_IMAGE
 
-COPY ./scenarios/python_native_cpu_3.15/main.py /app/main.py
+# ddtrace is pre-installed in the base image when DDTRACE_INSTALL_URL is set
+# (dd-trace-py downstream CI). Do not pip-install here — PyPI wheels may not
+# exist for 3.15 yet.
+
+COPY ./scenarios/python_native_cpu/main.py /app/main.py
 WORKDIR /app
 
 ENV EXECUTION_TIME_SEC=10

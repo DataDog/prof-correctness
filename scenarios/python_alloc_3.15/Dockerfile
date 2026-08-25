@@ -5,7 +5,7 @@ FROM $BASE_IMAGE
 # (dd-trace-py downstream CI). Do not pip-install here — PyPI wheels may not
 # exist for 3.15 yet.
 
-COPY ./scenarios/python_alloc_3.15/main.py /app/main.py
+COPY ./scenarios/python_alloc/main.py /app/main.py
 WORKDIR /app
 
 ENV DD_PROFILING_STACK_ENABLED=false

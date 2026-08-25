@@ -1,0 +1,39 @@
+{
+  "test_name": "python_alloc",
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "alloc-samples",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_1$",
+          "percent": 33,
+          "error_margin": 10
+        },
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_2$",
+          "percent": 44,
+          "error_margin": 10
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-space",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_1$",
+          "percent": 30,
+          "error_margin": 10
+        },
+        {
+          "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_2$",
+          "percent": 40,
+          "error_margin": 10
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": false
+}
