@@ -1,7 +1,7 @@
 """Allocation workload with two distinct sites for profile attribution.
 
 Each loop iteration calls allocate_memory_1 (size bytes) and allocate_memory_2
-(3× size bytes), producing a 1:3 alloc-space ratio in profiles.
+(3x size bytes), producing a 1:3 alloc-space ratio in profiles.
 """
 
 from ddtrace.profiling import Profiler
