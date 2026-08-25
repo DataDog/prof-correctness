@@ -17,11 +17,13 @@
         {
           "regular_expression": ".*spin",
           "percent": 12,
-          "error_margin": 6,
+          "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
-              "values": ["spin-0"]
+              "values": [
+                "spin-0"
+              ]
             }
           ]
         }
