@@ -15,9 +15,9 @@ async def main() -> None:
     # Give the Profiler some time to start up
     await asyncio.sleep(0.5)
 
-    execution_time_sec = float(os.environ.get("EXECUTION_TIME_SEC", "5"))
+    execution_time_sec: float = float(os.environ.get("EXECUTION_TIME_SEC", "5"))
 
-    short_task = asyncio.create_task(my_coroutine(execution_time_sec / 2.0), name="short_task")
+    short_task: asyncio.Task[None] = asyncio.create_task(my_coroutine(execution_time_sec / 2.0), name="short_task")
 
     # asyncio.gather will automatically wrap my_coroutine into a Task
     await asyncio.gather(short_task, my_coroutine(execution_time_sec))

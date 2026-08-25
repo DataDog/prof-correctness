@@ -1,14 +1,15 @@
 import os
 import sys
 from time import time
+from typing import Final
 
 from ddtrace.profiling import Profiler
 
-DEPTH: int = 400
+DEPTH: Final[int] = 400
 
 
 def burn(end: float) -> None:
-    x = 0
+    x: int = 0
     while time() < end:
         for i in range(10000):
             x += i
@@ -24,11 +25,11 @@ def recurse(depth: int, end: float) -> None:
 def main() -> None:
     sys.setrecursionlimit(10000)
 
-    prof = Profiler()
+    prof: Profiler = Profiler()
     prof.start()
 
-    execution_time = float(os.environ.get("EXECUTION_TIME_SEC", "30"))
-    end = time() + execution_time
+    execution_time: float = float(os.environ.get("EXECUTION_TIME_SEC", "30"))
+    end: float = time() + execution_time
     recurse(DEPTH, end)
 
 

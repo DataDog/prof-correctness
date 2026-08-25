@@ -24,10 +24,15 @@ class Target:
         self.index += 1
 
 
-if __name__ == "__main__":
-    prof = Profiler()
+def main() -> None:
+    prof: Profiler = Profiler()
     prof.start()
 
-    Target().run()
+    target: Target = Target()
+    target.run()
 
     prof.stop()
+
+
+if __name__ == "__main__":
+    main()
