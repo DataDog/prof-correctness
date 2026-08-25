@@ -661,7 +661,7 @@ func AnalyzePprofFile(r Reporter, pprofFile string, typedStacks TypedStacks, tes
 }
 
 // AnalyzeResults loads the expected_profile.json at jsonFilePath and asserts
-// every pprof file under pprofFolder matches it. Failures are reported via r.
+// every profile file under pprofFolder matches it. Failures are reported via r.
 func AnalyzeResults(r Reporter, jsonFilePath string, pprofFolder string) {
 	stackTestData, err := ReadJSONFile(jsonFilePath)
 	if err != nil {

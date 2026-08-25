@@ -24,6 +24,7 @@ package analysis
 import (
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/google/pprof/profile"
 )
@@ -143,13 +144,18 @@ func (ps *ProfileSet) finalize() *ProfileSet {
 	return ps
 }
 
-// LoadProfileSet reads a profile file (pprof or OTLP) and returns the neutral
-// ProfileSet. Format is chosen by filename suffix (.otlp/.otlp.pb -> OTLP
+// isJFRName reports whether name should be parsed as a Java Flight Recorder recording.
+func isJFRName(name string) bool {
+	return strings.HasSuffix(strings.ToLower(name), ".jfr")
+}
+
+// LoadProfileSet reads a profile file (pprof, OTLP or JFR) and returns the neutral
+// ProfileSet. Format is chosen by filename suffix (.jfr -> JFR, .otlp/.otlp.pb -> OTLP
 // proto, .otlp.json -> OTLP JSON, else pprof) with an OTLP fallback if pprof
 // parsing fails. Ambiguous suffixes such as .pb (used by both pprof and OTLP)
 // go through the content-based fallback rather than being forced to a format.
 // The per-format parsing lives in the respective adapter file (pprof.go /
-// otlp.go).
+// otlp.go / jfr.go).
 func LoadProfileSet(path string) (*ProfileSet, error) {
 	content, err := readAndDecompress(path)
 	if err != nil {
@@ -158,6 +164,8 @@ func LoadProfileSet(path string) (*ProfileSet, error) {
 
 	name := filepath.Base(path)
 	switch {
+	case isJFRName(name):
+		return FromJFR(content)
 	case isOTLPJSONName(name):
 		return loadOTLP(content, true)
 	case isOTLPProtoName(name):
