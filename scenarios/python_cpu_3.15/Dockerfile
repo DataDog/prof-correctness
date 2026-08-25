@@ -1,4 +1,6 @@
-ARG BASE_IMAGE="prof-python-3.15"
+# BASE_IMAGE is resolved from the scenario folder suffix (_3.14 / _3.15)
+# when not set inline; see docker_helpers_test.go.
+ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
 # ddtrace is pre-installed in the base image when DDTRACE_INSTALL_URL is set
