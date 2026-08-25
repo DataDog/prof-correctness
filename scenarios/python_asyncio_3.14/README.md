@@ -4,8 +4,8 @@ Pair: `python_asyncio_3.14` / `python_asyncio_3.15`. Asserts **wall-time** sampl
 
 | Profile type | Stack | Expected % | Margin | Labels |
 |--------------|-------|------------|--------|--------|
-| wall-time | `my_coroutine` | 30 | 10 | task name: `short_task` |
-| wall-time | `my_coroutine` | 61 | 10 | task name: `Task-[0-9]+` |
+| wall-time | `my_coroutine` | 30 | 5 | task name: `short_task` |
+| wall-time | `my_coroutine` | 61 | 5 | task name: `Task-[0-9]+` |
 
 Runs on `main` CI (PyPI ddtrace).
 

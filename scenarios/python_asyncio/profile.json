@@ -7,7 +7,7 @@
         {
           "regular_expression": ".*my_coroutine.*",
           "percent": 30,
-          "error_margin": 10,
+          "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
@@ -31,7 +31,7 @@
         {
           "regular_expression": ".*my_coroutine.*",
           "percent": 61,
-          "error_margin": 10,
+          "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
