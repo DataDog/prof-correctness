@@ -9,8 +9,8 @@ NO_YIELD_TIME_MS: int = 100
 
 
 def spin(end: float) -> None:
-    x = 0
-    next_yield_time = time.time() + (NO_YIELD_TIME_MS / 1000)
+    x: int = 0
+    next_yield_time: float = time.time() + (NO_YIELD_TIME_MS / 1000)
     while time.time() < end:
         for i in range(10_000):
             x += i
@@ -22,11 +22,11 @@ def spin(end: float) -> None:
 
 
 def main() -> None:
-    prof = Profiler()
+    prof: Profiler = Profiler()
     prof.start()
 
-    execution_time = float(os.environ.get("EXECUTION_TIME_SEC", "30"))
-    end = time.time() + execution_time
+    execution_time: float = float(os.environ.get("EXECUTION_TIME_SEC", "30"))
+    end: float = time.time() + execution_time
 
     threads: list[threading.Thread] = [
         threading.Thread(target=spin, args=(end,), name=f"spin-{i}") for i in range(NUM_THREADS)

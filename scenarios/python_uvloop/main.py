@@ -7,8 +7,8 @@ from ddtrace.profiling import Profiler
 
 
 async def cpu_bound_work(duration: float) -> None:
-    end_time = time.monotonic() + duration
-    count = 0
+    end_time: float = time.monotonic() + duration
+    count: int = 0
     while time.monotonic() < end_time:
         count += 1
 
@@ -23,7 +23,7 @@ async def mixed_workload(cpu_duration: float, io_duration: float) -> None:
 
 
 async def main() -> None:
-    execution_time_sec = int(os.environ.get("EXECUTION_TIME_SEC", "5"))
+    execution_time_sec: int = int(os.environ.get("EXECUTION_TIME_SEC", "5"))
 
     tasks: list[asyncio.Task[None]] = [
         asyncio.create_task(cpu_bound_work(execution_time_sec * 0.3)),
@@ -36,7 +36,7 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    prof = Profiler()
+    prof: Profiler = Profiler()
     prof.start()
 
     uvloop.install()
