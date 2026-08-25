@@ -20,11 +20,16 @@ class CPUBurner:
             self.i += 1
 
     def main(self) -> None:
-        execution_time_sec = float(os.getenv("EXECUTION_TIME_SEC", "10"))
-        end = time() + execution_time_sec
+        execution_time_sec: float = float(os.getenv("EXECUTION_TIME_SEC", "10"))
+        end: float = time() + execution_time_sec
         while time() < end:
             self.a()
             self.b()
 
 
-CPUBurner().main()
+def main() -> None:
+    CPUBurner().main()
+
+
+if __name__ == "__main__":
+    main()
