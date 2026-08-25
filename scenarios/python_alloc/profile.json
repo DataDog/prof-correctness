@@ -7,12 +7,12 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_1$",
+          "regular_expression": "^<module>;.*Target\\.run;Target\\.allocate_memory_1$",
           "percent": 32,
           "error_margin": 5
         },
         {
-          "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_2$",
+          "regular_expression": "^<module>;.*Target\\.run;Target\\.allocate_memory_2$",
           "percent": 43,
           "error_margin": 5
         }
@@ -23,12 +23,12 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_1$",
+          "regular_expression": "^<module>;.*Target\\.run;Target\\.allocate_memory_1$",
           "percent": 29,
           "error_margin": 5
         },
         {
-          "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_2$",
+          "regular_expression": "^<module>;.*Target\\.run;Target\\.allocate_memory_2$",
           "percent": 39,
           "error_margin": 5
         }

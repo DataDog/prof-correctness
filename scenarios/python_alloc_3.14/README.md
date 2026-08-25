@@ -4,10 +4,10 @@ Pair: `python_alloc_3.14` / `python_alloc_3.15`. Asserts `alloc-space` + `alloc-
 
 | Profile type | Stack | Expected % | Margin |
 |--------------|-------|------------|--------|
-| alloc-samples | `Target.allocate_memory_1` | 32 | 5 |
-| alloc-samples | `Target.allocate_memory_2` | 43 | 5 |
-| alloc-space | `Target.allocate_memory_1` | 29 | 5 |
-| alloc-space | `Target.allocate_memory_2` | 39 | 5 |
+| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_1` | 32 | 5 |
+| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_2` | 43 | 5 |
+| alloc-space | `<module>;.*Target.run;Target.allocate_memory_1` | 29 | 5 |
+| alloc-space | `<module>;.*Target.run;Target.allocate_memory_2` | 39 | 5 |
 
 Runs on `main` CI (PyPI ddtrace).
 
