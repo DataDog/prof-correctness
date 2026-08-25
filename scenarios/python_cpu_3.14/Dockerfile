@@ -3,7 +3,7 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
-COPY ./scenarios/python_cpu_gate/requirements.txt /app/requirements.txt
+COPY ./scenarios/python_gate/requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 COPY ./scenarios/python_cpu_gate/main.py /app/main.py
