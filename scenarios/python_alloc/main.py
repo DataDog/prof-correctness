@@ -1,19 +1,29 @@
+"""Allocation workload with two distinct sites for profile attribution.
+
+Each loop iteration calls allocate_memory_1 (size bytes) and allocate_memory_2
+(3× size bytes), producing a 1:3 alloc-space ratio in profiles.
+"""
+
 from ddtrace.profiling import Profiler
+
+# Capacity must be even: run() fills two slots per iteration.
+_CAPACITY = int(1e6)
+_ALLOC_SIZE = 1024
 
 
 class Target:
     def __init__(self) -> None:
         self.memory: list[bytearray | None] = []
         self.index: int = 0
-        self.grow_list(target=int(1e6))
+        self.grow_list(_CAPACITY)
 
     def run(self) -> None:
-        while self.memory[-1] is None:
-            self.allocate_memory_1(1024)
-            self.allocate_memory_2(1024)
+        while self.index < len(self.memory):
+            self.allocate_memory_1(_ALLOC_SIZE)
+            self.allocate_memory_2(_ALLOC_SIZE)
 
     def grow_list(self, target: int) -> None:
-        self.memory = [None for _ in range(target)]
+        self.memory = [None] * target
 
     def allocate_memory_1(self, size: int) -> None:
         self.memory[self.index] = bytearray(size)
