@@ -13,17 +13,13 @@ _ALLOC_SIZE = 1024
 
 class Target:
     def __init__(self) -> None:
-        self.memory: list[bytearray | None] = []
+        self.memory: list[bytearray | None] = [None] * _CAPACITY
         self.index: int = 0
-        self.grow_list(_CAPACITY)
 
     def run(self) -> None:
         while self.index < len(self.memory):
             self.allocate_memory_1(_ALLOC_SIZE)
             self.allocate_memory_2(_ALLOC_SIZE)
-
-    def grow_list(self, target: int) -> None:
-        self.memory = [None] * target
 
     def allocate_memory_1(self, size: int) -> None:
         self.memory[self.index] = bytearray(size)
