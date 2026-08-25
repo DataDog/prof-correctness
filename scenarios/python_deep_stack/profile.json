@@ -6,8 +6,8 @@
       "stack-content": [
         {
           "regular_expression": "[0-9]+ frames omitted>;(recurse;){50,}burn",
-          "percent": 100,
-          "error_margin": 10
+          "percent": 99,
+          "error_margin": 5
         }
       ]
     }

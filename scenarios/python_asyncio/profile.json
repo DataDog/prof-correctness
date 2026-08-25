@@ -6,8 +6,8 @@
       "stack-content": [
         {
           "regular_expression": ".*my_coroutine.*",
-          "percent": 50,
-          "error_margin": 100,
+          "percent": 30,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -30,8 +30,8 @@
       "stack-content": [
         {
           "regular_expression": ".*my_coroutine.*",
-          "percent": 50,
-          "error_margin": 100,
+          "percent": 61,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",

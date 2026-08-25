@@ -8,13 +8,13 @@
       "stack-content": [
         {
           "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_1$",
-          "percent": 33,
-          "error_margin": 10
+          "percent": 32,
+          "error_margin": 5
         },
         {
           "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_2$",
-          "percent": 44,
-          "error_margin": 10
+          "percent": 43,
+          "error_margin": 5
         }
       ]
     },
@@ -24,13 +24,13 @@
       "stack-content": [
         {
           "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_1$",
-          "percent": 30,
-          "error_margin": 10
+          "percent": 29,
+          "error_margin": 5
         },
         {
           "regular_expression": "^<module>;Target\\.run;Target\\.allocate_memory_2$",
-          "percent": 40,
-          "error_margin": 10
+          "percent": 39,
+          "error_margin": 5
         }
       ]
     }
