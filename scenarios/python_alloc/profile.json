@@ -8,12 +8,12 @@
       "stack-content": [
         {
           "regular_expression": "^<module>;.*Target\\.run;Target\\.allocate_memory_1$",
-          "percent": 33,
+          "percent": 32,
           "error_margin": 5
         },
         {
           "regular_expression": "^<module>;.*Target\\.run;Target\\.allocate_memory_2$",
-          "percent": 44,
+          "percent": 43,
           "error_margin": 5
         }
       ]
