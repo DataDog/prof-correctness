@@ -2,32 +2,30 @@
 
 Each loop iteration calls allocate_memory_1 (size bytes) and allocate_memory_2
 (3x size bytes), producing a 1:3 alloc-space ratio in profiles.
+
+Objects are not retained: this gate asserts allocation events, not the live set
+(python_live_heap covers persistent heap). Holding 1M bytearrays (~2 GB RSS)
+would also couple the run to TRACEBACK_ARRAY_MAX_COUNT (65535 live samples).
 """
 
 from ddtrace.profiling import Profiler
 
-# run() fills two slots per iteration (pair count = len // 2).
+# run() performs pair count = _CAPACITY // 2 iterations (500000 each site).
 _CAPACITY = int(1e6)
 _ALLOC_SIZE = 1024
 
 
 class Target:
-    def __init__(self) -> None:
-        self.memory: list[bytearray | None] = [None] * _CAPACITY
-        self.index: int = 0
-
     def run(self) -> None:
-        for _ in range(len(self.memory) // 2):
+        for _ in range(_CAPACITY // 2):
             self.allocate_memory_1(_ALLOC_SIZE)
             self.allocate_memory_2(_ALLOC_SIZE)
 
     def allocate_memory_1(self, size: int) -> None:
-        self.memory[self.index] = bytearray(size)
-        self.index += 1
+        bytearray(size)
 
     def allocate_memory_2(self, size: int) -> None:
-        self.memory[self.index] = bytearray(3 * size)
-        self.index += 1
+        bytearray(3 * size)
 
 
 def main() -> None:
