@@ -1,5 +1,6 @@
 {
   "test_name": "python_uvloop",
+  "note": "Empirical wall-time percents: asyncio.gather reclassifies the main task from leaf to parent mid-run (folded-stack shape and denominator both change), and mixed_workload awaits children inline so nested frames double-count (percents sum to 117%). Closed-form duration ratios do not reproduce observation. Anchors are the mode of 40/41 CI runs (56/29/43); the 51/27/39 harvest from run 32917399334 was that pool's unique minimum.",
   "scale_by_duration": false,
   "pprof-regex": "",
   "stacks": [
@@ -9,7 +10,7 @@
       "stack-content": [
         {
           "regular_expression": ".*cpu_bound_work.*",
-          "percent": 51,
+          "percent": 56,
           "error_margin": 5,
           "labels": [
             {
@@ -28,7 +29,7 @@
       "stack-content": [
         {
           "regular_expression": ".*mixed_workload.*",
-          "percent": 27,
+          "percent": 29,
           "error_margin": 5,
           "labels": [
             {
@@ -47,7 +48,7 @@
       "stack-content": [
         {
           "regular_expression": ".*io_simulation.*",
-          "percent": 39,
+          "percent": 43,
           "error_margin": 5,
           "labels": [
             {
