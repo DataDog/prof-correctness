@@ -1,15 +1,15 @@
 # Alloc gate (3.15 candidate)
 
-Pair: `python_alloc_3.14` / `python_alloc_3.15`. Same workload (`scenarios/python_alloc/main.py`); expectations from `python_alloc/profile_3.15.json` (3.15 uses bare `run;allocate_memory_*` stacks and `thread name` labels).
+Pair: `python_alloc_3.14` / `python_alloc_3.15`. Same workload and expectations as 3.14 (`scenarios/python_alloc/main.py`, `profile.json`). Memory-only; stack/lock collectors off. `DD_PROFILING_HEAP_SAMPLE_SIZE=65536` and `DD_PROFILING_MEMORY_MEM_DOMAIN_ENABLED=true` are pinned.
 
-| Profile type | Stack | Expected % | Margin |
-|--------------|-------|------------|--------|
-| alloc-samples | `run;allocate_memory_1` | 35 | 5 |
-| alloc-samples | `run;allocate_memory_2` | 45 | 5 |
-| alloc-samples | `__init__;grow_list` | 19 | 5 |
-| alloc-space | `run;allocate_memory_1` | 25 | 5 |
-| alloc-space | `run;allocate_memory_2` | 75 | 5 |
-| alloc-space | `grow_list` | 3 | 3 |
+| Profile type | Stack | Expected | Margin |
+|--------------|-------|----------|--------|
+| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_1` | 1000000 | 15 |
+| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_2` | 1000000 | 15 |
+| alloc-samples matching-sum | both sites | 2000000 | 15 |
+| alloc-space | `<module>;.*Target.run;Target.allocate_memory_1` | 512000000 | 10 |
+| alloc-space | `<module>;.*Target.run;Target.allocate_memory_2` | 1536000000 | 10 |
+| alloc-space matching-sum | both sites | 2048000000 | 10 |
 
 **Wheel-only** — requires `DDTRACE_INSTALL_URL`; excluded from `main` CI.
 

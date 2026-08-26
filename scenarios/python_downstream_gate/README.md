@@ -19,6 +19,8 @@ Twenty-four scenarios (**3.14 baseline** / **3.15 candidate**) are the default s
 
 Feature-specific pairs (mem_domain) land in follow-up PRs.
 
+Each wrapper directory has a `README.md` with expected profile tables, margins, and CI burn-in sources.
+
 ## Default regexp
 
 ```

@@ -1,6 +1,8 @@
 # Native CPU gate (3.15 candidate)
 
-Pair: `python_native_cpu_3.14` / `python_native_cpu_3.15`. Same workload and expectations as 3.14 (`scenarios/python_native_cpu/main.py`, `python_native_cpu/profile.json`).
+Pair: `python_native_cpu_3.14` / `python_native_cpu_3.15`. Same workload and expectations as 3.14 (`scenarios/python_native_cpu/main.py`, `profile.json`).
+
+Expectation tables: see `python_native_cpu_3.14/README.md`. 3.15 not re-burned on main CI until manylinux cp315 wheel lands.
 
 **Wheel-only** — requires `DDTRACE_INSTALL_URL`; excluded from `main` CI.
 

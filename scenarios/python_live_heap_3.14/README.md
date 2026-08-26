@@ -9,7 +9,11 @@ Pair: `python_live_heap_3.14` / `python_live_heap_3.15`. Asserts persistent live
 | heap-live-samples | `retain_major` | 80 | 20 |
 | heap-live-samples | `retain_minor` | 20 | 20 |
 
+Stay on percent: captured 3.14 snapshots (2026-08-24) do not match the arithmetic 1600/400 live-samples or 32768000 heap-space (interval dumps are ~5.3e6/1.3e6 space and ~200/50 samples; shutdown dumps are 0.6–1.2e9 space). `OBJ_SIZE == HEAP_SAMPLE_SIZE` does not make the per-object extrapolated count 1.
+
 `allow_first_profile_failure`: first snapshot may predate the full live set.
+
+**Source:** Burn-in via downstream wheel CI ([#168](https://github.com/DataDog/prof-correctness/pull/168)). Heap percents reflect 80/20 count split at `retain_major` / `retain_minor`; live-sample percents differ because sampling weights counts differently than byte totals.
 
 **Wheel-only** — excluded from prof-correctness `main` CI until live-heap ships on PyPI. With ddtrace `c6197c16` the snapshot is embedded in combined upload profiles (`profiles.*.pprof`); separate `*.heap.pprof` is used when the exporter ships that artifact.
 
