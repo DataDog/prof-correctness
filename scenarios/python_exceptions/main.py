@@ -1,4 +1,6 @@
 import contextlib
+import os
+import time
 
 from ddtrace.profiling import Profiler
 
@@ -16,7 +18,8 @@ def handle_value_error() -> None:
 def main() -> None:
     prof = Profiler()
     prof.start()
-    for _ in range(500):
+    end = time.monotonic() + float(os.environ.get("EXECUTION_TIME_SEC", "3"))
+    while time.monotonic() < end:
         handle_value_error()
     prof.stop()
 

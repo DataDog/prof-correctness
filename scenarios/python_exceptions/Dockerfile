@@ -9,6 +9,7 @@ RUN pip install -r /app/requirements.txt
 COPY ./scenarios/python_exceptions/main.py /app/main.py
 WORKDIR /app
 
+ENV EXECUTION_TIME_SEC=3
 ENV DD_PROFILING_EXCEPTION_ENABLED=true
 
 CMD python main.py

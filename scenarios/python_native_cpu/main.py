@@ -31,10 +31,10 @@ def compress_work(duration: float) -> None:
 
 
 def factorial_work(duration: float) -> None:
-    """Burn CPU in math.factorial (C extension)."""
+    """Burn CPU in math.factorial (C extension). Unit is 10_000 so one call is small vs the time window."""
     end: float = time() + duration
     while time() < end:
-        math.factorial(100_000)
+        math.factorial(10_000)
 
 
 def regex_work(duration: float) -> None:

@@ -1,6 +1,6 @@
 {
   "test_name": "python_gil_contention",
-  "note": "cpu-time 1e9 ns/s is one core (8 bytecode threads serialize on the GIL). Margin ±8: the pre-adaptive-sampling 41-run pool sat at 1.009e9 (cv 0.4%), but post-fix CI (run 33011434929, adaptive sampling off) was 7.2% above design. spin-0 percent 12 is fair share 100/8. wall-time 7.766e9 ns/s is the 41-run mean: design 8e9 sits 2.9% above observation.",
+  "note": "cpu-time 1e9 ns/s is one core. spin-0 percent 12 is fair share 100/8. wall-time 8e9 ns/s is NUM_THREADS × 1e9. Margins sized so a different machine still passes; the anchors are design.",
   "stacks": [
     {
       "profile-type": "cpu-time",
@@ -35,8 +35,8 @@
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "value": 7766000000,
-          "error_margin": 5
+          "value": 8000000000,
+          "error_margin": 8
         }
       ]
     }

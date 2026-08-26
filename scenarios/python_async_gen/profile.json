@@ -1,14 +1,22 @@
 {
   "test_name": "python_async_gen",
-  "note": "async_gen_work is the only workload coroutine for EXECUTION_TIME_SEC. The previous 35% ±10 encoded scheduler/sleep(0) dilution, not the 8s timeout. 50% ±20 is a floor on the generator body (observed must be ≥30%); a tighter closed form needs a rewrite that does not yield every 10k items.",
+  "note": "Named gen_task runs async_gen_work for the whole EXECUTION_TIME_SEC; it is the only user coroutine. Wall-time closed form: majority of samples on that stack.",
   "stacks": [
     {
       "profile-type": "wall-time",
       "stack-content": [
         {
           "regular_expression": ".*async_gen_work.*",
-          "percent": 50,
-          "error_margin": 20
+          "percent": 80,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "gen_task"
+              ]
+            }
+          ]
         }
       ]
     }

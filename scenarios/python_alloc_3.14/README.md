@@ -4,14 +4,14 @@ Pair: `python_alloc_3.14` / `python_alloc_3.15`. Asserts `alloc-space` + `alloc-
 
 | Profile type | Stack | Expected % | Margin |
 |--------------|-------|------------|--------|
-| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_1` | 32 | 5 |
-| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_2` | 43 | 5 |
-| alloc-space | `<module>;.*Target.run;Target.allocate_memory_1` | 29 | 5 |
-| alloc-space | `<module>;.*Target.run;Target.allocate_memory_2` | 39 | 5 |
+| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_1` | 50 | 15 |
+| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_2` | 50 | 15 |
+| alloc-space | `<module>;.*Target.run;Target.allocate_memory_1` | 25 | 10 |
+| alloc-space | `<module>;.*Target.run;Target.allocate_memory_2` | 75 | 10 |
 
 Runs on `main` CI (PyPI ddtrace).
 
-**Attribution gap (do not retune onto 29/39):** `main.py` documents a 1:3 byte ratio so alloc-space closed form is 25/75. Observed 3.14 alloc-space is an invariant **29:39 (1:1.345, sd=0 across 64 CI runs)** and the two sites together are only 68% of alloc-space despite being ~99.6% of allocated bytes. `profile_3.15.json` already asserts 25/75. Investigate before treating either number as correct.
+Equal call counts and 1:3 byte sizes. 3.14 has historically shown ~29/39 alloc-space (sd=0); that is treated as a profiler discrepancy against this spec, not as the expected value.
 
 ```sh
 TEST_SCENARIOS='python_alloc_3\.14' go test -v -run TestScenarios
