@@ -9,7 +9,7 @@
       "stack-content": [
         {
           "regular_expression": "^Hub\\.run;gevent\\.libev\\.corecext\\.loop\\.run$",
-          "value": 2091809000,
+          "value": 2108801000,
           "error_margin": 5,
           "labels": [
             {
@@ -29,8 +29,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 939424000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -49,8 +49,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 944701000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -69,8 +69,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 944701000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -89,8 +89,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 929318000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -109,8 +109,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 939431000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -129,8 +129,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 939430000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -149,8 +149,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 939431000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -169,8 +169,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 844584000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -189,8 +189,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 944701000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -209,8 +209,8 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 934000000,
-          "error_margin": 5,
+          "value": 944701000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",

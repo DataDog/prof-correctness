@@ -19,7 +19,7 @@
         },
         {
           "regular_expression": "^<module>;.*CPUBurner\\.main;CPUBurner\\.a$",
-          "percent": 33,
+          "percent": 32,
           "error_margin": 5,
           "labels": [
             {

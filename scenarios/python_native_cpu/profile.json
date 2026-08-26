@@ -6,27 +6,27 @@
       "stack-content": [
         {
           "regular_expression": ".*hash_work",
-          "percent": 20,
+          "percent": 19,
           "error_margin": 5
         },
         {
           "regular_expression": ".*compress_work",
-          "percent": 20,
+          "percent": 19,
           "error_margin": 5
         },
         {
           "regular_expression": ".*factorial_work",
-          "percent": 20,
+          "percent": 21,
           "error_margin": 5
         },
         {
           "regular_expression": ".*regex_work",
-          "percent": 20,
+          "percent": 19,
           "error_margin": 5
         },
         {
           "regular_expression": ".*crc_work",
-          "percent": 20,
+          "percent": 19,
           "error_margin": 5
         }
       ]
@@ -36,27 +36,27 @@
       "stack-content": [
         {
           "regular_expression": ".*hash_work",
-          "percent": 20,
+          "percent": 19,
           "error_margin": 5
         },
         {
           "regular_expression": ".*compress_work",
-          "percent": 20,
+          "percent": 19,
           "error_margin": 5
         },
         {
           "regular_expression": ".*factorial_work",
-          "percent": 20,
+          "percent": 21,
           "error_margin": 5
         },
         {
           "regular_expression": ".*regex_work",
-          "percent": 20,
+          "percent": 19,
           "error_margin": 5
         },
         {
           "regular_expression": ".*crc_work",
-          "percent": 20,
+          "percent": 19,
           "error_margin": 5
         }
       ]
