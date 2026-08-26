@@ -102,7 +102,20 @@ The `./profilers` folder contains helpers.
 
 ### Describe the expected output
 
-Describe what you expect in a json file within the same folder. *This data is captured at every run in the matching folder*, so you can use it as a reference to adjust your test. Here is an example of a json file
+Expected values should be derived from what the workload is **designed** to produce
+(equal time slices, known byte ratios, N threads × duration, and so on). Capture the
+observed profile (`captureProfData` writes a JSON dump next to each pprof under
+`./data/`) to **verify** that derivation and to **size the error margin** from
+run-to-run spread — not to supply the expected value itself.
+
+Widen the margin where measurement is genuinely noisy (scheduler fairness, nested
+asyncio frames). Do not move the anchor onto a single CI sample: at `±5` an
+anchor of 20 accepts `[15, 25]` and an anchor of 19 accepts `[14, 24]`, so a 1pp
+harvest tweak is arithmetically inert.
+
+When a closed form is unavailable, document why in the profile's `note` field and
+set the anchor from a **distribution** (see `TestFlakiness` / `FLAKINESS_RUNS` and
+`go run ./cmd/harvest-margins ./data`). Example:
 
 ```
 {
