@@ -1,13 +1,14 @@
 {
   "test_name": "python_gil_contention",
+  "note": "cpu-time 1e9 ns/s is one core (8 bytecode threads serialize on the GIL). spin-0 percent 12 is fair share 100/8 (integer schema cannot express 12.5). wall-time 7.766e9 ns/s is the 41-run mean: design 8e9 (NUM_THREADS × 1e9) sits 2.9% above observation, so design-centering needs ±7.6% and leaves a 10.9% upside blind spot vs ±5 symmetric on the mean.",
   "stacks": [
     {
       "profile-type": "cpu-time",
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "value": 1010000000,
-          "error_margin": 5
+          "value": 1000000000,
+          "error_margin": 2
         }
       ]
     },
@@ -16,8 +17,8 @@
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "percent": 15,
-          "error_margin": 5,
+          "percent": 12,
+          "error_margin": 4,
           "labels": [
             {
               "key": "thread name",
@@ -34,8 +35,8 @@
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "value": 7510000000,
-          "error_margin": 7
+          "value": 7766000000,
+          "error_margin": 5
         }
       ]
     }

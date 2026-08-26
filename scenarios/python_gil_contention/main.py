@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 import time
 
@@ -22,6 +23,10 @@ def spin(end: float) -> None:
 
 
 def main() -> None:
+    # Shorter GIL slices → more handoffs over the fixed window, so per-thread
+    # cpu-time converges closer to the 100/NUM_THREADS fair share.
+    sys.setswitchinterval(0.001)
+
     prof: Profiler = Profiler()
     prof.start()
 
