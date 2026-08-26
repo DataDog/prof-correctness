@@ -1,5 +1,6 @@
 {
   "test_name": "python_native_cpu",
+  "note": "Five equal time slices → 20% each by design. Observed: hash/compress/crc are exactly 19 in 70/70 CI runs; factorial_work mean 20.47; the five stacks sum to 96.5% (range 95–98). Hypothesis: math.factorial(100_000) overshoots its ~0.67s budget because the loop checks the clock then runs one whole unit. Investigate before tightening margins below ±5.",
   "stacks": [
     {
       "profile-type": "cpu-time",

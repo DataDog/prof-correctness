@@ -11,6 +11,8 @@ Pair: `python_alloc_3.14` / `python_alloc_3.15`. Asserts `alloc-space` + `alloc-
 
 Runs on `main` CI (PyPI ddtrace).
 
+**Attribution gap (do not retune onto 29/39):** `main.py` documents a 1:3 byte ratio so alloc-space closed form is 25/75. Observed 3.14 alloc-space is an invariant **29:39 (1:1.345, sd=0 across 64 CI runs)** and the two sites together are only 68% of alloc-space despite being ~99.6% of allocated bytes. `profile_3.15.json` already asserts 25/75. Investigate before treating either number as correct.
+
 ```sh
 TEST_SCENARIOS='python_alloc_3\.14' go test -v -run TestScenarios
 ```
