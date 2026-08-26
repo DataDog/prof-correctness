@@ -11,7 +11,7 @@ Checkout the readme for some guidelines on how to create new tests.
 
 The JSON next to a scenario states what the workload is **supposed** to produce, not what the last CI run happened to observe.
 
-1. Derive the expected `percent` / `value` from the workload constants (time budgets, byte ratios, thread counts, durations).
+1. Prefer an absolute or rate `value` derived from the workload constants (time budgets, byte ratios, thread counts, durations). Reserve `percent` for cases where no absolute quantity exists.
 2. Run the scenario (locally or in CI) and use the captured JSON under `./data/` to confirm the derivation and to size `error_margin` from measured spread.
 3. If no closed form exists, put the reason in the profile `note` and harvest a distribution (`FLAKINESS_RUNS` + `go run ./cmd/harvest-margins ./data`) rather than locking a single sample.
 

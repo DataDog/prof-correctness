@@ -1,66 +1,70 @@
 {
   "test_name": "python_native_cpu",
-  "note": "Five equal time slices → 20% each by design. factorial_work uses math.factorial(10_000) so one work unit is small relative to the time window.",
+  "note": "Five equal time slices of EXECUTION_TIME_SEC/5 = 5e9 ns each. factorial_work uses math.factorial(10_000) so one work unit is small relative to the time window.",
   "stacks": [
     {
       "profile-type": "cpu-time",
       "stack-content": [
         {
           "regular_expression": ".*hash_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         },
         {
           "regular_expression": ".*compress_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         },
         {
           "regular_expression": ".*factorial_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         },
         {
           "regular_expression": ".*regex_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         },
         {
           "regular_expression": ".*crc_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         }
-      ]
+      ],
+      "error-margin": 5,
+      "value-matching-sum": 25000000000
     },
     {
       "profile-type": "wall-time",
       "stack-content": [
         {
           "regular_expression": ".*hash_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         },
         {
           "regular_expression": ".*compress_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         },
         {
           "regular_expression": ".*factorial_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         },
         {
           "regular_expression": ".*regex_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         },
         {
           "regular_expression": ".*crc_work",
-          "percent": 20,
+          "value": 5000000000,
           "error_margin": 5
         }
-      ]
+      ],
+      "error-margin": 5,
+      "value-matching-sum": 25000000000
     }
   ],
   "scale_by_duration": false

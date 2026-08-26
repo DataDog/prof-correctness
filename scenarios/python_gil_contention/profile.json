@@ -1,6 +1,6 @@
 {
   "test_name": "python_gil_contention",
-  "note": "cpu-time 1e9 ns/s is one core. spin-0 percent 12 is fair share 100/8 (schema is integer; 12.5 cannot be expressed). wall-time 8e9 ns/s is NUM_THREADS × 1e9.",
+  "note": "cpu-time 1e9 ns/s is one core. spin-0 1.25e8 ns/s is fair share 1e9/NUM_THREADS. wall-time 8e9 ns/s is NUM_THREADS × 1e9.",
   "stacks": [
     {
       "profile-type": "cpu-time",
@@ -17,8 +17,8 @@
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "percent": 12,
-          "error_margin": 4,
+          "value": 125000000,
+          "error_margin": 8,
           "labels": [
             {
               "key": "thread name",

@@ -1,13 +1,13 @@
 {
   "test_name": "python_async_gen",
-  "note": "Named gen_task runs async_gen_work for the whole EXECUTION_TIME_SEC; it is the only user coroutine. Target is 100% of wall-time on that stack; margin is scheduler/sleep(0).",
+  "note": "Named gen_task runs async_gen_work for the whole EXECUTION_TIME_SEC = 8e9 ns; it is the only user coroutine. Margin is scheduler/sleep(0).",
   "stacks": [
     {
       "profile-type": "wall-time",
       "stack-content": [
         {
           "regular_expression": ".*async_gen_work.*",
-          "percent": 100,
+          "value": 8000000000,
           "error_margin": 20,
           "labels": [
             {
@@ -18,7 +18,9 @@
             }
           ]
         }
-      ]
+      ],
+      "error-margin": 20,
+      "value-matching-sum": 8000000000
     }
   ],
   "scale_by_duration": false
