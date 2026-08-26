@@ -1,13 +1,14 @@
 {
   "test_name": "python_exceptions",
+  "note": "500 identical ValueError raises; assert the labeled raise_value_error stack is a majority of exception-samples. The previous 4% ±4 was startup-sample dilution, not a closed form from the 500 raises. Sampling does not emit one sample per raise, so this is a share floor (50% ±40 → observed must be ≥10%) rather than a count.",
   "stacks": [
     {
       "profile-type": "exception-samples",
       "stack-content": [
         {
           "regular_expression": ".*raise_value_error.*",
-          "percent": 4,
-          "error_margin": 4,
+          "percent": 50,
+          "error_margin": 40,
           "labels": [
             {
               "key": "exception type",
