@@ -16,7 +16,7 @@
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "percent": 12,
+          "percent": 13,
           "error_margin": 5,
           "labels": [
             {

@@ -9,7 +9,7 @@
       "stack-content": [
         {
           "regular_expression": ".*cpu_bound_work.*",
-          "percent": 56,
+          "percent": 51,
           "error_margin": 5,
           "labels": [
             {
@@ -47,7 +47,7 @@
       "stack-content": [
         {
           "regular_expression": ".*io_simulation.*",
-          "percent": 43,
+          "percent": 39,
           "error_margin": 5,
           "labels": [
             {
