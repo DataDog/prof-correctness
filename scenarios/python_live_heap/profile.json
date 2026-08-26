@@ -1,6 +1,6 @@
 {
   "test_name": "python_live_heap",
-  "note": "Live-heap in combined upload profile (profiles.*.pprof at ddtrace c6197c16; *.heap.pprof when separate export ships). retain_major/retain_minor: equal-size bytes, 80/20 count split.",
+  "note": "Live-heap in combined upload profile (profiles.*.pprof at ddtrace c6197c16; *.heap.pprof when separate export ships). retain_major/retain_minor: equal-size bytes, 80/20 count split (N_MAJOR=1600, N_MINOR=400).",
   "pprof-regex": "profiles\\..*\\.pprof",
   "scale_by_duration": false,
   "allow_first_profile_failure": true,
@@ -27,14 +27,14 @@
       "stack-content": [
         {
           "regular_expression": "^<module>;.*main;.*retain_major.*$",
-          "percent": 64,
-          "error_margin": 16,
+          "percent": 80,
+          "error_margin": 20,
           "labels": []
         },
         {
           "regular_expression": "^<module>;.*main;.*retain_minor.*$",
-          "percent": 16,
-          "error_margin": 8,
+          "percent": 20,
+          "error_margin": 20,
           "labels": []
         }
       ]

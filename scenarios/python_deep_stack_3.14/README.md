@@ -4,7 +4,7 @@ Pair: `python_deep_stack_3.14` / `python_deep_stack_3.15`. Asserts **cpu-time** 
 
 | Profile type | Stack | Expected % | Margin |
 |--------------|-------|------------|--------|
-| cpu-time | `<N frames omitted>;recurse;…;burn` | 99 | 5 |
+| cpu-time | `<N frames omitted>;recurse;…;burn` | 100 | 5 |
 
 Runs on `main` CI (PyPI ddtrace).
 

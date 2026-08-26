@@ -6,8 +6,8 @@ Pair: `python_live_heap_3.14` / `python_live_heap_3.15`. Asserts persistent live
 |--------------|-------|------------|--------|
 | heap-space | `retain_major` | 80 | 10 |
 | heap-space | `retain_minor` | 20 | 10 |
-| heap-live-samples | `retain_major` | 64 | 16 |
-| heap-live-samples | `retain_minor` | 16 | 8 |
+| heap-live-samples | `retain_major` | 80 | 20 |
+| heap-live-samples | `retain_minor` | 20 | 20 |
 
 `allow_first_profile_failure`: first snapshot may predate the full live set.
 

@@ -1,12 +1,13 @@
 {
   "test_name": "python_deep_stack",
+  "note": "recurse(400) then burn for EXECUTION_TIME_SEC is the only CPU work. Target 100% of cpu-time on that stack; margin is profiler/startup frames.",
   "stacks": [
     {
       "profile-type": "cpu-time",
       "stack-content": [
         {
           "regular_expression": "[0-9]+ frames omitted>;(recurse;){50,}burn",
-          "percent": 99,
+          "percent": 100,
           "error_margin": 5
         }
       ]

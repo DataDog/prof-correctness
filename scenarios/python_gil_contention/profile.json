@@ -1,6 +1,6 @@
 {
   "test_name": "python_gil_contention",
-  "note": "cpu-time 1e9 ns/s is one core. spin-0 percent 12 is fair share 100/8. wall-time 8e9 ns/s is NUM_THREADS × 1e9. Margins sized so a different machine still passes; the anchors are design.",
+  "note": "cpu-time 1e9 ns/s is one core. spin-0 percent 12 is fair share 100/8 (schema is integer; 12.5 cannot be expressed). wall-time 8e9 ns/s is NUM_THREADS × 1e9.",
   "stacks": [
     {
       "profile-type": "cpu-time",

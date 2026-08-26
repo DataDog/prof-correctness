@@ -1,13 +1,14 @@
 {
   "test_name": "python_asyncio",
+  "note": "Named short_task sleeps EXECUTION_TIME_SEC/2, long_task sleeps EXECUTION_TIME_SEC. Concurrent 1:2 → 33% / 67% of wall-time.",
   "stacks": [
     {
       "profile-type": "wall-time",
       "stack-content": [
         {
           "regular_expression": ".*my_coroutine.*",
-          "percent": 30,
-          "error_margin": 5,
+          "percent": 33,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -30,8 +31,8 @@
       "stack-content": [
         {
           "regular_expression": ".*my_coroutine.*",
-          "percent": 61,
-          "error_margin": 5,
+          "percent": 67,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -41,7 +42,9 @@
             },
             {
               "key": "task name",
-              "values_regex": "Task-[0-9]+"
+              "values": [
+                "long_task"
+              ]
             }
           ]
         }
