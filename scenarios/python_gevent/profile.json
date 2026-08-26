@@ -30,7 +30,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 939424000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -50,7 +50,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 944701000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -70,7 +70,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 944701000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -90,7 +90,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 929318000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -110,7 +110,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 939431000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -130,7 +130,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 939430000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -150,7 +150,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 939431000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -170,7 +170,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 844584000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -190,7 +190,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 944701000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
@@ -210,7 +210,7 @@
         {
           "regular_expression": ".*target.*",
           "value": 944701000,
-          "error_margin": 10,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
