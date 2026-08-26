@@ -1,3 +1,12 @@
+"""uvloop gate workload: asyncio tasks with CPU-bound and I/O-bound phases.
+
+Wall-time expectations (profile.json) are burn-in anchors, not naive ratios of
+the duration constants below. asyncio runs on a single thread: cpu_bound_work
+busy-loops without awaiting, so tasks run sequentially when scheduled, not in
+parallel on a shared wall-clock timeline. Samples also attribute nested calls
+(cpu_bound_work inside mixed_workload) to the innermost matching stack frame.
+"""
+
 import asyncio
 import os
 import time
@@ -23,6 +32,9 @@ async def mixed_workload(cpu_duration: float, io_duration: float) -> None:
 
 
 async def main() -> None:
+    # Durations are fractions of EXECUTION_TIME_SEC (default 5s). Tasks are
+    # created upfront; main runs its own cpu_bound_work before gather, so work
+    # is interleaved on one thread rather than overlapping like parallel threads.
     execution_time_sec: int = int(os.environ.get("EXECUTION_TIME_SEC", "5"))
 
     tasks: list[asyncio.Task[None]] = [
