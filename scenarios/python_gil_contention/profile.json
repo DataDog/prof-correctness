@@ -6,7 +6,7 @@
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "value": 1000000000,
+          "value": 1010000000,
           "error_margin": 5
         }
       ]
@@ -16,7 +16,7 @@
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "percent": 13,
+          "percent": 15,
           "error_margin": 5,
           "labels": [
             {

@@ -28,7 +28,7 @@
       "stack-content": [
         {
           "regular_expression": ".*mixed_workload.*",
-          "percent": 29,
+          "percent": 27,
           "error_margin": 5,
           "labels": [
             {
