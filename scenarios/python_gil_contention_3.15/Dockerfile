@@ -9,6 +9,7 @@ COPY ./scenarios/python_gil_contention/main.py /app/main.py
 WORKDIR /app
 
 ENV EXECUTION_TIME_SEC=15
+ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED=0
 ENV DD_PROFILING_ENABLED=true
 
 CMD python main.py
