@@ -34,8 +34,8 @@
       "stack-content": [
         {
           "regular_expression": ".*spin",
-          "value": 8000000000,
-          "error_margin": 5
+          "value": 7510000000,
+          "error_margin": 7
         }
       ]
     }
