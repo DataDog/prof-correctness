@@ -8,11 +8,15 @@ Objects are not retained: this gate asserts allocation events, not the live set
 would also couple the run to TRACEBACK_ARRAY_MAX_COUNT (65535 live samples).
 """
 
+from __future__ import annotations
+
+from typing import Final
+
 from ddtrace.profiling import Profiler
 
 # run() performs pair count = _CAPACITY // 2 iterations (500000 each site).
-_CAPACITY = int(1e6)
-_ALLOC_SIZE = 1024
+_CAPACITY: Final[int] = int(1e6)
+_ALLOC_SIZE: Final[int] = 1024
 
 
 class Target:

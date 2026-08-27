@@ -1,6 +1,6 @@
 {
   "test_name": "python_live_heap",
-  "note": "Live-heap in combined upload profile (profiles.*.pprof at ddtrace c6197c16; *.heap.pprof when separate export ships). retain_major/retain_minor: equal-size bytes, 80/20 count split (N_MAJOR=1600, N_MINOR=400). Captured 3.14 data (2026-08-24) does not support absolute 1600/400 or heap-space 32768000: interval snapshots (profiles.7.2/.7.3) are ~5.3e6/1.3e6 heap-space (~80/20) totaling ~6.6e6 vs 32.8e6 theory, and ~200/50 heap-live-samples; shutdown 7.4 heap-space is 0.6–1.2e9. Per-object extrapolated count is not 1 even though OBJ_SIZE == HEAP_SAMPLE_SIZE. Stay on percent.",
+  "note": "Live-heap in combined upload profile (profiles.*.pprof at ddtrace c6197c16; *.heap.pprof when separate export ships). retain_major/retain_minor: equal-size bytes; 80/20 count split is the closed form. Absolute 1600/400 is not used because per-object extrapolated count is not 1 (OBJ_SIZE == HEAP_SAMPLE_SIZE is not sufficient).",
   "pprof-regex": "profiles\\..*\\.pprof",
   "scale_by_duration": false,
   "allow_first_profile_failure": true,
