@@ -1,0 +1,48 @@
+name: Burn-in harvest
+run-name: "burn-in ${{ inputs.test_scenarios }} x${{ inputs.flakiness_runs }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_scenarios:
+        description: 'Regexp matching exactly one scenario (TEST_SCENARIOS)'
+        required: true
+        type: string
+      flakiness_runs:
+        description: 'Parallel repeats (FLAKINESS_RUNS)'
+        required: false
+        type: string
+        default: '10'
+      ddtrace_install_url:
+        description: 'Optional ddtrace install.sh URL (leave empty for PyPI)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  harvest:
+    runs-on: ubuntu-8-core-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 1.25.1
+      - name: Update perf_event_paranoid settings
+        run: sudo sysctl kernel.perf_event_paranoid=1
+      - name: Run TestFlakiness
+        run: go test -timeout 60m -v -run TestFlakiness
+        env:
+          TEST_SCENARIOS: ${{ inputs.test_scenarios }}
+          FLAKINESS_RUNS: ${{ inputs.flakiness_runs }}
+          DDTRACE_INSTALL_URL: ${{ inputs.ddtrace_install_url }}
+      - name: Aggregate captured JSON
+        if: always()
+        run: go run ./cmd/harvest-margins ./data
+      - name: Upload captured profiles
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: burn_in_${{ github.run_id }}
+          path: data
+          if-no-files-found: warn
