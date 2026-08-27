@@ -6,6 +6,8 @@ awaited on its own so the main task is never a gather parent and never a
 leaf doing work. Wall-time closed form: 50% cpu_task / 50% io_task.
 """
 
+from __future__ import annotations
+
 import asyncio
 import os
 import time
@@ -25,7 +27,8 @@ async def io_simulation(duration: float) -> None:
 
 
 async def main() -> None:
-    half: float = float(os.environ.get("EXECUTION_TIME_SEC", "5")) / 2.0
+    execution_time_raw: str = os.environ.get("EXECUTION_TIME_SEC", "5")
+    half: float = float(execution_time_raw) / 2.0
     await asyncio.create_task(cpu_bound_work(half), name="cpu_task")
     await asyncio.create_task(io_simulation(half), name="io_task")
 

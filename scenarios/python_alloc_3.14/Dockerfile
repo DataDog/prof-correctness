@@ -15,7 +15,7 @@ ENV DD_PROFILING_LOCK_ENABLED=false
 # future change reintroduces retention of the 1M objects.
 ENV DD_PROFILING_HEAP_SAMPLE_SIZE=65536
 # bytearray buffers are PYMEM_DOMAIN_MEM on 3.13+; without this hook
-# the gate only sees ~56-byte OBJ headers (~29/39 space, ~80 MB total).
+# the gate only sees ~56-byte OBJ headers (~80 MB total).
 ENV DD_PROFILING_MEMORY_MEM_DOMAIN_ENABLED=true
 
 CMD python main.py

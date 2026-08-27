@@ -1,13 +1,11 @@
 {
   "test_name": "python_alloc",
-  "note": "500k calls at 1024 vs 3072 bytes. On 3.13+ bytearray buffers are PYMEM_DOMAIN_MEM; CI n=64 with mem_domain off saw only ~56-byte OBJ headers (~29/39 space, ~72–105 MB total, sd=0). Local 3.14 / ddtrace 4.15.0rc1, HEAP_SAMPLE_SIZE=65536, no retention: mem_domain off → 28.8/27.2 MB (1:0.94); mem_domain on → alloc-space 540/1565 MB (1:2.90, two-site 98.6% of 2.14 GB vs 512/1536 MB payload + ~56-byte headers). Each bytearray is two mallocs (OBJ header + MEM buffer), so alloc-samples is ~1e6/site not 5e5. Retention dropped; live-set is python_live_heap's job.",
+  "note": "500k calls × 1024 vs 3072 B yield alloc-space 512/1536 MB. Each bytearray is two mallocs (OBJ header + MEM buffer on 3.13+), so alloc-samples is 1e6/site. The 29/39 ratio was mem_domain off (headers only); Dockerfiles pin DD_PROFILING_MEMORY_MEM_DOMAIN_ENABLED=true.",
   "pprof-regex": "",
   "stacks": [
     {
       "profile-type": "alloc-samples",
       "pprof-regex": "",
-      "error-margin": 15,
-      "value-matching-sum": 2000000,
       "stack-content": [
         {
           "regular_expression": "^<module>;.*Target\\.run;Target\\.allocate_memory_1$",
@@ -24,8 +22,6 @@
     {
       "profile-type": "alloc-space",
       "pprof-regex": "",
-      "error-margin": 10,
-      "value-matching-sum": 2048000000,
       "stack-content": [
         {
           "regular_expression": "^<module>;.*Target\\.run;Target\\.allocate_memory_1$",

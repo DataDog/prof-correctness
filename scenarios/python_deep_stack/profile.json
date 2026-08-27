@@ -10,9 +10,7 @@
           "value": 30000000000,
           "error_margin": 5
         }
-      ],
-      "error-margin": 5,
-      "value-matching-sum": 30000000000
+      ]
     }
   ],
   "scale_by_duration": false

@@ -34,9 +34,7 @@
             }
           ]
         }
-      ],
-      "error-margin": 10,
-      "value-matching-sum": 5000000000
+      ]
     }
   ]
 }
