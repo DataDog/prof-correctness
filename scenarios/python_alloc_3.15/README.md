@@ -6,10 +6,8 @@ Pair: `python_alloc_3.14` / `python_alloc_3.15`. Same workload and expectations 
 |--------------|-------|----------|--------|
 | alloc-samples | `<module>;.*Target.run;Target.allocate_memory_1` | 1000000 | 15 |
 | alloc-samples | `<module>;.*Target.run;Target.allocate_memory_2` | 1000000 | 15 |
-| alloc-samples matching-sum | both sites | 2000000 | 15 |
 | alloc-space | `<module>;.*Target.run;Target.allocate_memory_1` | 512000000 | 10 |
 | alloc-space | `<module>;.*Target.run;Target.allocate_memory_2` | 1536000000 | 10 |
-| alloc-space matching-sum | both sites | 2048000000 | 10 |
 
 **Wheel-only** — requires `DDTRACE_INSTALL_URL`; excluded from `main` CI.
 
