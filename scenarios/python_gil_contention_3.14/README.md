@@ -7,7 +7,7 @@ Expectations in `scenarios/python_gil_contention/profile.json` (`scale_by_durati
 | Profile type | Stack | Expected | Margin | Notes |
 |--------------|-------|----------|--------|-------|
 | cpu-time | `.*spin` (aggregate) | 1×10⁹ | 8 | one core |
-| cpu-time | `.*spin` | 1.25×10⁸ | 8 | thread name: `spin-0`; fair share 1e9/NUM_THREADS |
+| cpu-time | `.*spin` | 1.25×10⁸ | 32 | thread name: `spin-0`; fair share 1e9/NUM_THREADS; margin is GIL unfairness (old 12±4pp band) |
 | wall-time | `.*spin` (aggregate) | 8×10⁹ | 8 | NUM_THREADS × 1e9 |
 
 ```sh
