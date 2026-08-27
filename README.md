@@ -114,8 +114,8 @@ anchor of 20 accepts `[15, 25]` and an anchor of 19 accepts `[14, 24]`, so a 1pp
 harvest tweak is arithmetically inert.
 
 When a closed form is unavailable, document why in the profile's `note` field and
-set the anchor from a **distribution** (see `TestFlakiness` / `FLAKINESS_RUNS` and
-`go run ./cmd/harvest-margins ./data`). Example:
+set the anchor from a **distribution** (see `TestFlakiness` / `FLAKINESS_RUNS`;
+inspect the captured JSON dumps under `./data/`). Example:
 
 ```
 {
