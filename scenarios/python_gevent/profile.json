@@ -1,7 +1,7 @@
 {
   "test_name": "python_gevent",
-  "note": "Worker wall-time is 10 × EXECUTION_TIME_SEC/2 = 10e9 ns (scale_by_duration false). Hub runs the whole EXECUTION_TIME_SEC = 2e9 ns. Per-greenlet rows are not a stable property (a sample-interval deficit moves between greenlets).",
-  "scale_by_duration": false,
+  "note": "Hub wall-time 1e9 ns/s is the whole run. Worker wall-time 5e9 ns/s is 10 greenlets × EXECUTION_TIME_SEC/2. Percents can sum over 100% (concurrent greenlets). Per-greenlet rows are not a stable property (a sample-interval deficit moves between greenlets).",
+  "scale_by_duration": true,
   "pprof-regex": "",
   "stacks": [
     {
@@ -10,7 +10,7 @@
       "stack-content": [
         {
           "regular_expression": "^Hub\\.run;gevent\\.libev\\.corecext\\.loop\\.run$",
-          "value": 2000000000,
+          "value": 1000000000,
           "error_margin": 12,
           "labels": [
             {
@@ -29,7 +29,7 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 10000000000,
+          "value": 5000000000,
           "error_margin": 12,
           "labels": [
             {

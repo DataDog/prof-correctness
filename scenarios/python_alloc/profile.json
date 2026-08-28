@@ -1,6 +1,6 @@
 {
   "test_name": "python_alloc",
-  "note": "500k calls × 1024 vs 3072 B yield alloc-space 512/1536 MB. Each bytearray is two mallocs (OBJ header + MEM buffer on 3.13+), so alloc-samples is 1e6/site. The 29/39 ratio was mem_domain off (headers only); Dockerfiles pin DD_PROFILING_MEMORY_MEM_DOMAIN_ENABLED=true.",
+  "note": "500k calls × 1024 vs 3072 B yield alloc-space 512/1536 MB. Each bytearray is two mallocs (OBJ header + MEM buffer on 3.13+), so alloc-samples is 1e6/site. Dockerfiles pin DD_PROFILING_MEMORY_MEM_DOMAIN_ENABLED=true.",
   "pprof-regex": "",
   "stacks": [
     {

@@ -115,7 +115,19 @@ harvest tweak is arithmetically inert.
 
 When a closed form is unavailable, document why in the profile's `note` field and
 set the anchor from a **distribution** (see `TestFlakiness` / `FLAKINESS_RUNS`;
-inspect the captured JSON dumps under `./data/`). Example:
+inspect the captured JSON dumps under `./data/`).
+
+`TEST_RUN_SECS` overrides the Dockerfile `EXECUTION_TIME_SEC` at `docker run`.
+Encode the expectation so that override still makes sense:
+
+- `percent` — share of the profile; independent of run duration.
+- `value` with `scale_by_duration: true` — a **rate** (per second). The analyzer
+  multiplies by profile duration, so `TEST_RUN_SECS` still works
+  (`python_gil_contention` is the example).
+- `value` with `scale_by_duration: false` — an absolute total, **tied** to the
+  Dockerfile `EXECUTION_TIME_SEC`.
+
+Example:
 
 ```
 {
@@ -127,12 +139,12 @@ inspect the captured JSON dumps under `./data/`). Example:
       [
         {
           "regular_expression":";_start;__libc_start_main.*;main;a$",
-          "value": 33,
+          "percent": 33,
           "error_margin": 5
         },
         {
           "regular_expression":";_start;__libc_start_main.*;main;b$",
-          "value": 66,
+          "percent": 66,
           "error_margin": 5
         }
       ]

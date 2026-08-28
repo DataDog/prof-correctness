@@ -11,7 +11,7 @@ Pair: `python_alloc_3.14` / `python_alloc_3.15`. Asserts `alloc-space` + `alloc-
 
 Runs on `main` CI (PyPI ddtrace).
 
-Equal call counts and 1:3 byte sizes. 3.14 has historically shown ~29/39 alloc-space (sd=0); that is treated as a profiler discrepancy against this spec, not as the expected value.
+Equal call counts and 1:3 byte sizes.
 
 ```sh
 TEST_SCENARIOS='python_alloc_3\.14' go test -v -run TestScenarios
