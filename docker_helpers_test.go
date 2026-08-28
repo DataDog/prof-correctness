@@ -184,7 +184,7 @@ func buildBaseImage(rootDir string, baseImageName string, t *testing.T) {
 
 	pythonWheelImages := map[string]string{
 		"prof-python-3.14": "python:3.14",
-		"prof-python-3.15": "python:3.15.0b1",
+		"prof-python-3.15": "python:3.15.0rc1",
 	}
 
 	var dockerfilePath string
