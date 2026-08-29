@@ -4,7 +4,7 @@
   "main": "main.js",
   "license": "MIT",
   "dependencies": {
-    "dd-trace": "DataDog/dd-trace-js#master"
+    "dd-trace": "DataDog/dd-trace-js#main"
   },
   "overrides": {
     "@datadog/pprof": "dev"
