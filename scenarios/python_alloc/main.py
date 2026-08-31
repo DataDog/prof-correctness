@@ -3,9 +3,9 @@
 Each loop iteration calls allocate_memory_1 (size bytes) and allocate_memory_2
 (3x size bytes), producing a 1:3 alloc-space ratio in profiles.
 
-Objects are not retained: this gate asserts allocation events, not the live set
-(python_live_heap covers persistent heap). Holding 1M bytearrays (~2 GB RSS)
-would also couple the run to TRACEBACK_ARRAY_MAX_COUNT (65535 live samples).
+Objects are not retained: this gate asserts allocation events, not the heap size.
+Holding 1M bytearrays (~2 GB RSS) would also couple the run to
+TRACEBACK_ARRAY_MAX_COUNT (65535 live samples).
 """
 
 from __future__ import annotations

@@ -5,7 +5,7 @@ Pair: `python_asyncio_3.14` / `python_asyncio_3.15`. Asserts **wall-time** sampl
 | Profile type | Stack | Expected % | Margin | Labels |
 |--------------|-------|------------|--------|--------|
 | wall-time | `my_coroutine` | 33 | 10 | task name: `short_task` |
-| wall-time | `my_coroutine` | 67 | 10 | task name: `long_task` |
+| wall-time | `my_coroutine` | 67 | 10 | task name: `Task-[0-9]+` |
 
 **Source:** concurrent sleeps `EXECUTION_TIME_SEC/2` and `EXECUTION_TIME_SEC` → 1:2 → 33/67.
 

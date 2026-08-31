@@ -1,6 +1,6 @@
 {
   "test_name": "python_asyncio",
-  "note": "Named short_task sleeps EXECUTION_TIME_SEC/2, long_task sleeps EXECUTION_TIME_SEC: 1:2 → 33/67 of wall-time.",
+  "note": "Named short_task sleeps EXECUTION_TIME_SEC/2; gather wraps the other my_coroutine for EXECUTION_TIME_SEC (Task-N): 1:2 → 33/67 of wall-time.",
   "stacks": [
     {
       "profile-type": "wall-time",
@@ -37,9 +37,7 @@
             },
             {
               "key": "task name",
-              "values": [
-                "long_task"
-              ]
+              "values_regex": "Task-[0-9]+"
             }
           ]
         }
