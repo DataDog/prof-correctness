@@ -15,7 +15,7 @@ Pair: `python_native_cpu_3.14` / `python_native_cpu_3.15`. Asserts **cpu-time** 
 | wall-time | `regex_work` | 20 | 5 |
 | wall-time | `crc_work` | 20 | 5 |
 
-Runs on `main` CI (PyPI ddtrace). `factorial_work` uses `math.factorial(10_000)` so one unit is small vs the time window.
+Runs on `main` CI (PyPI ddtrace).
 
 ```sh
 TEST_SCENARIOS='python_native_cpu_3\.14' go test -v -run TestScenarios

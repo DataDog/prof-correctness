@@ -1,6 +1,6 @@
 {
   "test_name": "python_native_cpu",
-  "note": "Five equal time slices of EXECUTION_TIME_SEC/5: 20% each of cpu-time and wall-time. factorial_work uses math.factorial(10_000) so one work unit is small relative to the time window.",
+  "note": "Five equal time slices of EXECUTION_TIME_SEC/5: 20% each of cpu-time and wall-time.",
   "stacks": [
     {
       "profile-type": "cpu-time",

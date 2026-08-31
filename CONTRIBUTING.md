@@ -1,6 +1,6 @@
 # Contributing
 
-Community contributions to `prof-correctness` are welcome. See below for some basic guidelines.
+Community contributions to `prof-correctness` are welcome 😃! See below for some basic guidelines.
 
 ## Highlighting setups in which profiling should work better
 

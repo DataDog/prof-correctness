@@ -2,12 +2,12 @@
 
 Pair: `python_alloc_3.14` / `python_alloc_3.15`. Asserts `alloc-space` + `alloc-samples` on two sites with 1:3 byte ratio (`allocate_memory_1` / `allocate_memory_2`). Workload: `scenarios/python_alloc/main.py`. Memory-only; stack/lock collectors off.
 
-| Profile type | Stack | Expected % | Margin |
-|--------------|-------|------------|--------|
-| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_1` | 50 | 15 |
-| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_2` | 50 | 15 |
-| alloc-space | `<module>;.*Target.run;Target.allocate_memory_1` | 25 | 10 |
-| alloc-space | `<module>;.*Target.run;Target.allocate_memory_2` | 75 | 10 |
+| Profile type | Stack | Expected | Margin |
+|--------------|-------|----------|--------|
+| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_1` | 1e6 | 15 |
+| alloc-samples | `<module>;.*Target.run;Target.allocate_memory_2` | 1e6 | 15 |
+| alloc-space | `<module>;.*Target.run;Target.allocate_memory_1` | 512 MB | 10 |
+| alloc-space | `<module>;.*Target.run;Target.allocate_memory_2` | 1536 MB | 10 |
 
 Runs on `main` CI (PyPI ddtrace).
 

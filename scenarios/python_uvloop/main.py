@@ -18,8 +18,9 @@ from ddtrace.profiling import Profiler
 
 async def cpu_bound_work(duration: float) -> None:
     end_time: float = time.monotonic() + duration
+    count: int = 0
     while time.monotonic() < end_time:
-        pass
+        count += 1
 
 
 async def io_simulation(duration: float) -> None:

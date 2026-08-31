@@ -7,7 +7,7 @@ RUN pip install -r /app/requirements.txt
 COPY ./scenarios/python_deep_stack/main.py /app/main.py
 WORKDIR /app
 
-ENV EXECUTION_TIME_SEC=30
+ENV EXECUTION_TIME_SEC=10
 ENV DD_PROFILING_ENABLED=true
 
 CMD python main.py
