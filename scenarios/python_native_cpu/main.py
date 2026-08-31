@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import binascii
 import hashlib
 import math
@@ -55,7 +57,8 @@ def main() -> None:
     prof: Profiler = Profiler()
     prof.start()
 
-    execution_time: float = float(os.environ.get("EXECUTION_TIME_SEC", "25"))
+    execution_time_raw: str = os.environ.get("EXECUTION_TIME_SEC", "25")
+    execution_time: float = float(execution_time_raw)
     all_functions: list[Callable[[float], None]] = [
         hash_work,
         compress_work,

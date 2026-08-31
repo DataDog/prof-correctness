@@ -1,32 +1,33 @@
 {
   "test_name": "python_native_cpu",
+  "note": "Five equal time slices of EXECUTION_TIME_SEC/5: 20% each of cpu-time and wall-time.",
   "stacks": [
     {
       "profile-type": "cpu-time",
       "stack-content": [
         {
           "regular_expression": ".*hash_work",
-          "percent": 19,
+          "percent": 20,
           "error_margin": 5
         },
         {
           "regular_expression": ".*compress_work",
-          "percent": 19,
+          "percent": 20,
           "error_margin": 5
         },
         {
           "regular_expression": ".*factorial_work",
-          "percent": 21,
+          "percent": 20,
           "error_margin": 5
         },
         {
           "regular_expression": ".*regex_work",
-          "percent": 19,
+          "percent": 20,
           "error_margin": 5
         },
         {
           "regular_expression": ".*crc_work",
-          "percent": 19,
+          "percent": 20,
           "error_margin": 5
         }
       ]
@@ -36,27 +37,27 @@
       "stack-content": [
         {
           "regular_expression": ".*hash_work",
-          "percent": 19,
+          "percent": 20,
           "error_margin": 5
         },
         {
           "regular_expression": ".*compress_work",
-          "percent": 19,
+          "percent": 20,
           "error_margin": 5
         },
         {
           "regular_expression": ".*factorial_work",
-          "percent": 21,
+          "percent": 20,
           "error_margin": 5
         },
         {
           "regular_expression": ".*regex_work",
-          "percent": 19,
+          "percent": 20,
           "error_margin": 5
         },
         {
           "regular_expression": ".*crc_work",
-          "percent": 19,
+          "percent": 20,
           "error_margin": 5
         }
       ]

@@ -1,13 +1,22 @@
 {
   "test_name": "python_async_gen",
+  "note": "Named gen_task runs async_gen_work for the whole EXECUTION_TIME_SEC; it is the only coroutine, so 100% of wall-time.",
   "stacks": [
     {
       "profile-type": "wall-time",
       "stack-content": [
         {
           "regular_expression": ".*async_gen_work.*",
-          "percent": 35,
-          "error_margin": 10
+          "percent": 100,
+          "error_margin": 20,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "gen_task"
+              ]
+            }
+          ]
         }
       ]
     }

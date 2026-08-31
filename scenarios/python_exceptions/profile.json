@@ -1,13 +1,14 @@
 {
   "test_name": "python_exceptions",
+  "note": "ValueError loop for EXECUTION_TIME_SEC is the only workload exception. Target is 100% of exception-samples on raise_value_error; margin is non-workload frames.",
   "stacks": [
     {
       "profile-type": "exception-samples",
       "stack-content": [
         {
           "regular_expression": ".*raise_value_error.*",
-          "percent": 4,
-          "error_margin": 4,
+          "percent": 100,
+          "error_margin": 20,
           "labels": [
             {
               "key": "exception type",

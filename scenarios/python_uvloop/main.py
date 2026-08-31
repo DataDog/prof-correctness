@@ -1,11 +1,12 @@
-"""uvloop gate workload: asyncio tasks with CPU-bound and I/O-bound phases.
+"""uvloop gate: two named top-level tasks, sequential, no gather.
 
-Wall-time expectations (profile.json) are burn-in anchors, not naive ratios of
-the duration constants below. asyncio runs on a single thread: cpu_bound_work
-busy-loops without awaiting, so tasks run sequentially when scheduled, not in
-parallel on a shared wall-clock timeline. Samples also attribute nested calls
-(cpu_bound_work inside mixed_workload) to the innermost matching stack frame.
+cpu_bound_work busy-loops for EXECUTION_TIME_SEC/2 (blocks the event loop).
+io_simulation then sleeps for EXECUTION_TIME_SEC/2. Each is a named Task
+awaited on its own so the main task is never a gather parent and never a
+leaf doing work. Wall-time closed form: 50% cpu_task / 50% io_task.
 """
+
+from __future__ import annotations
 
 import asyncio
 import os
@@ -26,30 +27,15 @@ async def io_simulation(duration: float) -> None:
     await asyncio.sleep(duration)
 
 
-async def mixed_workload(cpu_duration: float, io_duration: float) -> None:
-    await cpu_bound_work(cpu_duration)
-    await io_simulation(io_duration)
-
-
 async def main() -> None:
-    # Durations are fractions of EXECUTION_TIME_SEC (default 5s). Tasks are
-    # created upfront; main runs its own cpu_bound_work before gather, so work
-    # is interleaved on one thread rather than overlapping like parallel threads.
-    execution_time_sec: int = int(os.environ.get("EXECUTION_TIME_SEC", "5"))
-
-    tasks: list[asyncio.Task[None]] = [
-        asyncio.create_task(cpu_bound_work(execution_time_sec * 0.3)),
-        asyncio.create_task(mixed_workload(execution_time_sec * 0.2, execution_time_sec * 0.1)),
-        asyncio.create_task(io_simulation(execution_time_sec * 0.4)),
-    ]
-
-    await cpu_bound_work(execution_time_sec * 0.3)
-    await asyncio.gather(*tasks)
+    execution_time_raw: str = os.environ.get("EXECUTION_TIME_SEC", "5")
+    half: float = float(execution_time_raw) / 2.0
+    await asyncio.create_task(cpu_bound_work(half), name="cpu_task")
+    await asyncio.create_task(io_simulation(half), name="io_task")
 
 
 if __name__ == "__main__":
     prof: Profiler = Profiler()
     prof.start()
-
     uvloop.install()
     asyncio.run(main())

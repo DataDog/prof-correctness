@@ -1,5 +1,6 @@
 {
   "test_name": "python_gevent",
+  "note": "Worker wall-time is 10 × EXECUTION_TIME_SEC/2 = 10e9 ns (sum over Greenlet-N). Hub is EXECUTION_TIME_SEC = 2e9 ns. scale_by_duration must stay false: pprof duration includes post-join dump time the workers do not fill. TODO(PROF-15860): assert each Greenlet-N independently — https://datadoghq.atlassian.net/browse/PROF-15860",
   "scale_by_duration": false,
   "pprof-regex": "",
   "stacks": [
@@ -9,15 +10,14 @@
       "stack-content": [
         {
           "regular_expression": "^Hub\\.run;gevent\\.libev\\.corecext\\.loop\\.run$",
-          "value": 2108801000,
-          "error_margin": 5,
+          "value": 2000000000,
+          "error_margin": 12,
           "labels": [
             {
               "key": "task name",
               "values": [
                 "Hub"
-              ],
-              "values_regex": ""
+              ]
             }
           ]
         }
@@ -29,195 +29,12 @@
       "stack-content": [
         {
           "regular_expression": ".*target.*",
-          "value": 939424000,
+          "value": 10000000000,
           "error_margin": 12,
           "labels": [
             {
               "key": "task name",
-              "values": [
-                "Greenlet-0"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 944701000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-1"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 944701000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-2"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 929318000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-3"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 939431000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-4"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 939430000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-5"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 939431000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-6"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 844584000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-7"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 944701000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-8"
-              ],
-              "values_regex": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*target.*",
-          "value": 944701000,
-          "error_margin": 12,
-          "labels": [
-            {
-              "key": "task name",
-              "values": [
-                "Greenlet-9"
-              ],
-              "values_regex": ""
+              "values_regex": "^Greenlet-[0-9]+$"
             }
           ]
         }

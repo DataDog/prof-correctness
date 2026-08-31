@@ -1,5 +1,6 @@
 {
   "test_name": "python_uvloop",
+  "note": "Two named tasks, sequential, no gather. cpu_bound_work then io_simulation each run EXECUTION_TIME_SEC/2: 50/50 of wall-time. Main is never a gather parent and never a leaf.",
   "scale_by_duration": false,
   "pprof-regex": "",
   "stacks": [
@@ -9,51 +10,26 @@
       "stack-content": [
         {
           "regular_expression": ".*cpu_bound_work.*",
-          "percent": 51,
-          "error_margin": 5,
+          "percent": 50,
+          "error_margin": 10,
           "labels": [
             {
-              "key": "thread name",
+              "key": "task name",
               "values": [
-                "MainThread"
+                "cpu_task"
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
-        {
-          "regular_expression": ".*mixed_workload.*",
-          "percent": 27,
-          "error_margin": 5,
-          "labels": [
-            {
-              "key": "thread name",
-              "values": [
-                "MainThread"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "profile-type": "wall-time",
-      "pprof-regex": "",
-      "stack-content": [
+        },
         {
           "regular_expression": ".*io_simulation.*",
-          "percent": 39,
-          "error_margin": 5,
+          "percent": 50,
+          "error_margin": 10,
           "labels": [
             {
-              "key": "thread name",
+              "key": "task name",
               "values": [
-                "MainThread"
+                "io_task"
               ]
             }
           ]

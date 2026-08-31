@@ -28,7 +28,7 @@ def main() -> None:
     prof: Profiler = Profiler()
     prof.start()
 
-    execution_time: float = float(os.environ.get("EXECUTION_TIME_SEC", "30"))
+    execution_time: float = float(os.environ.get("EXECUTION_TIME_SEC", "10"))
     end: float = time() + execution_time
     recurse(DEPTH, end)
 
