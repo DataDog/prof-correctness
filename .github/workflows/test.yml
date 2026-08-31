@@ -76,17 +76,16 @@ jobs:
         DDTRACE_INSTALL_URL: ${{ inputs.ddtrace_install_url }}
     - name: Create unique artifact name
       id: artifact_name
-      if: always()
+      if: failure()
       run: |
         SAFE_SHARD=$(echo "${{ matrix.shard }}" | sed 's/[^a-zA-Z0-9]/_/g')
         echo "name=docker_scenario_test_data_${SAFE_SHARD}_${{ github.run_id }}" >> $GITHUB_OUTPUT
     - name: Upload test files
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      if: always()
+      if: failure()
       with:
         name: ${{ steps.artifact_name.outputs.name }}
         path: data
-        if-no-files-found: ignore
     - name: Notify Slack
       if: failure() && github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
       run: |
