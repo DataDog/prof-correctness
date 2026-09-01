@@ -19,6 +19,11 @@ on:
         required: false
         type: string
         default: ''
+      capture_artifact:
+        description: 'If set, upload data/ on success as <value>_<shard> (v4 unique names)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   list-scenarios:
@@ -85,6 +90,18 @@ jobs:
       if: failure()
       with:
         name: ${{ steps.artifact_name.outputs.name }}
+        path: data
+    - name: Create unique capture artifact name
+      id: capture_name
+      if: inputs.capture_artifact != ''
+      run: |
+        SAFE_SHARD=$(echo "${{ matrix.shard }}" | sed 's/[^a-zA-Z0-9]/_/g')
+        echo "name=${{ inputs.capture_artifact }}_${SAFE_SHARD}" >> "$GITHUB_OUTPUT"
+    - name: Upload capture files
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      if: inputs.capture_artifact != ''
+      with:
+        name: ${{ steps.capture_name.outputs.name }}
         path: data
     - name: Notify Slack
       if: failure() && github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
