@@ -135,6 +135,28 @@ func TestCompare_AnchoredFold(t *testing.T) {
 	}
 }
 
+func TestCompare_QuoteMetaUnescape(t *testing.T) {
+	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
+	writeAsserted(t, scenarios, "python_cpu", "cpu-time", `^<module>;.*foo\+bar$`)
+	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
+		{`^<module>;x;foo\+bar$`, 10},
+	})
+	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{
+		{`^<module>;x;foo\+bar$`, 11},
+	})
+	var stdout, stderr bytes.Buffer
+	err := run(runConfig{
+		leftDir: left, rightDir: right, maxPP: 5,
+		scenariosDir: scenarios, stdout: &stdout, stderr: &stderr,
+	})
+	if err != nil {
+		t.Fatalf("QuoteMeta \\+ should unescape: %v\nstderr=%s", err, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "3.14=10 3.15=11") {
+		t.Fatalf("stdout=%q", stdout.String())
+	}
+}
+
 func TestCompare_EmptyFoldFails(t *testing.T) {
 	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
 	writeAsserted(t, scenarios, "python_cpu", "cpu-time", `^<module>;.*Foo\.b$`)

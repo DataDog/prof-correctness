@@ -20,7 +20,10 @@ import (
 
 const unmatchedMinPP int64 = 5
 
-var versionTok = regexp.MustCompile(`_3\.(?:14|15)`)
+var (
+	versionTok  = regexp.MustCompile(`_3\.(?:14|15)`)
+	unquoteMeta = regexp.MustCompile(`\\(.)`)
+)
 
 type stackKey struct {
 	profileType string
@@ -197,9 +200,9 @@ func foldPercents(percents map[stackKey]int64, asserted []stackKey) map[stackKey
 			continue
 		}
 		for k, p := range percents {
-			// Captures are "^"+QuoteMeta(stack)+"$". Strip anchors and \. so
-			// an asserted ^…$ sees the stack body, not a regex-vs-regex miss.
-			body := strings.ReplaceAll(strings.TrimSuffix(strings.TrimPrefix(k.regex, "^"), "$"), `\.`, ".")
+			// Captures are "^"+QuoteMeta(stack)+"$". Strip anchors and
+			// QuoteMeta escapes so an asserted ^…$ sees the stack body.
+			body := unquoteMeta.ReplaceAllString(strings.TrimSuffix(strings.TrimPrefix(k.regex, "^"), "$"), "$1")
 			if k.profileType == a.profileType && re.MatchString(body) {
 				out[a] += p
 			}
