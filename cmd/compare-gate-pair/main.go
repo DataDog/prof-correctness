@@ -197,7 +197,10 @@ func foldPercents(percents map[stackKey]int64, asserted []stackKey) map[stackKey
 			continue
 		}
 		for k, p := range percents {
-			if k.profileType == a.profileType && re.MatchString(k.regex) {
+			// Captures are "^"+QuoteMeta(stack)+"$". Strip anchors and \. so
+			// an asserted ^…$ sees the stack body, not a regex-vs-regex miss.
+			body := strings.ReplaceAll(strings.TrimSuffix(strings.TrimPrefix(k.regex, "^"), "$"), `\.`, ".")
+			if k.profileType == a.profileType && re.MatchString(body) {
 				out[a] += p
 			}
 		}
@@ -239,6 +242,10 @@ func compare(left, right map[string]loadedCapture, maxPP int64, scenariosDir str
 		asserted := loadAssertedKeys(scenariosDir, family)
 		lpcts := foldPercents(l.percents, asserted)
 		rpcts := foldPercents(r.percents, asserted)
+		if len(asserted) > 0 && len(l.percents) > 0 && len(r.percents) > 0 && len(lpcts) == 0 && len(rpcts) == 0 {
+			failures = append(failures, fmt.Sprintf("%s: folded to nothing (asserted regexes matched no capture keys)", family))
+			continue
+		}
 		keys := map[stackKey]struct{}{}
 		for k := range lpcts {
 			keys[k] = struct{}{}
