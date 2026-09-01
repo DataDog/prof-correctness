@@ -249,4 +249,154 @@ func TestFamilyFromName(t *testing.T) {
 	}
 }
 
+func writeAsserted(t *testing.T, scenariosDir, family, profileType, regex string) {
+	t.Helper()
+	dir := filepath.Join(scenariosDir, family)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	c := captureFile{
+		TestName: family,
+		Stacks: []typedStacks{{
+			ProfileType: profileType,
+			StackContent: []stackEntry{{
+				RegularExpression: regex,
+			}},
+		}},
+	}
+	raw, err := json.MarshalIndent(c, "", "  ")
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "profile.json"), raw, 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+}
+
+func TestCompare_FactorialAliasPairs(t *testing.T) {
+	left := t.TempDir()
+	right := t.TempDir()
+	writeCapture(t, left, "python_native_cpu_3.14-20260101-120000-aaa", "python_native_cpu", "cpu-time", []testStack{
+		{Regex: `^<module>;main;factorial_work;math\.factorial$`, Percent: 21},
+	})
+	writeCapture(t, right, "python_native_cpu_3.15-20260101-120100-bbb", "python_native_cpu", "cpu-time", []testStack{
+		{Regex: `^<module>;main;factorial_work;math\.integer\.factorial$`, Percent: 20},
+	})
+
+	var stdout, stderr bytes.Buffer
+	if err := run(left, right, 5, &stdout, &stderr); err != nil {
+		t.Fatalf("alias should pair: %v\nstderr=%s", err, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "3.14=21 3.15=20") {
+		t.Fatalf("stdout=%q", stdout.String())
+	}
+}
+
+func TestCompare_AssertedOnlyIgnoresExtra(t *testing.T) {
+	left := t.TempDir()
+	right := t.TempDir()
+	scenarios := t.TempDir()
+	writeAsserted(t, scenarios, "python_cpu", "cpu-time", "^hot$")
+	writeCapture(t, left, "python_cpu_3.14-20260101-120000-aaa", "python_cpu", "cpu-time", []testStack{
+		{Regex: "^hot$", Percent: 20},
+		{Regex: "^CodeProvenance$", Percent: 40},
+		{Regex: ".*sleep$", Percent: 30},
+	})
+	writeCapture(t, right, "python_cpu_3.15-20260101-120100-bbb", "python_cpu", "cpu-time", []testStack{
+		{Regex: "^hot$", Percent: 22},
+		{Regex: "^pathlib$", Percent: 50},
+	})
+
+	var stdout, stderr bytes.Buffer
+	err := runOpts(runConfig{
+		leftDir: left, rightDir: right, maxPP: 5,
+		scenariosDir: scenarios, stdout: &stdout, stderr: &stderr,
+	})
+	if err != nil {
+		t.Fatalf("extra capture stacks should be ignored: %v\nstderr=%s", err, stderr.String())
+	}
+	if strings.Contains(stdout.String(), "CodeProvenance") || strings.Contains(stderr.String(), "unmatched") {
+		t.Fatalf("stdout=%q stderr=%q", stdout.String(), stderr.String())
+	}
+}
+
+func TestCompare_Exceptions6ppStillFails(t *testing.T) {
+	left := t.TempDir()
+	right := t.TempDir()
+	writeCapture(t, left, "python_exceptions_3.14-20260101-120000-aaa", "python_exceptions", "cpu-time", []testStack{
+		{Regex: `^<module>;main;handle_value_error$`, Percent: 41},
+	})
+	writeCapture(t, right, "python_exceptions_3.15-20260101-120100-bbb", "python_exceptions", "cpu-time", []testStack{
+		{Regex: `^<module>;main;handle_value_error$`, Percent: 47},
+	})
+
+	var stdout, stderr bytes.Buffer
+	err := run(left, right, 5, &stdout, &stderr)
+	if err == nil {
+		t.Fatal("expected 6pp to fail at -max-pp 5")
+	}
+	if !strings.Contains(stderr.String(), "|41-47|=6 > 5") {
+		t.Fatalf("stderr=%q", stderr.String())
+	}
+}
+
+func TestCompare_ExcludeSkipsDivergence(t *testing.T) {
+	left := t.TempDir()
+	right := t.TempDir()
+	writeCapture(t, left, "python_exceptions_3.14-20260101-120000-aaa", "python_exceptions", "cpu-time", []testStack{
+		{Regex: `^<module>;main;handle_value_error$`, Percent: 41},
+	})
+	writeCapture(t, right, "python_exceptions_3.15-20260101-120100-bbb", "python_exceptions", "cpu-time", []testStack{
+		{Regex: `^<module>;main;handle_value_error$`, Percent: 47},
+	})
+	writeCapture(t, left, "python_live_heap_3.14-20260101-120000-aaa", "python_live_heap", "heap-live-samples", []testStack{
+		{Regex: `^<module>;main;Target\.run;Target\.retain_major$`, Percent: 64},
+	})
+	writeCapture(t, right, "python_live_heap_3.15-20260101-120100-bbb", "python_live_heap", "heap-live-samples", []testStack{
+		{Regex: `^<module>;main;Target\.run;Target\.retain_major$`, Percent: 79},
+	})
+	writeCapture(t, left, "python_cpu_3.14-20260101-120000-aaa", "python_cpu", "cpu-time", []testStack{
+		{Regex: "^hot$", Percent: 20},
+	})
+	writeCapture(t, right, "python_cpu_3.15-20260101-120100-bbb", "python_cpu", "cpu-time", []testStack{
+		{Regex: "^hot$", Percent: 21},
+	})
+
+	var stdout, stderr bytes.Buffer
+	err := runOpts(runConfig{
+		leftDir: left, rightDir: right, maxPP: 5,
+		exclude: parseExclude("python_exceptions,python_live_heap"),
+		stdout:  &stdout, stderr: &stderr,
+	})
+	if err != nil {
+		t.Fatalf("excluded families should not fail: %v\nstderr=%s", err, stderr.String())
+	}
+	if strings.Contains(stderr.String(), "handle_value_error") || strings.Contains(stderr.String(), "retain_major") {
+		t.Fatalf("stderr=%q", stderr.String())
+	}
+}
+
+func TestCompare_ExcludeShortName(t *testing.T) {
+	if !isExcluded("python_exceptions", parseExclude("exceptions,live_heap")) {
+		t.Fatal("exceptions should match python_exceptions")
+	}
+	if !isExcluded("python_live_heap", parseExclude("exceptions,live_heap")) {
+		t.Fatal("live_heap should match python_live_heap")
+	}
+	if isExcluded("python_cpu", parseExclude("exceptions,live_heap")) {
+		t.Fatal("python_cpu should not be excluded")
+	}
+}
+
+func TestNormalizeRegex_Factorial(t *testing.T) {
+	got := normalizeRegex(`^<module>;main;factorial_work;math\.integer\.factorial$`)
+	want := `^<module>;main;factorial_work;math\.factorial$`
+	if got != want {
+		t.Fatalf("got %q want %q", got, want)
+	}
+	if normalizeRegex(want) != want {
+		t.Fatal("already-canonical key should be unchanged")
+	}
+}
+
 func ptr(v int64) *int64 { return &v }
