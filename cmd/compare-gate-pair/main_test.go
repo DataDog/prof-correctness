@@ -113,6 +113,50 @@ func TestCompare_FactorialAlias(t *testing.T) {
 	}
 }
 
+func TestCompare_AnchoredFold(t *testing.T) {
+	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
+	writeAsserted(t, scenarios, "python_cpu", "cpu-time", `^<module>;.*Foo\.b$`)
+	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
+		{`^<module>;x;Foo.b$`, 10}, {`^<module>;y;Foo\.b$`, 10},
+	})
+	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{
+		{`^<module>;x;Foo.b$`, 11}, {`^<module>;y;Foo\.b$`, 10},
+	})
+	var stdout, stderr bytes.Buffer
+	err := run(runConfig{
+		leftDir: left, rightDir: right, maxPP: 5,
+		scenariosDir: scenarios, stdout: &stdout, stderr: &stderr,
+	})
+	if err != nil {
+		t.Fatalf("anchored asserted key should fold capture body: %v\nstderr=%s", err, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "3.14=20 3.15=21") {
+		t.Fatalf("stdout=%q", stdout.String())
+	}
+}
+
+func TestCompare_EmptyFoldFails(t *testing.T) {
+	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
+	writeAsserted(t, scenarios, "python_cpu", "cpu-time", `^<module>;.*Foo\.b$`)
+	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
+		{`^unrelated$`, 20},
+	})
+	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{
+		{`^unrelated$`, 20},
+	})
+	var stdout, stderr bytes.Buffer
+	err := run(runConfig{
+		leftDir: left, rightDir: right, maxPP: 5,
+		scenariosDir: scenarios, stdout: &stdout, stderr: &stderr,
+	})
+	if err == nil || !strings.Contains(stderr.String(), "folded to nothing") {
+		t.Fatalf("expected empty-fold fail: err=%v stderr=%q", err, stderr.String())
+	}
+	if strings.Contains(stderr.String(), "|") || strings.Contains(stderr.String(), "unmatched") {
+		t.Fatalf("empty fold is a regex miss, not a percent miss: stderr=%q", stderr.String())
+	}
+}
+
 func TestCompare_AssertedOnly(t *testing.T) {
 	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
 	writeAsserted(t, scenarios, "python_cpu", "cpu-time", ".*hot")
