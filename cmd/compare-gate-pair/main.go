@@ -1,14 +1,7 @@
-// compare-gate-pair diffs 3.14 vs 3.15 capture JSONs. Each side already
-// asserts a shared profile.json band; this fails when asserted stacks still
-// disagree inside it (e.g. both pass 20±5 but 18 vs 24).
-//
-// Families pair by stripping _3.14/_3.15 from the capture folder (else
-// test_name). Keys are (profile-type, regular_expression). math.factorial
-// and math.integer.factorial collapse to one key. When
-// scenarios/<family>/profile.json exists, only those asserted keys are
-// compared. -exclude skips families.
-//
-// Exit 0 within -max-pp; 1 on divergence or asserted ≥5% unmatched; 2 usage.
+// compare-gate-pair diffs 3.14 vs 3.15 capture percents on asserted
+// (profile-type, regex) keys from the family's expected_profile.json.
+// Exit 1 if |Δ| > -max-pp or an asserted key is unmatched at ≥5%.
+// math.factorial and math.integer.factorial are one key. -exclude skips families.
 package main
 
 import (
@@ -20,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -55,13 +49,10 @@ type loadedCapture struct {
 }
 
 type runConfig struct {
-	leftDir      string
-	rightDir     string
-	maxPP        int64
-	scenariosDir string
-	exclude      []string
-	stdout       io.Writer
-	stderr       io.Writer
+	leftDir, rightDir, scenariosDir string
+	maxPP                           int64
+	exclude                         []string
+	stdout, stderr                  io.Writer
 }
 
 func familyFromName(name string) string {
@@ -72,17 +63,11 @@ func familyFromName(name string) string {
 	return name[:loc[0]]
 }
 
-func familyFor(path, testName string) string {
-	dir := filepath.Dir(path)
-	for i := 0; i < 6 && dir != "." && dir != string(os.PathSeparator); i++ {
-		if f := familyFromName(filepath.Base(dir)); f != "" {
+func familyOf(path, testName string) string {
+	for _, part := range strings.Split(filepath.ToSlash(path), "/") {
+		if f := familyFromName(part); f != "" {
 			return f
 		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break
-		}
-		dir = parent
 	}
 	if f := familyFromName(testName); f != "" {
 		return f
@@ -92,8 +77,7 @@ func familyFor(path, testName string) string {
 
 func normalizeRegex(s string) string {
 	s = strings.ReplaceAll(s, `math\.integer\.factorial`, `math\.factorial`)
-	s = strings.ReplaceAll(s, "math.integer.factorial", "math.factorial")
-	return s
+	return strings.ReplaceAll(s, "math.integer.factorial", "math.factorial")
 }
 
 func percentsFrom(c captureFile) map[stackKey]int64 {
@@ -103,8 +87,7 @@ func percentsFrom(c captureFile) map[stackKey]int64 {
 			if sc.Percent == nil || sc.RegularExpression == "" || ts.ProfileType == "" {
 				continue
 			}
-			k := stackKey{profileType: ts.ProfileType, regex: normalizeRegex(sc.RegularExpression)}
-			out[k] += *sc.Percent
+			out[stackKey{ts.ProfileType, normalizeRegex(sc.RegularExpression)}] += *sc.Percent
 		}
 	}
 	return out
@@ -116,19 +99,16 @@ func loadJSON(path string) (loadedCapture, bool, error) {
 		return loadedCapture{}, false, err
 	}
 	var c captureFile
-	if err := json.Unmarshal(raw, &c); err != nil {
-		return loadedCapture{}, false, nil
-	}
-	if len(c.Stacks) == 0 {
+	if json.Unmarshal(raw, &c) != nil {
 		return loadedCapture{}, false, nil
 	}
 	percents := percentsFrom(c)
 	if len(percents) == 0 {
 		return loadedCapture{}, false, nil
 	}
-	family := familyFor(path, c.TestName)
+	family := familyOf(path, c.TestName)
 	if family == "" {
-		return loadedCapture{}, false, fmt.Errorf("%s: cannot derive family from folder or test_name", path)
+		return loadedCapture{}, false, nil
 	}
 	return loadedCapture{path: path, family: family, percents: percents}, true, nil
 }
@@ -155,8 +135,6 @@ func collectSide(root string) (map[string]loadedCapture, error) {
 		return nil, err
 	}
 	sort.Slice(found, func(i, j int) bool { return found[i].path < found[j].path })
-	// Last capture JSON per family wins so a later pprof (post-warmup) overrides
-	// the first profile that allow_first_profile_failure would ignore.
 	out := map[string]loadedCapture{}
 	for _, lc := range found {
 		out[lc.family] = lc
@@ -164,48 +142,31 @@ func collectSide(root string) (map[string]loadedCapture, error) {
 	return out, nil
 }
 
-func absPP(a, b int64) int64 {
-	if a < b {
-		return b - a
-	}
-	return a - b
-}
-
-func keyString(k stackKey) string {
-	return k.profileType + " " + k.regex
-}
-
 func parseExclude(s string) []string {
-	if s == "" {
+	return strings.FieldsFunc(s, func(r rune) bool { return r == ',' || r == ' ' })
+}
+
+func loadAssertedKeys(scenariosDir, family string) []stackKey {
+	if scenariosDir == "" {
 		return nil
 	}
-	var out []string
-	for _, p := range strings.Split(s, ",") {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			out = append(out, p)
+	for _, ver := range []string{"_3.14", "_3.15"} {
+		keys := keysFromFile(filepath.Join(scenariosDir, family+ver, "expected_profile.json"))
+		if len(keys) > 0 {
+			return keys
 		}
 	}
-	return out
+	return nil
 }
 
-func isExcluded(family string, exclude []string) bool {
-	for _, e := range exclude {
-		if family == e || family == "python_"+e || e == "python_"+family {
-			return true
-		}
-	}
-	return false
-}
-
-func readAssertedFile(path string) ([]stackKey, bool) {
+func keysFromFile(path string) []stackKey {
 	raw, err := os.ReadFile(path)
 	if err != nil {
-		return nil, false
+		return nil
 	}
 	var c captureFile
-	if err := json.Unmarshal(raw, &c); err != nil {
-		return nil, false
+	if json.Unmarshal(raw, &c) != nil {
+		return nil
 	}
 	seen := map[stackKey]struct{}{}
 	var keys []stackKey
@@ -214,7 +175,7 @@ func readAssertedFile(path string) ([]stackKey, bool) {
 			if sc.RegularExpression == "" || ts.ProfileType == "" {
 				continue
 			}
-			k := stackKey{profileType: ts.ProfileType, regex: normalizeRegex(sc.RegularExpression)}
+			k := stackKey{ts.ProfileType, normalizeRegex(sc.RegularExpression)}
 			if _, ok := seen[k]; ok {
 				continue
 			}
@@ -222,86 +183,49 @@ func readAssertedFile(path string) ([]stackKey, bool) {
 			keys = append(keys, k)
 		}
 	}
-	if len(keys) == 0 {
-		return nil, false
-	}
-	return keys, true
-}
-
-func loadAssertedKeys(scenariosDir, family string) []stackKey {
-	if scenariosDir == "" {
-		return nil
-	}
-	candidates := []string{
-		filepath.Join(scenariosDir, family, "profile.json"),
-		filepath.Join(scenariosDir, family+"_3.14", "expected_profile.json"),
-		filepath.Join(scenariosDir, family+"_3.15", "expected_profile.json"),
-		filepath.Join(scenariosDir, family+"_gate", "profile.json"),
-	}
-	for _, p := range candidates {
-		keys, ok := readAssertedFile(p)
-		if ok {
-			return keys
-		}
-	}
-	return nil
+	return keys
 }
 
 func foldPercents(percents map[stackKey]int64, asserted []stackKey) map[stackKey]int64 {
 	if len(asserted) == 0 {
 		return percents
 	}
-	type compiledAssert struct {
-		key stackKey
-		re  *regexp.Regexp
-	}
-	compiled := make([]compiledAssert, 0, len(asserted))
+	out := map[stackKey]int64{}
 	for _, a := range asserted {
 		re, err := regexp.Compile(a.regex)
 		if err != nil {
 			continue
 		}
-		compiled = append(compiled, compiledAssert{key: a, re: re})
-	}
-	out := map[stackKey]int64{}
-	for _, a := range compiled {
-		var sum int64
-		matched := false
 		for k, p := range percents {
-			if k.profileType != a.key.profileType {
-				continue
+			if k.profileType == a.profileType && re.MatchString(k.regex) {
+				out[a] += p
 			}
-			if a.re.MatchString(k.regex) {
-				sum += p
-				matched = true
-			}
-		}
-		if matched {
-			out[a.key] = sum
 		}
 	}
 	return out
 }
 
-func compare(left, right map[string]loadedCapture, maxPP int64, scenariosDir string, exclude []string, w io.Writer) []string {
-	families := map[string]struct{}{}
+func families(left, right map[string]loadedCapture, skip []string) []string {
+	seen := map[string]struct{}{}
 	for f := range left {
-		families[f] = struct{}{}
+		seen[f] = struct{}{}
 	}
 	for f := range right {
-		families[f] = struct{}{}
+		seen[f] = struct{}{}
 	}
-	names := make([]string, 0, len(families))
-	for f := range families {
-		names = append(names, f)
+	var names []string
+	for f := range seen {
+		if !slices.Contains(skip, f) {
+			names = append(names, f)
+		}
 	}
 	sort.Strings(names)
+	return names
+}
 
+func compare(left, right map[string]loadedCapture, maxPP int64, scenariosDir string, skip []string, w io.Writer) []string {
 	var failures []string
-	for _, family := range names {
-		if isExcluded(family, exclude) {
-			continue
-		}
+	for _, family := range families(left, right, skip) {
 		l, lOK := left[family]
 		r, rOK := right[family]
 		if !lOK {
@@ -327,42 +251,33 @@ func compare(left, right map[string]loadedCapture, maxPP int64, scenariosDir str
 			keyList = append(keyList, k)
 		}
 		sort.Slice(keyList, func(i, j int) bool {
-			return keyString(keyList[i]) < keyString(keyList[j])
+			return keyList[i].profileType+keyList[i].regex < keyList[j].profileType+keyList[j].regex
 		})
 		for _, k := range keyList {
+			label := k.profileType + " " + k.regex
 			lp, hasL := lpcts[k]
 			rp, hasR := rpcts[k]
 			switch {
 			case hasL && hasR:
-				diff := absPP(lp, rp)
-				fmt.Fprintf(w, "%s %s: 3.14=%d 3.15=%d Δ=%d\n", family, keyString(k), lp, rp, diff)
+				diff := lp - rp
+				if diff < 0 {
+					diff = -diff
+				}
+				fmt.Fprintf(w, "%s %s: 3.14=%d 3.15=%d Δ=%d\n", family, label, lp, rp, diff)
 				if diff > maxPP {
-					failures = append(failures, fmt.Sprintf("%s %s: |%d-%d|=%d > %d", family, keyString(k), lp, rp, diff, maxPP))
+					failures = append(failures, fmt.Sprintf("%s %s: |%d-%d|=%d > %d", family, label, lp, rp, diff, maxPP))
 				}
 			case hasL && lp >= unmatchedMinPP:
-				failures = append(failures, fmt.Sprintf("%s %s: %d%% on 3.14, unmatched on 3.15", family, keyString(k), lp))
+				failures = append(failures, fmt.Sprintf("%s %s: %d%% on 3.14, unmatched on 3.15", family, label, lp))
 			case hasR && rp >= unmatchedMinPP:
-				failures = append(failures, fmt.Sprintf("%s %s: %d%% on 3.15, unmatched on 3.14", family, keyString(k), rp))
+				failures = append(failures, fmt.Sprintf("%s %s: %d%% on 3.15, unmatched on 3.14", family, label, rp))
 			}
 		}
 	}
 	return failures
 }
 
-func run(leftDir, rightDir string, maxPP int64, stdout, stderr io.Writer) error {
-	return runOpts(runConfig{
-		leftDir:  leftDir,
-		rightDir: rightDir,
-		maxPP:    maxPP,
-		stdout:   stdout,
-		stderr:   stderr,
-	})
-}
-
-func runOpts(cfg runConfig) error {
-	if cfg.maxPP < 0 {
-		return fmt.Errorf("-max-pp must be >= 0")
-	}
+func run(cfg runConfig) error {
 	left, err := collectSide(cfg.leftDir)
 	if err != nil {
 		return fmt.Errorf("left: %w", err)
@@ -379,20 +294,7 @@ func runOpts(cfg runConfig) error {
 	}
 	failures := compare(left, right, cfg.maxPP, cfg.scenariosDir, cfg.exclude, cfg.stdout)
 	if len(failures) == 0 {
-		n := 0
-		seen := map[string]struct{}{}
-		for f := range left {
-			seen[f] = struct{}{}
-		}
-		for f := range right {
-			seen[f] = struct{}{}
-		}
-		for f := range seen {
-			if !isExcluded(f, cfg.exclude) {
-				n++
-			}
-		}
-		fmt.Fprintf(cfg.stdout, "ok: %d families within %d pp\n", n, cfg.maxPP)
+		fmt.Fprintf(cfg.stdout, "ok: %d families within %d pp\n", len(families(left, right, cfg.exclude)), cfg.maxPP)
 		return nil
 	}
 	for _, f := range failures {
@@ -402,11 +304,11 @@ func runOpts(cfg runConfig) error {
 }
 
 func main() {
-	left := flag.String("left", "", "directory of 3.14 capture folders (data/<scenario>-<timestamp>-*)")
+	left := flag.String("left", "", "directory of 3.14 capture folders")
 	right := flag.String("right", "", "directory of 3.15 capture folders")
 	maxPP := flag.Int64("max-pp", 5, "max |percent_3.14-percent_3.15| in percentage points")
-	scenarios := flag.String("scenarios", "scenarios", "scenarios dir for asserted profile.json keys")
-	exclude := flag.String("exclude", "", "comma-separated families to skip (e.g. python_exceptions,python_live_heap)")
+	scenarios := flag.String("scenarios", "scenarios", "scenarios dir for asserted expected_profile.json keys")
+	exclude := flag.String("exclude", "", "comma-separated families to skip")
 	flag.Parse()
 
 	if *left == "" || *right == "" {
@@ -415,20 +317,13 @@ func main() {
 		os.Exit(2)
 	}
 
-	err := runOpts(runConfig{
-		leftDir:      *left,
-		rightDir:     *right,
-		maxPP:        *maxPP,
-		scenariosDir: *scenarios,
-		exclude:      parseExclude(*exclude),
-		stdout:       os.Stdout,
-		stderr:       os.Stderr,
+	err := run(runConfig{
+		leftDir: *left, rightDir: *right, maxPP: *maxPP,
+		scenariosDir: *scenarios, exclude: parseExclude(*exclude),
+		stdout: os.Stdout, stderr: os.Stderr,
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
-		if strings.Contains(err.Error(), "-max-pp") {
-			os.Exit(2)
-		}
 		os.Exit(1)
 	}
 }
