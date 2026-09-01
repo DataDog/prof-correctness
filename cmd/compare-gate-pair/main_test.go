@@ -14,240 +14,177 @@ type testStack struct {
 	Percent int64
 }
 
-func writeCapture(t *testing.T, root, folder, testName, profileType string, stacks []testStack) {
+func writeJSON(t *testing.T, dir, file, testName, profileType string, stacks []stackEntry) {
 	t.Helper()
-	dir := filepath.Join(root, folder)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatalf("mkdir: %v", err)
 	}
+	raw, err := json.Marshal(captureFile{
+		TestName: testName,
+		Stacks:   []typedStacks{{ProfileType: profileType, StackContent: stacks}},
+	})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, file), raw, 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+}
+
+func writeCapture(t *testing.T, root, folder, profileType string, stacks []testStack) {
+	t.Helper()
 	content := make([]stackEntry, len(stacks))
 	for i, s := range stacks {
 		p := s.Percent
 		content[i] = stackEntry{RegularExpression: s.Regex, Percent: &p}
 	}
-	raw, err := json.Marshal(captureFile{
-		TestName: testName,
-		Stacks:   []typedStacks{{ProfileType: profileType, StackContent: content}},
-	})
-	if err != nil {
-		t.Fatalf("marshal: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "profile.json"), raw, 0o644); err != nil {
-		t.Fatalf("write: %v", err)
-	}
+	writeJSON(t, filepath.Join(root, folder), "profile.json", folder, profileType, content)
 }
 
 func writeAsserted(t *testing.T, scenariosDir, family, profileType, regex string) {
 	t.Helper()
-	dir := filepath.Join(scenariosDir, family+"_3.14")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		t.Fatalf("mkdir: %v", err)
-	}
-	raw, err := json.Marshal(captureFile{
-		TestName: family,
-		Stacks: []typedStacks{{
-			ProfileType:  profileType,
-			StackContent: []stackEntry{{RegularExpression: regex}},
-		}},
+	writeJSON(t, filepath.Join(scenariosDir, family+"_3.14"), "expected_profile.json", family, profileType,
+		[]stackEntry{{RegularExpression: regex}})
+}
+
+func cmpRun(t *testing.T, left, right, scenarios string, exclude []string) (string, string, error) {
+	t.Helper()
+	var stdout, stderr bytes.Buffer
+	err := run(runConfig{
+		leftDir: left, rightDir: right, maxPP: 5, scenariosDir: scenarios,
+		exclude: exclude, stdout: &stdout, stderr: &stderr,
 	})
-	if err != nil {
-		t.Fatalf("marshal: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "expected_profile.json"), raw, 0o644); err != nil {
-		t.Fatalf("write: %v", err)
-	}
+	return stdout.String(), stderr.String(), err
 }
 
 func TestCompare_DivergenceFails(t *testing.T) {
 	left, right := t.TempDir(), t.TempDir()
-	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{{"^hot$", 18}})
-	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{{"^hot$", 24}})
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{leftDir: left, rightDir: right, maxPP: 5, stdout: &stdout, stderr: &stderr})
-	if err == nil {
-		t.Fatal("expected divergence to fail")
-	}
-	if !strings.Contains(stderr.String(), "|18-24|=6 > 5") {
-		t.Fatalf("stderr=%q", stderr.String())
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 18}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 24}})
+	_, stderr, err := cmpRun(t, left, right, "", nil)
+	if err == nil || !strings.Contains(stderr, "|18-24|=6 > 5") {
+		t.Fatalf("expected divergence: err=%v stderr=%q", err, stderr)
 	}
 }
 
 func TestCompare_Unmatched(t *testing.T) {
 	left, right := t.TempDir(), t.TempDir()
-	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
-		{"^hot$", 20}, {"^only14$", 8},
-	})
-	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{{"^hot$", 20}})
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{leftDir: left, rightDir: right, maxPP: 5, stdout: &stdout, stderr: &stderr})
-	if err == nil || !strings.Contains(stderr.String(), "only14") || !strings.Contains(stderr.String(), "unmatched") {
-		t.Fatalf("expected unmatched ≥5%% fail: err=%v stderr=%q", err, stderr.String())
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}, {"^only14$", 8}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 20}})
+	_, stderr, err := cmpRun(t, left, right, "", nil)
+	if err == nil || !strings.Contains(stderr, "only14") || !strings.Contains(stderr, "unmatched") {
+		t.Fatalf("expected unmatched ≥5%% fail: err=%v stderr=%q", err, stderr)
 	}
 
 	left2, right2 := t.TempDir(), t.TempDir()
-	writeCapture(t, left2, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
-		{"^hot$", 20}, {"^noise$", 3},
-	})
-	writeCapture(t, right2, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{{"^hot$", 20}})
-	stdout.Reset()
-	stderr.Reset()
-	if err := run(runConfig{leftDir: left2, rightDir: right2, maxPP: 5, stdout: &stdout, stderr: &stderr}); err != nil {
-		t.Fatalf("tail <5%% should be ignored: %v\nstderr=%s", err, stderr.String())
+	writeCapture(t, left2, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}, {"^noise$", 3}})
+	writeCapture(t, right2, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 20}})
+	if _, stderr, err := cmpRun(t, left2, right2, "", nil); err != nil {
+		t.Fatalf("tail <5%% should be ignored: %v\nstderr=%s", err, stderr)
 	}
 }
 
 func TestCompare_FactorialAlias(t *testing.T) {
 	left, right := t.TempDir(), t.TempDir()
-	writeCapture(t, left, "python_native_cpu_3.14-ts-a", "python_native_cpu", "cpu-time", []testStack{
-		{`^<module>;main;factorial_work;math\.factorial$`, 21},
-	})
-	writeCapture(t, right, "python_native_cpu_3.15-ts-b", "python_native_cpu", "cpu-time", []testStack{
-		{`^<module>;main;factorial_work;math\.integer\.factorial$`, 20},
-	})
-	var stdout, stderr bytes.Buffer
-	if err := run(runConfig{leftDir: left, rightDir: right, maxPP: 5, stdout: &stdout, stderr: &stderr}); err != nil {
-		t.Fatalf("alias should pair: %v\nstderr=%s", err, stderr.String())
+	writeCapture(t, left, "native_3.14", "cpu-time", []testStack{{`^math\.factorial$`, 21}})
+	writeCapture(t, right, "native_3.15", "cpu-time", []testStack{{`^math\.integer\.factorial$`, 20}})
+	stdout, stderr, err := cmpRun(t, left, right, "", nil)
+	if err != nil {
+		t.Fatalf("alias should pair: %v\nstderr=%s", err, stderr)
 	}
-	if !strings.Contains(stdout.String(), "3.14=21 3.15=20") {
-		t.Fatalf("stdout=%q", stdout.String())
+	if !strings.Contains(stdout, "3.14=21 3.15=20") {
+		t.Fatalf("stdout=%q", stdout)
 	}
 }
 
 func TestCompare_AnchoredFold(t *testing.T) {
 	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
-	writeAsserted(t, scenarios, "python_cpu", "cpu-time", `^<module>;.*Foo\.b$`)
-	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
-		{`^<module>;x;Foo.b$`, 10}, {`^<module>;y;Foo\.b$`, 10},
-	})
-	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{
-		{`^<module>;x;Foo.b$`, 11}, {`^<module>;y;Foo\.b$`, 10},
-	})
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{
-		leftDir: left, rightDir: right, maxPP: 5,
-		scenariosDir: scenarios, stdout: &stdout, stderr: &stderr,
-	})
+	writeAsserted(t, scenarios, "cpu", "cpu-time", `^.*Foo\.b$`)
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{`^x;Foo.b$`, 10}, {`^y;Foo\.b$`, 10}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{`^x;Foo.b$`, 11}, {`^y;Foo\.b$`, 10}})
+	stdout, stderr, err := cmpRun(t, left, right, scenarios, nil)
 	if err != nil {
-		t.Fatalf("anchored asserted key should fold capture body: %v\nstderr=%s", err, stderr.String())
+		t.Fatalf("anchored asserted key should fold capture body: %v\nstderr=%s", err, stderr)
 	}
-	if !strings.Contains(stdout.String(), "3.14=20 3.15=21") {
-		t.Fatalf("stdout=%q", stdout.String())
+	if !strings.Contains(stdout, "3.14=20 3.15=21") {
+		t.Fatalf("stdout=%q", stdout)
 	}
 }
 
 func TestCompare_QuoteMetaUnescape(t *testing.T) {
 	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
-	writeAsserted(t, scenarios, "python_cpu", "cpu-time", `^<module>;.*foo\+bar$`)
-	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
-		{`^<module>;x;foo\+bar$`, 10},
-	})
-	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{
-		{`^<module>;x;foo\+bar$`, 11},
-	})
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{
-		leftDir: left, rightDir: right, maxPP: 5,
-		scenariosDir: scenarios, stdout: &stdout, stderr: &stderr,
-	})
+	writeAsserted(t, scenarios, "cpu", "cpu-time", `^.*foo\+bar$`)
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{`^x;foo\+bar$`, 10}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{`^x;foo\+bar$`, 11}})
+	stdout, stderr, err := cmpRun(t, left, right, scenarios, nil)
 	if err != nil {
-		t.Fatalf("QuoteMeta \\+ should unescape: %v\nstderr=%s", err, stderr.String())
+		t.Fatalf("QuoteMeta \\+ should unescape: %v\nstderr=%s", err, stderr)
 	}
-	if !strings.Contains(stdout.String(), "3.14=10 3.15=11") {
-		t.Fatalf("stdout=%q", stdout.String())
+	if !strings.Contains(stdout, "3.14=10 3.15=11") {
+		t.Fatalf("stdout=%q", stdout)
 	}
 }
 
 func TestCompare_EmptyFoldFails(t *testing.T) {
 	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
-	writeAsserted(t, scenarios, "python_cpu", "cpu-time", `^<module>;.*Foo\.b$`)
-	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
-		{`^unrelated$`, 20},
-	})
-	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{
-		{`^unrelated$`, 20},
-	})
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{
-		leftDir: left, rightDir: right, maxPP: 5,
-		scenariosDir: scenarios, stdout: &stdout, stderr: &stderr,
-	})
-	if err == nil || !strings.Contains(stderr.String(), "folded to nothing") {
-		t.Fatalf("expected empty-fold fail: err=%v stderr=%q", err, stderr.String())
+	writeAsserted(t, scenarios, "cpu", "cpu-time", `^Foo$`)
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^x$", 20}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^x$", 20}})
+	_, stderr, err := cmpRun(t, left, right, scenarios, nil)
+	if err == nil || !strings.Contains(stderr, "folded to nothing") {
+		t.Fatalf("expected empty-fold fail: err=%v stderr=%q", err, stderr)
 	}
-	if strings.Contains(stderr.String(), "|") || strings.Contains(stderr.String(), "unmatched") {
-		t.Fatalf("empty fold is a regex miss, not a percent miss: stderr=%q", stderr.String())
+	if strings.Contains(stderr, "|") || strings.Contains(stderr, "unmatched") {
+		t.Fatalf("empty fold is a regex miss, not a percent miss: stderr=%q", stderr)
 	}
 }
 
 func TestCompare_AssertedOnly(t *testing.T) {
 	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
-	writeAsserted(t, scenarios, "python_cpu", "cpu-time", ".*hot")
-	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{
-		{"^<module>;hot$", 20}, {"^CodeProvenance$", 40}, {".*sleep$", 30},
-	})
-	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{
-		{"^<module>;hot$", 22}, {"^pathlib$", 50},
-	})
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{
-		leftDir: left, rightDir: right, maxPP: 5,
-		scenariosDir: scenarios, stdout: &stdout, stderr: &stderr,
-	})
+	writeAsserted(t, scenarios, "cpu", "cpu-time", ".*hot")
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}, {"^extra$", 40}, {".*sleep$", 30}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 22}, {"^other$", 50}})
+	stdout, stderr, err := cmpRun(t, left, right, scenarios, nil)
 	if err != nil {
-		t.Fatalf("extra capture stacks should be ignored: %v\nstderr=%s", err, stderr.String())
+		t.Fatalf("extra capture stacks should be ignored: %v\nstderr=%s", err, stderr)
 	}
-	if strings.Contains(stdout.String(), "CodeProvenance") || strings.Contains(stderr.String(), "unmatched") {
-		t.Fatalf("stdout=%q stderr=%q", stdout.String(), stderr.String())
+	if strings.Contains(stdout, "extra") || strings.Contains(stderr, "unmatched") {
+		t.Fatalf("stdout=%q stderr=%q", stdout, stderr)
 	}
 }
 
 func TestCompare_Exclude(t *testing.T) {
 	left, right := t.TempDir(), t.TempDir()
-	writeCapture(t, left, "python_exceptions_3.14-ts-a", "python_exceptions", "cpu-time", []testStack{
-		{`^<module>;main;handle_value_error$`, 41},
-	})
-	writeCapture(t, right, "python_exceptions_3.15-ts-b", "python_exceptions", "cpu-time", []testStack{
-		{`^<module>;main;handle_value_error$`, 47},
-	})
-	writeCapture(t, left, "python_live_heap_3.14-ts-a", "python_live_heap", "heap-live-samples", []testStack{
-		{`^<module>;main;Target\.run;Target\.retain_major$`, 64},
-	})
-	writeCapture(t, right, "python_live_heap_3.15-ts-b", "python_live_heap", "heap-live-samples", []testStack{
-		{`^<module>;main;Target\.run;Target\.retain_major$`, 79},
-	})
-	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{{"^hot$", 20}})
-	writeCapture(t, right, "python_cpu_3.15-ts-b", "python_cpu", "cpu-time", []testStack{{"^hot$", 21}})
-
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{
-		leftDir: left, rightDir: right, maxPP: 5,
-		exclude: parseExclude("python_exceptions,python_live_heap"),
-		stdout:  &stdout, stderr: &stderr,
-	})
+	writeCapture(t, left, "python_exceptions_3.14", "cpu-time", []testStack{{"^e$", 41}})
+	writeCapture(t, right, "python_exceptions_3.15", "cpu-time", []testStack{{"^e$", 47}})
+	writeCapture(t, left, "python_live_heap_3.14", "heap-live-samples", []testStack{{"^h$", 64}})
+	writeCapture(t, right, "python_live_heap_3.15", "heap-live-samples", []testStack{{"^h$", 79}})
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 21}})
+	_, stderr, err := cmpRun(t, left, right, "", parseExclude("python_exceptions,python_live_heap"))
 	if err != nil {
-		t.Fatalf("excluded families should not fail: %v\nstderr=%s", err, stderr.String())
+		t.Fatalf("excluded families should not fail: %v\nstderr=%s", err, stderr)
 	}
-	if strings.Contains(stderr.String(), "handle_value_error") || strings.Contains(stderr.String(), "retain_major") {
-		t.Fatalf("stderr=%q", stderr.String())
+	if strings.Contains(stderr, "python_exceptions") || strings.Contains(stderr, "python_live_heap") {
+		t.Fatalf("stderr=%q", stderr)
 	}
 }
 
 func TestCompare_MissingFamily(t *testing.T) {
 	left, right := t.TempDir(), t.TempDir()
-	writeCapture(t, left, "python_cpu_3.14-ts-a", "python_cpu", "cpu-time", []testStack{{"^hot$", 20}})
-	writeCapture(t, right, "python_alloc_3.15-ts-b", "python_alloc", "alloc-space", []testStack{{"^alloc$", 40}})
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{leftDir: left, rightDir: right, maxPP: 5, stdout: &stdout, stderr: &stderr})
-	if err == nil || (!strings.Contains(stderr.String(), "missing on right") && !strings.Contains(stderr.String(), "missing on left")) {
-		t.Fatalf("expected missing family: err=%v stderr=%q", err, stderr.String())
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}})
+	writeCapture(t, right, "alloc_3.15", "alloc-space", []testStack{{"^a$", 40}})
+	_, stderr, err := cmpRun(t, left, right, "", nil)
+	if err == nil || (!strings.Contains(stderr, "missing on right") && !strings.Contains(stderr, "missing on left")) {
+		t.Fatalf("expected missing family: err=%v stderr=%q", err, stderr)
 	}
 }
 
 func TestFamilyFromName(t *testing.T) {
-	if got := familyFromName("python_cpu_3.14-20260101-aaa"); got != "python_cpu" {
+	if got := familyFromName("python_cpu_3.14-x"); got != "python_cpu" {
 		t.Fatalf("got %q", got)
 	}
-	if got := familyFromName("python_live_heap_3.15-bbb"); got != "python_live_heap" {
+	if got := familyFromName("python_live_heap_3.15-x"); got != "python_live_heap" {
 		t.Fatalf("got %q", got)
 	}
 	if familyFromName("python_cpu") != "" {
@@ -259,8 +196,7 @@ func TestFamilyFromName(t *testing.T) {
 }
 
 func TestCompare_EmptyDir(t *testing.T) {
-	var stdout, stderr bytes.Buffer
-	err := run(runConfig{leftDir: t.TempDir(), rightDir: t.TempDir(), maxPP: 5, stdout: &stdout, stderr: &stderr})
+	_, _, err := cmpRun(t, t.TempDir(), t.TempDir(), "", nil)
 	if err == nil || !strings.Contains(err.Error(), "no capture JSON") {
 		t.Fatalf("err=%v", err)
 	}
