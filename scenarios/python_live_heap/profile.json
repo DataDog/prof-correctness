@@ -1,6 +1,6 @@
 {
   "test_name": "python_live_heap",
-  "note": "Live-heap in combined upload profile (profiles.*.pprof at ddtrace c6197c16; *.heap.pprof when separate export ships). retain_major/retain_minor: equal-size bytes; 80/20 count split is the closed form. Absolute 1600/400 is not used because per-object extrapolated count is not 1 (OBJ_SIZE == HEAP_SAMPLE_SIZE is not sufficient).",
+  "note": "Live-heap in combined upload profile (profiles.*.pprof at ddtrace c6197c16; *.heap.pprof when separate export ships). retain_major/retain_minor: equal-size bytes; 80/20 count split is the closed form. Absolute 1600/400 is not used because per-object extrapolated count is not 1 (OBJ_SIZE == HEAP_SAMPLE_SIZE is not sufficient). DD_PROFILING_ENABLE_CODE_PROVENANCE=false: provenance allocations are ~0% of heap-space but ~30% of live-samples on later dumps.",
   "pprof-regex": "profiles\\..*\\.pprof",
   "scale_by_duration": false,
   "allow_first_profile_failure": true,

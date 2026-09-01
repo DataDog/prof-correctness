@@ -23,5 +23,9 @@ ENV DD_PROFILING_UPLOAD_INTERVAL=5
 # Isolate the heap profiler so other collectors don't add noise.
 ENV DD_PROFILING_STACK_ENABLED=false
 ENV DD_PROFILING_LOCK_ENABLED=false
+# Code provenance builds a JSON of installed files on flush. Those objects
+# are ~0% of heap-space but ~30% of heap-live-samples, which breaks the
+# 80/20 count split. The gate is the retained live set, not provenance.
+ENV DD_PROFILING_ENABLE_CODE_PROVENANCE=false
 
 CMD python main.py
