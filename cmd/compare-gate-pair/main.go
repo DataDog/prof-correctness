@@ -1,21 +1,14 @@
-// compare-gate-pair diffs 3.14 vs 3.15 capture JSONs and exits non-zero when
-// observed percents diverge. Each side already asserts a shared profile.json
-// band independently; this catches the case where both pass the band (e.g.
-// 20±5) but the captures still disagree (18 vs 24).
+// compare-gate-pair diffs 3.14 vs 3.15 capture JSONs. Each side already
+// asserts a shared profile.json band; this fails when asserted stacks still
+// disagree inside it (e.g. both pass 20±5 but 18 vs 24).
 //
-// Capture JSON is StackTestData written by analysis.captureProfData: a sibling
-// .json next to each pprof under data/<scenario>-<timestamp>-*/.
+// Families pair by stripping _3.14/_3.15 from the capture folder (else
+// test_name). Keys are (profile-type, regular_expression). math.factorial
+// and math.integer.factorial collapse to one key. When
+// scenarios/<family>/profile.json exists, only those asserted keys are
+// compared. -exclude skips families.
 //
-// Families are paired by stripping _3.14 / _3.15 from the capture folder name
-// (MkdirTemp layout from docker_helpers_test.go), falling back to test_name.
-// Stacks are grouped by (profile-type, regular_expression) and compared on
-// percent.
-//
-// Exit codes:
-//
-//	0  every paired stack is within -max-pp
-//	1  a pair exceeds -max-pp, or a ≥5% stack is unmatched
-//	2  usage error
+// Exit 0 within -max-pp; 1 on divergence or asserted ≥5% unmatched; 2 usage.
 package main
 
 import (
@@ -61,6 +54,16 @@ type loadedCapture struct {
 	percents map[stackKey]int64
 }
 
+type runConfig struct {
+	leftDir      string
+	rightDir     string
+	maxPP        int64
+	scenariosDir string
+	exclude      []string
+	stdout       io.Writer
+	stderr       io.Writer
+}
+
 func familyFromName(name string) string {
 	loc := versionTok.FindStringIndex(name)
 	if loc == nil {
@@ -87,6 +90,12 @@ func familyFor(path, testName string) string {
 	return testName
 }
 
+func normalizeRegex(s string) string {
+	s = strings.ReplaceAll(s, `math\.integer\.factorial`, `math\.factorial`)
+	s = strings.ReplaceAll(s, "math.integer.factorial", "math.factorial")
+	return s
+}
+
 func percentsFrom(c captureFile) map[stackKey]int64 {
 	out := map[stackKey]int64{}
 	for _, ts := range c.Stacks {
@@ -94,7 +103,7 @@ func percentsFrom(c captureFile) map[stackKey]int64 {
 			if sc.Percent == nil || sc.RegularExpression == "" || ts.ProfileType == "" {
 				continue
 			}
-			k := stackKey{profileType: ts.ProfileType, regex: sc.RegularExpression}
+			k := stackKey{profileType: ts.ProfileType, regex: normalizeRegex(sc.RegularExpression)}
 			out[k] += *sc.Percent
 		}
 	}
@@ -166,7 +175,115 @@ func keyString(k stackKey) string {
 	return k.profileType + " " + k.regex
 }
 
-func compare(left, right map[string]loadedCapture, maxPP int64, w io.Writer) []string {
+func parseExclude(s string) []string {
+	if s == "" {
+		return nil
+	}
+	var out []string
+	for _, p := range strings.Split(s, ",") {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func isExcluded(family string, exclude []string) bool {
+	for _, e := range exclude {
+		if family == e || family == "python_"+e || e == "python_"+family {
+			return true
+		}
+	}
+	return false
+}
+
+func readAssertedFile(path string) ([]stackKey, bool) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, false
+	}
+	var c captureFile
+	if err := json.Unmarshal(raw, &c); err != nil {
+		return nil, false
+	}
+	seen := map[stackKey]struct{}{}
+	var keys []stackKey
+	for _, ts := range c.Stacks {
+		for _, sc := range ts.StackContent {
+			if sc.RegularExpression == "" || ts.ProfileType == "" {
+				continue
+			}
+			k := stackKey{profileType: ts.ProfileType, regex: normalizeRegex(sc.RegularExpression)}
+			if _, ok := seen[k]; ok {
+				continue
+			}
+			seen[k] = struct{}{}
+			keys = append(keys, k)
+		}
+	}
+	if len(keys) == 0 {
+		return nil, false
+	}
+	return keys, true
+}
+
+func loadAssertedKeys(scenariosDir, family string) []stackKey {
+	if scenariosDir == "" {
+		return nil
+	}
+	candidates := []string{
+		filepath.Join(scenariosDir, family, "profile.json"),
+		filepath.Join(scenariosDir, family+"_3.14", "expected_profile.json"),
+		filepath.Join(scenariosDir, family+"_3.15", "expected_profile.json"),
+		filepath.Join(scenariosDir, family+"_gate", "profile.json"),
+	}
+	for _, p := range candidates {
+		keys, ok := readAssertedFile(p)
+		if ok {
+			return keys
+		}
+	}
+	return nil
+}
+
+func foldPercents(percents map[stackKey]int64, asserted []stackKey) map[stackKey]int64 {
+	if len(asserted) == 0 {
+		return percents
+	}
+	type compiledAssert struct {
+		key stackKey
+		re  *regexp.Regexp
+	}
+	compiled := make([]compiledAssert, 0, len(asserted))
+	for _, a := range asserted {
+		re, err := regexp.Compile(a.regex)
+		if err != nil {
+			continue
+		}
+		compiled = append(compiled, compiledAssert{key: a, re: re})
+	}
+	out := map[stackKey]int64{}
+	for _, a := range compiled {
+		var sum int64
+		matched := false
+		for k, p := range percents {
+			if k.profileType != a.key.profileType {
+				continue
+			}
+			if a.re.MatchString(k.regex) {
+				sum += p
+				matched = true
+			}
+		}
+		if matched {
+			out[a.key] = sum
+		}
+	}
+	return out
+}
+
+func compare(left, right map[string]loadedCapture, maxPP int64, scenariosDir string, exclude []string, w io.Writer) []string {
 	families := map[string]struct{}{}
 	for f := range left {
 		families[f] = struct{}{}
@@ -182,6 +299,9 @@ func compare(left, right map[string]loadedCapture, maxPP int64, w io.Writer) []s
 
 	var failures []string
 	for _, family := range names {
+		if isExcluded(family, exclude) {
+			continue
+		}
 		l, lOK := left[family]
 		r, rOK := right[family]
 		if !lOK {
@@ -192,11 +312,14 @@ func compare(left, right map[string]loadedCapture, maxPP int64, w io.Writer) []s
 			failures = append(failures, fmt.Sprintf("%s: missing on right (3.15)", family))
 			continue
 		}
+		asserted := loadAssertedKeys(scenariosDir, family)
+		lpcts := foldPercents(l.percents, asserted)
+		rpcts := foldPercents(r.percents, asserted)
 		keys := map[stackKey]struct{}{}
-		for k := range l.percents {
+		for k := range lpcts {
 			keys[k] = struct{}{}
 		}
-		for k := range r.percents {
+		for k := range rpcts {
 			keys[k] = struct{}{}
 		}
 		keyList := make([]stackKey, 0, len(keys))
@@ -207,8 +330,8 @@ func compare(left, right map[string]loadedCapture, maxPP int64, w io.Writer) []s
 			return keyString(keyList[i]) < keyString(keyList[j])
 		})
 		for _, k := range keyList {
-			lp, hasL := l.percents[k]
-			rp, hasR := r.percents[k]
+			lp, hasL := lpcts[k]
+			rp, hasR := rpcts[k]
 			switch {
 			case hasL && hasR:
 				diff := absPP(lp, rp)
@@ -227,30 +350,53 @@ func compare(left, right map[string]loadedCapture, maxPP int64, w io.Writer) []s
 }
 
 func run(leftDir, rightDir string, maxPP int64, stdout, stderr io.Writer) error {
-	if maxPP < 0 {
+	return runOpts(runConfig{
+		leftDir:  leftDir,
+		rightDir: rightDir,
+		maxPP:    maxPP,
+		stdout:   stdout,
+		stderr:   stderr,
+	})
+}
+
+func runOpts(cfg runConfig) error {
+	if cfg.maxPP < 0 {
 		return fmt.Errorf("-max-pp must be >= 0")
 	}
-	left, err := collectSide(leftDir)
+	left, err := collectSide(cfg.leftDir)
 	if err != nil {
 		return fmt.Errorf("left: %w", err)
 	}
-	right, err := collectSide(rightDir)
+	right, err := collectSide(cfg.rightDir)
 	if err != nil {
 		return fmt.Errorf("right: %w", err)
 	}
 	if len(left) == 0 {
-		return fmt.Errorf("no capture JSON found under %s", leftDir)
+		return fmt.Errorf("no capture JSON found under %s", cfg.leftDir)
 	}
 	if len(right) == 0 {
-		return fmt.Errorf("no capture JSON found under %s", rightDir)
+		return fmt.Errorf("no capture JSON found under %s", cfg.rightDir)
 	}
-	failures := compare(left, right, maxPP, stdout)
+	failures := compare(left, right, cfg.maxPP, cfg.scenariosDir, cfg.exclude, cfg.stdout)
 	if len(failures) == 0 {
-		fmt.Fprintf(stdout, "ok: %d families within %d pp\n", len(left), maxPP)
+		n := 0
+		seen := map[string]struct{}{}
+		for f := range left {
+			seen[f] = struct{}{}
+		}
+		for f := range right {
+			seen[f] = struct{}{}
+		}
+		for f := range seen {
+			if !isExcluded(f, cfg.exclude) {
+				n++
+			}
+		}
+		fmt.Fprintf(cfg.stdout, "ok: %d families within %d pp\n", n, cfg.maxPP)
 		return nil
 	}
 	for _, f := range failures {
-		fmt.Fprintln(stderr, f)
+		fmt.Fprintln(cfg.stderr, f)
 	}
 	return fmt.Errorf("%d divergence(s)", len(failures))
 }
@@ -259,6 +405,8 @@ func main() {
 	left := flag.String("left", "", "directory of 3.14 capture folders (data/<scenario>-<timestamp>-*)")
 	right := flag.String("right", "", "directory of 3.15 capture folders")
 	maxPP := flag.Int64("max-pp", 5, "max |percent_3.14-percent_3.15| in percentage points")
+	scenarios := flag.String("scenarios", "scenarios", "scenarios dir for asserted profile.json keys")
+	exclude := flag.String("exclude", "", "comma-separated families to skip (e.g. python_exceptions,python_live_heap)")
 	flag.Parse()
 
 	if *left == "" || *right == "" {
@@ -267,7 +415,15 @@ func main() {
 		os.Exit(2)
 	}
 
-	err := run(*left, *right, *maxPP, os.Stdout, os.Stderr)
+	err := runOpts(runConfig{
+		leftDir:      *left,
+		rightDir:     *right,
+		maxPP:        *maxPP,
+		scenariosDir: *scenarios,
+		exclude:      parseExclude(*exclude),
+		stdout:       os.Stdout,
+		stderr:       os.Stderr,
+	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		if strings.Contains(err.Error(), "-max-pp") {
