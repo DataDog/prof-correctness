@@ -1,9 +1,9 @@
 ARG BASE_IMAGE="prof-python-3.15"
 FROM $BASE_IMAGE
 
-# ddtrace is pre-installed in the base image when DDTRACE_INSTALL_URL is set
-# (dd-trace-py downstream CI). Do not pip-install here — PyPI wheels may not
-# exist for 3.15 yet.
+# ddtrace stays the S3 pin from the base image. Do not pip-install
+# requirements.txt (it includes ddtrace). gevent ships cp315 wheels.
+RUN pip install gevent
 
 COPY ./scenarios/python_gevent/main.py /app/main.py
 WORKDIR /app

@@ -11,6 +11,8 @@ Pair: `python_live_heap_3.14` / `python_live_heap_3.15`. Asserts persistent live
 
 `allow_first_profile_failure`: first snapshot may predate the full live set.
 
+`DD_PROFILING_ENABLE_CODE_PROVENANCE=false`: provenance allocations are ~0% of heap-space but ~30% of live-samples after the first flush.
+
 **Wheel-only** — excluded from prof-correctness `main` CI until live-heap ships on PyPI. With ddtrace `c6197c16` the snapshot is embedded in combined upload profiles (`profiles.*.pprof`); separate `*.heap.pprof` is used when the exporter ships that artifact.
 
 ```sh

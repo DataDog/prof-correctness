@@ -1,10 +1,9 @@
 ARG BASE_IMAGE="prof-python-3.15"
 FROM $BASE_IMAGE
 
-# ddtrace is pre-installed in the base image when DDTRACE_INSTALL_URL is set
-# (dd-trace-py downstream CI). Do not pip-install here — PyPI wheels may not
-# exist for 3.15 yet.
-
+# Parked: uvloop has no cp315 wheel. The sdist dies SIGSEGV (pip exit -11)
+# getting requirements on python:3.15.0b1. Do not pip-install requirements.txt
+# (it includes ddtrace and would overwrite the S3 pin).
 COPY ./scenarios/python_uvloop/main.py /app/main.py
 WORKDIR /app
 
