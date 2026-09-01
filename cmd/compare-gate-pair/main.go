@@ -46,7 +46,6 @@ type captureFile struct {
 }
 
 type loadedCapture struct {
-	path     string
 	family   string
 	percents map[stackKey]int64
 }
@@ -113,11 +112,11 @@ func loadJSON(path string) (loadedCapture, bool, error) {
 	if family == "" {
 		return loadedCapture{}, false, nil
 	}
-	return loadedCapture{path: path, family: family, percents: percents}, true, nil
+	return loadedCapture{family: family, percents: percents}, true, nil
 }
 
 func collectSide(root string) (map[string]loadedCapture, error) {
-	var found []loadedCapture
+	out := map[string]loadedCapture{}
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -130,19 +129,11 @@ func collectSide(root string) (map[string]loadedCapture, error) {
 			return err
 		}
 		if ok {
-			found = append(found, lc)
+			out[lc.family] = lc
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
-	sort.Slice(found, func(i, j int) bool { return found[i].path < found[j].path })
-	out := map[string]loadedCapture{}
-	for _, lc := range found {
-		out[lc.family] = lc
-	}
-	return out, nil
+	return out, err
 }
 
 func parseExclude(s string) []string {
@@ -200,8 +191,6 @@ func foldPercents(percents map[stackKey]int64, asserted []stackKey) map[stackKey
 			continue
 		}
 		for k, p := range percents {
-			// Captures are "^"+QuoteMeta(stack)+"$". Strip anchors and
-			// QuoteMeta escapes so an asserted ^…$ sees the stack body.
 			body := unquoteMeta.ReplaceAllString(strings.TrimSuffix(strings.TrimPrefix(k.regex, "^"), "$"), "$1")
 			if k.profileType == a.profileType && re.MatchString(body) {
 				out[a] += p

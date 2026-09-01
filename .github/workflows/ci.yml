@@ -108,7 +108,6 @@ jobs:
           path: right
           merge-multiple: true
       - name: Compare 3.14 vs 3.15 captures
-        # python_exceptions / python_live_heap parked for a follow-up that researches 3.14 vs 3.15 drift.
         run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_exceptions,python_live_heap
   full_host:
     uses: ./.github/workflows/test.yml
