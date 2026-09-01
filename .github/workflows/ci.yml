@@ -68,14 +68,15 @@ jobs:
     name: python 3.14
     uses: ./.github/workflows/test.yml
     with:
-      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|gevent|exceptions|async_gen|lock|live_heap)_3\.14'
+      # uvloop parked: no cp315 wheel; sdist SIGSEGV on 3.15.0b1 (pair, not 3.14-only).
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|gevent|exceptions|async_gen|lock|live_heap)_3\.14'
       ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
     secrets: inherit
   python_3_15:
     name: python 3.15
     uses: ./.github/workflows/test.yml
     with:
-      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|gevent|exceptions|async_gen|lock|live_heap)_3\.15'
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|gevent|exceptions|async_gen|lock|live_heap)_3\.15'
       ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
     secrets: inherit
   full_host:
