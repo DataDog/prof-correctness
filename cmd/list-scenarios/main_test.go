@@ -115,7 +115,7 @@ func TestRun_ExactChunkSizeBoundary(t *testing.T) {
 }
 
 func TestRun_ExcludeDropsMatchedNames(t *testing.T) {
-	// Mirrors ci.yml python job: exclude *_3.15 and the gate index directory.
+	// Mirrors ci.yml python job: exclude gate pairs and the index directory.
 	root := mkScenarios(t, []string{
 		"python_cpu",
 		"python_lock_3.14",
@@ -123,7 +123,7 @@ func TestRun_ExcludeDropsMatchedNames(t *testing.T) {
 		"python_downstream_gate",
 	})
 
-	got, err := run("python.*", `_3\.15$|^python_downstream_gate$`, root, 3)
+	got, err := run("python.*", `_3\.(14|15)$|^python_downstream_gate$`, root, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,7 +133,7 @@ func TestRun_ExcludeDropsMatchedNames(t *testing.T) {
 		names = append(names, e.Names)
 	}
 	joined := strings.Join(names, ", ")
-	want := "python_cpu, python_lock_3.14"
+	want := "python_cpu"
 	if joined != want {
 		t.Fatalf("excluded set wrong:\n got %q\nwant %q", joined, want)
 	}
