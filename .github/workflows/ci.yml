@@ -65,7 +65,8 @@ jobs:
     secrets: inherit
   # Temporary S3 pin (da3df551) until 3.15 natives land on main (#19936/#19269/#19270).
   # Do not flip dd-trace-py GitLab prof-correctness allow_failure yet.
-  python_3.15:
+  python_3_15:
+    name: python 3.15
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|gevent|exceptions|async_gen|lock|live_heap)_3\.15'

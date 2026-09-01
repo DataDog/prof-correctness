@@ -31,7 +31,7 @@ Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml
 
 Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.python-wheel) with `DDTRACE_INSTALL_URL` (S3 wheel from downstream CI).
 
-- `*_3.15` — `python_3.15` job in [ci.yml](../../.github/workflows/ci.yml) (temporary S3 wheel pin until 3.15 natives are on main)
+- `*_3.15` — `python_3_15` job in [ci.yml](../../.github/workflows/ci.yml) (temporary S3 wheel pin until 3.15 natives are on main)
 - Core `*_3.14` (cpu, alloc, asyncio, native_cpu, deep_stack, gil_contention, uvloop, gevent, exceptions, async_gen, lock) — run on `main` CI (PyPI ddtrace)
 - Wheel-only `*_3.14` (live_heap, …) — also in `test_scenarios_exclude` until PyPI ships the feature
 
