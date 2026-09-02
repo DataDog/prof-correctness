@@ -201,3 +201,15 @@ func TestCompare_EmptyDir(t *testing.T) {
 		t.Fatalf("err=%v", err)
 	}
 }
+
+func TestCompare_CorruptProfileFails(t *testing.T) {
+	left, right := t.TempDir(), t.TempDir()
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 20}})
+	if err := os.WriteFile(filepath.Join(left, "cpu_3.14", "profile.json"), []byte("{"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := cmpRun(t, left, right, "", nil); err == nil {
+		t.Fatal("corrupt profile.json should fail")
+	}
+}

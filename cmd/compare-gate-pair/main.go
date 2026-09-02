@@ -101,8 +101,8 @@ func loadJSON(path string) (loadedCapture, bool, error) {
 		return loadedCapture{}, false, err
 	}
 	var c captureFile
-	if json.Unmarshal(raw, &c) != nil {
-		return loadedCapture{}, false, nil
+	if err := json.Unmarshal(raw, &c); err != nil {
+		return loadedCapture{}, false, err
 	}
 	percents := percentsFrom(c)
 	if len(percents) == 0 {
@@ -121,7 +121,7 @@ func collectSide(root string) (map[string]loadedCapture, error) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || !strings.HasSuffix(d.Name(), ".json") {
+		if d.IsDir() || d.Name() != "profile.json" {
 			return nil
 		}
 		lc, ok, err := loadJSON(path)
