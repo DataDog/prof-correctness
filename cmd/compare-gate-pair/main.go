@@ -23,6 +23,10 @@ const unmatchedMinPP int64 = 5
 var (
 	versionTok  = regexp.MustCompile(`_3\.(?:14|15)`)
 	unquoteMeta = regexp.MustCompile(`\\(.)`)
+	// captureProfData writes <pprof-base>.json: profile.json, profile.<pid>.json,
+	// or profiles.<pid>.<n>.json. Sidecars (*.info.json, *.internal_metadata.json)
+	// and expected_profile.json do not match.
+	captureJSON = regexp.MustCompile(`^profiles?(?:\.\d+)*\.json$`)
 )
 
 type stackKey struct {
@@ -121,7 +125,7 @@ func collectSide(root string) (map[string]loadedCapture, error) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || d.Name() != "profile.json" {
+		if d.IsDir() || !captureJSON.MatchString(d.Name()) {
 			return nil
 		}
 		lc, ok, err := loadJSON(path)

@@ -202,6 +202,24 @@ func TestCompare_EmptyDir(t *testing.T) {
 	}
 }
 
+func TestCompare_PythonCaptureNames(t *testing.T) {
+	left, right := t.TempDir(), t.TempDir()
+	p20, p21 := int64(20), int64(21)
+	writeJSON(t, filepath.Join(left, "cpu_3.14"), "profiles.7.1.json", "cpu_3.14", "cpu-time",
+		[]stackEntry{{RegularExpression: "^hot$", Percent: &p20}})
+	writeJSON(t, filepath.Join(right, "cpu_3.15"), "profile.9.json", "cpu_3.15", "cpu-time",
+		[]stackEntry{{RegularExpression: "^hot$", Percent: &p21}})
+	if err := os.WriteFile(filepath.Join(left, "cpu_3.14", "profiles.7.1.info.json"), []byte("{"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(left, "cpu_3.14", "profiles.7.1.internal_metadata.json"), []byte("{"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := cmpRun(t, left, right, "", nil); err != nil {
+		t.Fatalf("python capture names should load; sidecars ignored: %v", err)
+	}
+}
+
 func TestCompare_CorruptProfileFails(t *testing.T) {
 	left, right := t.TempDir(), t.TempDir()
 	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}})
