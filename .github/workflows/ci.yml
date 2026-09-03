@@ -4,6 +4,41 @@ on:
   schedule:
     - cron: "0 0 * * *"
 jobs:
+  # Skip ddprof/dotnet/ruby/node/full_host when a push touches only
+  # scenarios/python*. Nightly, first push (before == 0000…), and any
+  # other path keep today's "run every language job" behavior.
+  # schema-validation and ruff always run.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run_others: ${{ steps.filter.outputs.run_others }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Detect Python-only path changes
+        id: filter
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          run_others=true
+          if [ "$EVENT_NAME" = "push" ] && [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            if ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+              git fetch --depth=1 origin "$BEFORE" || true
+            fi
+            if files=$(git diff --name-only "$BEFORE" HEAD); then
+              if [ -n "$files" ]; then
+                run_others=false
+                while IFS= read -r f; do
+                  [ -z "$f" ] && continue
+                  case "$f" in
+                    scenarios/python*) ;;
+                    *) run_others=true; break ;;
+                  esac
+                done <<< "$files"
+              fi
+            fi
+          fi
+          echo "run_others=$run_others" >> "$GITHUB_OUTPUT"
   schema-validation:
     runs-on: ubuntu-latest
     steps:
@@ -36,21 +71,29 @@ jobs:
         if: success() || failure()
         run: ruff check .
   ddprof:
+    needs: changes
+    if: needs.changes.outputs.run_others == 'true'
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: ddprof.*
     secrets: inherit
   dotnet:
+    needs: changes
+    if: needs.changes.outputs.run_others == 'true'
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: dotnet.*
     secrets: inherit
   ruby:
+    needs: changes
+    if: needs.changes.outputs.run_others == 'true'
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: ruby.*
     secrets: inherit
   node:
+    needs: changes
+    if: needs.changes.outputs.run_others == 'true'
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: node.*
@@ -82,6 +125,8 @@ jobs:
       ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
     secrets: inherit
   full_host:
+    needs: changes
+    if: needs.changes.outputs.run_others == 'true'
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: full_host.*
