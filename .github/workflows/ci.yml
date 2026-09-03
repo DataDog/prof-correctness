@@ -108,7 +108,7 @@ jobs:
           path: right
           merge-multiple: true
       - name: Compare 3.14 vs 3.15 captures
-        run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_exceptions,python_live_heap
+        run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_live_heap
   full_host:
     uses: ./.github/workflows/test.yml
     with:
