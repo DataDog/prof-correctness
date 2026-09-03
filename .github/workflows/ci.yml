@@ -20,6 +20,8 @@ jobs:
         run: go test -v ./cmd/prof-analyze/...
       - name: Run list-scenarios CLI tests
         run: go test -v ./cmd/list-scenarios/...
+      - name: Run compare-gate-pair CLI tests
+        run: go test -v ./cmd/compare-gate-pair/...
   ruff:
     runs-on: ubuntu-latest
     steps:
@@ -73,6 +75,7 @@ jobs:
       # we stay on 3.15.0b1 because da3df551 ddtrace cp315 SIGSEGVs on rc1.
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.14'
       ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
+      capture_artifact: gate-3.14
     secrets: inherit
   python_3_15:
     name: python 3.15
@@ -80,7 +83,32 @@ jobs:
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.15'
       ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
+      capture_artifact: gate-3.15
     secrets: inherit
+  compare:
+    name: compare 3.14 vs 3.15
+    needs: [python_3_14, python_3_15]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 1.25.1
+      - name: Download 3.14 captures
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gate-3.14_*
+          path: left
+          merge-multiple: true
+      - name: Download 3.15 captures
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gate-3.15_*
+          path: right
+          merge-multiple: true
+      - name: Compare 3.14 vs 3.15 captures
+        run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_live_heap
   full_host:
     uses: ./.github/workflows/test.yml
     with:
