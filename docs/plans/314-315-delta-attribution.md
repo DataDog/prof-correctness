@@ -2,7 +2,6 @@
 
 Parked compare deltas (same `da3df551` wheel, both interpreters):
 
-- `python_exceptions` handle_value_error: ~6pp on cpu/wall
 - `python_live_heap` retain_major heap-live-samples: ~15pp
 
 Question: last ~6 months of ddtrace, or CPython 3.14 vs 3.15?

@@ -155,18 +155,48 @@ func TestCompare_AssertedOnly(t *testing.T) {
 
 func TestCompare_Exclude(t *testing.T) {
 	left, right := t.TempDir(), t.TempDir()
-	writeCapture(t, left, "python_exceptions_3.14", "cpu-time", []testStack{{"^e$", 41}})
-	writeCapture(t, right, "python_exceptions_3.15", "cpu-time", []testStack{{"^e$", 47}})
 	writeCapture(t, left, "python_live_heap_3.14", "heap-live-samples", []testStack{{"^h$", 64}})
 	writeCapture(t, right, "python_live_heap_3.15", "heap-live-samples", []testStack{{"^h$", 79}})
 	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}})
 	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 21}})
-	_, stderr, err := cmpRun(t, left, right, "", parseExclude("python_exceptions,python_live_heap"))
+	_, stderr, err := cmpRun(t, left, right, "", parseExclude("python_live_heap"))
 	if err != nil {
 		t.Fatalf("excluded families should not fail: %v\nstderr=%s", err, stderr)
 	}
-	if strings.Contains(stderr, "python_exceptions") || strings.Contains(stderr, "python_live_heap") {
+	if strings.Contains(stderr, "python_live_heap") {
 		t.Fatalf("stderr=%q", stderr)
+	}
+}
+
+func TestCompare_SameRegexDifferentLabels(t *testing.T) {
+	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
+	short := []labelSpec{{Key: "task name", Values: []string{"short_task"}}}
+	long := []labelSpec{{Key: "task name", Values: []string{"long_task"}}}
+	p33, p67, p34, p66 := int64(33), int64(67), int64(34), int64(66)
+	writeJSON(t, filepath.Join(scenarios, "aio_3.14"), "expected_profile.json", "aio", "wall-time",
+		[]stackEntry{
+			{RegularExpression: ".*my_coroutine.*", Labels: short},
+			{RegularExpression: ".*my_coroutine.*", Labels: long},
+		})
+	writeJSON(t, filepath.Join(left, "aio_3.14"), "profile.json", "aio_3.14", "wall-time",
+		[]stackEntry{
+			{RegularExpression: "^x;my_coroutine$", Percent: &p33, Labels: short},
+			{RegularExpression: "^x;my_coroutine$", Percent: &p67, Labels: long},
+		})
+	writeJSON(t, filepath.Join(right, "aio_3.15"), "profile.json", "aio_3.15", "wall-time",
+		[]stackEntry{
+			{RegularExpression: "^x;my_coroutine$", Percent: &p34, Labels: short},
+			{RegularExpression: "^x;my_coroutine$", Percent: &p66, Labels: long},
+		})
+	stdout, stderr, err := cmpRun(t, left, right, scenarios, nil)
+	if err != nil {
+		t.Fatalf("labeled rows should stay two keys: %v\nstderr=%s", err, stderr)
+	}
+	if !strings.Contains(stdout, "3.14=33 3.15=34") || !strings.Contains(stdout, "3.14=67 3.15=66") {
+		t.Fatalf("expected two keys, got stdout=%q", stdout)
+	}
+	if strings.Contains(stdout, "3.14=100") {
+		t.Fatalf("collapsed same-regex labels: stdout=%q", stdout)
 	}
 }
 

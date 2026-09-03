@@ -1,5 +1,5 @@
 // compare-gate-pair diffs 3.14 vs 3.15 capture percents on asserted
-// (profile-type, regex) keys from the family's expected_profile.json.
+// (profile-type, regex, labels) keys from the family's expected_profile.json.
 // Exit 1 if |Δ| > -max-pp or an asserted key is unmatched at ≥5%.
 // math.factorial and math.integer.factorial are one key. -exclude skips families.
 package main
@@ -29,14 +29,22 @@ var (
 	captureJSON = regexp.MustCompile(`^profiles?(?:\.\d+)*\.json$`)
 )
 
+type labelSpec struct {
+	Key         string   `json:"key"`
+	Values      []string `json:"values"`
+	ValuesRegex string   `json:"values_regex"`
+}
+
 type stackKey struct {
 	profileType string
 	regex       string
+	labels      string
 }
 
 type stackEntry struct {
-	RegularExpression string `json:"regular_expression"`
-	Percent           *int64 `json:"percent"`
+	RegularExpression string      `json:"regular_expression"`
+	Percent           *int64      `json:"percent"`
+	Labels            []labelSpec `json:"labels"`
 }
 
 type typedStacks struct {
@@ -49,9 +57,19 @@ type captureFile struct {
 	Stacks   []typedStacks `json:"stacks"`
 }
 
+type stackObs struct {
+	percent int64
+	labels  []labelSpec
+}
+
+type assertedKey struct {
+	stackKey
+	labelSpecs []labelSpec
+}
+
 type loadedCapture struct {
 	family   string
-	percents map[stackKey]int64
+	percents map[stackKey]stackObs
 }
 
 type runConfig struct {
@@ -86,14 +104,87 @@ func normalizeRegex(s string) string {
 	return strings.ReplaceAll(s, "math.integer.factorial", "math.factorial")
 }
 
-func percentsFrom(c captureFile) map[stackKey]int64 {
-	out := map[stackKey]int64{}
+func labelsKey(labels []labelSpec) string {
+	if len(labels) == 0 {
+		return ""
+	}
+	sorted := append([]labelSpec(nil), labels...)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Key < sorted[j].Key })
+	var b strings.Builder
+	for _, l := range sorted {
+		b.WriteString(l.Key)
+		b.WriteByte('=')
+		vals := append([]string(nil), l.Values...)
+		sort.Strings(vals)
+		for _, v := range vals {
+			b.WriteString(v)
+			b.WriteByte(',')
+		}
+		if l.ValuesRegex != "" {
+			b.WriteByte('~')
+			b.WriteString(l.ValuesRegex)
+		}
+		b.WriteByte(';')
+	}
+	return b.String()
+}
+
+func labelsMatch(asserted, capture []labelSpec) bool {
+	if len(asserted) == 0 {
+		return true
+	}
+	byKey := make(map[string]labelSpec, len(capture))
+	for _, c := range capture {
+		byKey[c.Key] = c
+	}
+	for _, a := range asserted {
+		c, ok := byKey[a.Key]
+		if !ok {
+			return false
+		}
+		if a.ValuesRegex != "" {
+			re, err := regexp.Compile(a.ValuesRegex)
+			if err != nil {
+				return false
+			}
+			if len(c.Values) == 0 {
+				return false
+			}
+			for _, v := range c.Values {
+				if !re.MatchString(v) {
+					return false
+				}
+			}
+			continue
+		}
+		if len(a.Values) != len(c.Values) {
+			return false
+		}
+		av := append([]string(nil), a.Values...)
+		cv := append([]string(nil), c.Values...)
+		sort.Strings(av)
+		sort.Strings(cv)
+		if !slices.Equal(av, cv) {
+			return false
+		}
+	}
+	return true
+}
+
+func percentsFrom(c captureFile) map[stackKey]stackObs {
+	out := map[stackKey]stackObs{}
 	for _, ts := range c.Stacks {
 		for _, sc := range ts.StackContent {
 			if sc.Percent == nil || sc.RegularExpression == "" || ts.ProfileType == "" {
 				continue
 			}
-			out[stackKey{ts.ProfileType, normalizeRegex(sc.RegularExpression)}] += *sc.Percent
+			k := stackKey{ts.ProfileType, normalizeRegex(sc.RegularExpression), labelsKey(sc.Labels)}
+			obs := out[k]
+			obs.percent += *sc.Percent
+			if obs.labels == nil {
+				obs.labels = sc.Labels
+			}
+			out[k] = obs
 		}
 	}
 	return out
@@ -144,7 +235,7 @@ func parseExclude(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool { return r == ',' || r == ' ' })
 }
 
-func loadAssertedKeys(scenariosDir, family string) []stackKey {
+func loadAssertedKeys(scenariosDir, family string) []assertedKey {
 	if scenariosDir == "" {
 		return nil
 	}
@@ -157,7 +248,7 @@ func loadAssertedKeys(scenariosDir, family string) []stackKey {
 	return nil
 }
 
-func keysFromFile(path string) []stackKey {
+func keysFromFile(path string) []assertedKey {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil
@@ -167,26 +258,34 @@ func keysFromFile(path string) []stackKey {
 		return nil
 	}
 	seen := map[stackKey]struct{}{}
-	var keys []stackKey
+	var keys []assertedKey
 	for _, ts := range c.Stacks {
 		for _, sc := range ts.StackContent {
 			if sc.RegularExpression == "" || ts.ProfileType == "" {
 				continue
 			}
-			k := stackKey{ts.ProfileType, normalizeRegex(sc.RegularExpression)}
+			k := stackKey{ts.ProfileType, normalizeRegex(sc.RegularExpression), labelsKey(sc.Labels)}
 			if _, ok := seen[k]; ok {
 				continue
 			}
 			seen[k] = struct{}{}
-			keys = append(keys, k)
+			keys = append(keys, assertedKey{stackKey: k, labelSpecs: sc.Labels})
 		}
 	}
 	return keys
 }
 
-func foldPercents(percents map[stackKey]int64, asserted []stackKey) map[stackKey]int64 {
+func flattenPercents(percents map[stackKey]stackObs) map[stackKey]int64 {
+	out := map[stackKey]int64{}
+	for k, o := range percents {
+		out[k] = o.percent
+	}
+	return out
+}
+
+func foldPercents(percents map[stackKey]stackObs, asserted []assertedKey) map[stackKey]int64 {
 	if len(asserted) == 0 {
-		return percents
+		return flattenPercents(percents)
 	}
 	out := map[stackKey]int64{}
 	for _, a := range asserted {
@@ -194,10 +293,10 @@ func foldPercents(percents map[stackKey]int64, asserted []stackKey) map[stackKey
 		if err != nil {
 			continue
 		}
-		for k, p := range percents {
+		for k, o := range percents {
 			body := unquoteMeta.ReplaceAllString(strings.TrimSuffix(strings.TrimPrefix(k.regex, "^"), "$"), "$1")
-			if k.profileType == a.profileType && re.MatchString(body) {
-				out[a] += p
+			if k.profileType == a.profileType && re.MatchString(body) && labelsMatch(a.labelSpecs, o.labels) {
+				out[a.stackKey] += o.percent
 			}
 		}
 	}
@@ -254,10 +353,15 @@ func compare(left, right map[string]loadedCapture, maxPP int64, scenariosDir str
 			keyList = append(keyList, k)
 		}
 		sort.Slice(keyList, func(i, j int) bool {
-			return keyList[i].profileType+keyList[i].regex < keyList[j].profileType+keyList[j].regex
+			li := keyList[i].profileType + keyList[i].regex + keyList[i].labels
+			lj := keyList[j].profileType + keyList[j].regex + keyList[j].labels
+			return li < lj
 		})
 		for _, k := range keyList {
 			label := k.profileType + " " + k.regex
+			if k.labels != "" {
+				label += " " + k.labels
+			}
 			lp, hasL := lpcts[k]
 			rp, hasR := rpcts[k]
 			switch {
