@@ -1,5 +1,5 @@
-# Leftover monolith after ruby extraction. on.push.paths omits
-# extracted runtimes so a ruby-only push does not start these jobs.
+# Leftover monolith after dotnet extraction. on.push.paths omits
+# extracted runtimes so a dotnet-only push does not start these jobs.
 # Editing this file still starts leftover runtimes.
 # test.yml is not in paths: treat a reusable-workflow edit as shared
 # (run all) — touch each runtime workflow file, or wait for nightly.
@@ -8,7 +8,6 @@ on:
   push:
     paths:
       - "scenarios/ddprof*/**"
-      - "scenarios/dotnet*/**"
       - "scenarios/full_host*/**"
       - ".github/workflows/ci.yml"
   schedule:
@@ -18,11 +17,6 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: ddprof.*
-    secrets: inherit
-  dotnet:
-    uses: ./.github/workflows/test.yml
-    with:
-      test_scenarios: dotnet.*
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
