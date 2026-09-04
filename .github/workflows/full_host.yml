@@ -1,14 +1,12 @@
-# Leftover monolith after ddprof extraction. on.push.paths omits
-# extracted runtimes so a ddprof-only push does not start these jobs.
-# Editing this file still starts leftover runtimes.
+# Path-filtered full_host matrix. Nightly cron matches former leftover ci.yml.
 # test.yml is not in paths: treat a reusable-workflow edit as shared
 # (run all) — touch each runtime workflow file, or wait for nightly.
-name: prof-correctness
+name: full_host
 on:
   push:
     paths:
       - "scenarios/full_host*/**"
-      - ".github/workflows/ci.yml"
+      - ".github/workflows/full_host.yml"
   schedule:
     - cron: "0 0 * * *"
 jobs:
