@@ -22,7 +22,7 @@ Feature-specific pairs (mem_domain) land in follow-up PRs.
 ## Default regexp
 
 ```
-python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|gevent|exceptions|async_gen|lock|live_heap)_3\.(14|15)
+python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.(14|15)
 ```
 
 Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml`](../../.github/workflows/downstream-python.yml).
@@ -32,7 +32,7 @@ Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml
 Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.python-wheel) with `DDTRACE_INSTALL_URL` (S3 wheel from downstream CI).
 
 - `python` — old (non-gate) Python scenarios, PyPI ddtrace
-- `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel
+- `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel (temporary until natives are on main)
 - There is no job yet that diffs 3.14 vs 3.15 captures and fails on drift; each side only asserts the shared `profile.json`
 
 ## Local run
