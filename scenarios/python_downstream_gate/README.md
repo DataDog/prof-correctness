@@ -32,8 +32,13 @@ Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml
 Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.python-wheel) with `DDTRACE_INSTALL_URL` (S3 wheel from downstream CI).
 
 - `python` — old (non-gate) Python scenarios, PyPI ddtrace
-- `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel (Requires-Python still excludes 3.15)
+- `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel
+- The current validation pin is `ddtrace==4.15.0rc2` at commit `6c2d10971404884620ce61c85de886f14bf711cf`.
+- The pin's S3 index has Linux cp315 wheels for manylinux2014 x86_64/aarch64 and musllinux_1_2 x86_64/aarch64. It does not establish macOS or Windows cp315 wheel support.
+- The wheel metadata is `Requires-Python: >=3.9,<3.15`, so pip rejects Python 3.15; installing it there requires `PIP_IGNORE_REQUIRES_PYTHON=1`. uv has no equivalent resolver override, so use pip for this validation path.
 - There is no job yet that diffs 3.14 vs 3.15 captures and fails on drift; each side only asserts the shared `profile.json`
+
+The 2026-09-04 narrow validation downloaded the manylinux2014 x86_64 cp315 wheel from this index and ran `python:3.15.0rc1` with `PIP_IGNORE_REQUIRES_PYTHON=1`: `import=4.15.0rc2 wrap=ok`. This is an unofficial Linux wheel path, not official Python 3.15 support.
 
 ## Local run
 
