@@ -1,0 +1,17 @@
+# Path-filtered ddprof matrix. Nightly cron matches leftover ci.yml.
+# test.yml is not in paths: treat a reusable-workflow edit as shared
+# (run all) — touch each runtime workflow file, or wait for nightly.
+name: ddprof
+on:
+  push:
+    paths:
+      - "scenarios/ddprof*/**"
+      - ".github/workflows/ddprof.yml"
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  ddprof:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: ddprof.*
+    secrets: inherit
