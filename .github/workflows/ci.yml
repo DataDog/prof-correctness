@@ -1,5 +1,5 @@
-# Leftover monolith after dotnet extraction. on.push.paths omits
-# extracted runtimes so a dotnet-only push does not start these jobs.
+# Leftover monolith after ddprof extraction. on.push.paths omits
+# extracted runtimes so a ddprof-only push does not start these jobs.
 # Editing this file still starts leftover runtimes.
 # test.yml is not in paths: treat a reusable-workflow edit as shared
 # (run all) — touch each runtime workflow file, or wait for nightly.
@@ -7,17 +7,11 @@ name: prof-correctness
 on:
   push:
     paths:
-      - "scenarios/ddprof*/**"
       - "scenarios/full_host*/**"
       - ".github/workflows/ci.yml"
   schedule:
     - cron: "0 0 * * *"
 jobs:
-  ddprof:
-    uses: ./.github/workflows/test.yml
-    with:
-      test_scenarios: ddprof.*
-    secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
     with:
