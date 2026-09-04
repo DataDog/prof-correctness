@@ -1,8 +1,8 @@
 ARG BASE_IMAGE="prof-python-3.15"
 FROM $BASE_IMAGE
 
-# Parked: uvloop has no cp315 wheel. The sdist died SIGSEGV (pip exit -11)
-# getting requirements on 3.15. Do not pip-install requirements.txt
+# Parked: uvloop has no cp315 wheel. The sdist dies SIGSEGV (pip exit -11)
+# getting requirements on python:3.15.0b1. Do not pip-install requirements.txt
 # (it includes ddtrace and would overwrite the S3 pin).
 COPY ./scenarios/python_uvloop/main.py /app/main.py
 WORKDIR /app

@@ -184,8 +184,10 @@ func buildBaseImage(rootDir string, baseImageName string, t *testing.T) {
 
 	pythonWheelImages := map[string]string{
 		"prof-python-3.14": "python:3.14",
-		// rc1-built cp315 manylinux exists after #19936 IMAGE_TAG bump.
-		"prof-python-3.15": "python:3.15.0rc1",
+		// Stay on b1: da3df551 cp315 SIGSEGVs on 3.15.0rc1 (run 33546017517).
+		// Same wheel passes on b1 (run 33545370076). CPython freezes the
+		// ABI at rc1; this manylinux wheel was built against an earlier 3.15.
+		"prof-python-3.15": "python:3.15.0b1",
 	}
 
 	var dockerfilePath string

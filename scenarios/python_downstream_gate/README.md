@@ -1,6 +1,6 @@
 # Python downstream gate (dd-trace-py)
 
-Twenty-two scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI. The uvloop pair is parked: no cp315 wheel. Gevent is in the gate: greenlet cp315 needs 3.15b2+, and the image is `python:3.15.0rc1`.
+Twenty scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI. The uvloop pair is parked: no cp315 wheel. The gevent pair is parked: greenlet cp315 needs `_PyGC_VisitFrameStack` (3.15b2+), and we stay on `python:3.15.0b1` because the pinned ddtrace cp315 wheel SIGSEGVs on rc1.
 
 | Family | 3.14 | 3.15 | Asserts |
 |--------|------|------|---------|
@@ -11,7 +11,7 @@ Twenty-two scenarios (**3.14 baseline** / **3.15 candidate**) are the default se
 | deep-stack | `python_deep_stack_3.14` | `python_deep_stack_3.15` | cpu-time |
 | gil-contention | `python_gil_contention_3.14` | `python_gil_contention_3.15` | cpu-time + wall-time |
 | uvloop | `python_uvloop_3.14` | `python_uvloop_3.15` | parked (no 3.15 wheel) |
-| gevent | `python_gevent_3.14` | `python_gevent_3.15` | wall-time (greenlets) |
+| gevent | `python_gevent_3.14` | `python_gevent_3.15` | parked (greenlet needs 3.15b2+; ddtrace cp315 SIGSEGVs on rc1) |
 | exceptions | `python_exceptions_3.14` | `python_exceptions_3.15` | exception-samples |
 | async-gen | `python_async_gen_3.14` | `python_async_gen_3.15` | wall-time |
 | lock | `python_lock_3.14` | `python_lock_3.15` | lock-acquire/release |
@@ -33,18 +33,13 @@ Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.
 
 - `python` — old (non-gate) Python scenarios, PyPI ddtrace
 - `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel
-- The current validation pin is `ddtrace==4.15.0rc2` at commit `6c2d10971404884620ce61c85de886f14bf711cf`.
-- The pin's S3 index has Linux cp315 wheels for manylinux2014 x86_64/aarch64 and musllinux_1_2 x86_64/aarch64. It does not establish macOS or Windows cp315 wheel support.
-- The wheel metadata is `Requires-Python: >=3.9,<3.15`, so pip rejects Python 3.15; installing it there requires `PIP_IGNORE_REQUIRES_PYTHON=1`. uv has no equivalent resolver override, so use pip for this validation path.
 - There is no job yet that diffs 3.14 vs 3.15 captures and fails on drift; each side only asserts the shared `profile.json`
-
-The 2026-09-04 narrow validation downloaded the manylinux2014 x86_64 cp315 wheel from this index and ran `python:3.15.0rc1` with `PIP_IGNORE_REQUIRES_PYTHON=1`: `import=4.15.0rc2 wrap=ok`. This is an unofficial Linux wheel path, not official Python 3.15 support.
 
 ## Local run
 
 ```sh
 export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/<commit-sha>/install.sh"
-TEST_SCENARIOS='python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|gevent|exceptions|async_gen|lock|live_heap)_3\.(14|15)' go test -v -run TestScenarios
+TEST_SCENARIOS='python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.(14|15)' go test -v -run TestScenarios
 ```
 
 See [README](../../README.md#downstream-from-dd-trace-py).
