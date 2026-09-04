@@ -1,5 +1,5 @@
-# Leftover monolith after Python extraction. on.push.paths omits
-# scenarios/python* so a Python-only push does not start these jobs.
+# Leftover monolith after node extraction. on.push.paths omits
+# extracted runtimes so a node-only push does not start these jobs.
 # Editing this file still starts leftover runtimes.
 # test.yml is not in paths: treat a reusable-workflow edit as shared
 # (run all) — touch each runtime workflow file, or wait for nightly.
@@ -10,7 +10,6 @@ on:
       - "scenarios/ddprof*/**"
       - "scenarios/dotnet*/**"
       - "scenarios/ruby*/**"
-      - "scenarios/node*/**"
       - "scenarios/full_host*/**"
       - ".github/workflows/ci.yml"
   schedule:
@@ -30,11 +29,6 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: ruby.*
-    secrets: inherit
-  node:
-    uses: ./.github/workflows/test.yml
-    with:
-      test_scenarios: node.*
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
