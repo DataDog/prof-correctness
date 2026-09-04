@@ -1,0 +1,17 @@
+# Path-filtered ruby matrix. Nightly cron matches leftover ci.yml.
+# test.yml is not in paths: treat a reusable-workflow edit as shared
+# (run all) — touch each runtime workflow file, or wait for nightly.
+name: ruby
+on:
+  push:
+    paths:
+      - "scenarios/ruby*/**"
+      - ".github/workflows/ruby.yml"
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  ruby:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: ruby.*
+    secrets: inherit
