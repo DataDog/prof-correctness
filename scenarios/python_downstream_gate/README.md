@@ -1,6 +1,6 @@
 # Python downstream gate (dd-trace-py)
 
-Twenty scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI. The uvloop pair is parked: no cp315 wheel. The gevent pair is parked: greenlet cp315 needs `_PyGC_VisitFrameStack` (3.15b2+), and we stay on `python:3.15.0b1` because the pinned ddtrace cp315 wheel SIGSEGVs on rc1.
+Twenty-two scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI. The uvloop pair is parked: no cp315 wheel. Gevent is in the gate: greenlet cp315 needs 3.15b2+, and the image is `python:3.15.0rc1`.
 
 | Family | 3.14 | 3.15 | Asserts |
 |--------|------|------|---------|
@@ -11,7 +11,7 @@ Twenty scenarios (**3.14 baseline** / **3.15 candidate**) are the default set wh
 | deep-stack | `python_deep_stack_3.14` | `python_deep_stack_3.15` | cpu-time |
 | gil-contention | `python_gil_contention_3.14` | `python_gil_contention_3.15` | cpu-time + wall-time |
 | uvloop | `python_uvloop_3.14` | `python_uvloop_3.15` | parked (no 3.15 wheel) |
-| gevent | `python_gevent_3.14` | `python_gevent_3.15` | parked (greenlet needs 3.15b2+; ddtrace cp315 SIGSEGVs on rc1) |
+| gevent | `python_gevent_3.14` | `python_gevent_3.15` | wall-time (greenlets) |
 | exceptions | `python_exceptions_3.14` | `python_exceptions_3.15` | exception-samples |
 | async-gen | `python_async_gen_3.14` | `python_async_gen_3.15` | wall-time |
 | lock | `python_lock_3.14` | `python_lock_3.15` | lock-acquire/release |
@@ -22,7 +22,7 @@ Feature-specific pairs (mem_domain) land in follow-up PRs.
 ## Default regexp
 
 ```
-python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.(14|15)
+python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|gevent|exceptions|async_gen|lock|live_heap)_3\.(14|15)
 ```
 
 Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml`](../../.github/workflows/downstream-python.yml).
@@ -32,14 +32,14 @@ Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml
 Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.python-wheel) with `DDTRACE_INSTALL_URL` (S3 wheel from downstream CI).
 
 - `python` — old (non-gate) Python scenarios, PyPI ddtrace
-- `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel (temporary until natives are on main)
+- `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel (Requires-Python still excludes 3.15)
 - There is no job yet that diffs 3.14 vs 3.15 captures and fails on drift; each side only asserts the shared `profile.json`
 
 ## Local run
 
 ```sh
 export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/<commit-sha>/install.sh"
-TEST_SCENARIOS='python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.(14|15)' go test -v -run TestScenarios
+TEST_SCENARIOS='python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|gevent|exceptions|async_gen|lock|live_heap)_3\.(14|15)' go test -v -run TestScenarios
 ```
 
 See [README](../../README.md#downstream-from-dd-trace-py).

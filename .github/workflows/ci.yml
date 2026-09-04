@@ -63,23 +63,22 @@ jobs:
       test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
     secrets: inherit
   # Same S3 wheel on both sides so 3.14 vs 3.15 is the interpreter, not PyPI vs pin.
-  # Temporary until 3.15 natives land on main (#19936/#19269/#19270).
+  # 6c2d109714 is on main after #19936 (rc1 manylinux IMAGE_TAG).
   python_3_14:
     name: python 3.14
     uses: ./.github/workflows/test.yml
     with:
-      # uvloop parked: no cp315 wheel; sdist SIGSEGV on 3.15.0b1 (pair, not 3.14-only).
-      # gevent parked: greenlet cp315 needs _PyGC_VisitFrameStack (3.15b2+);
-      # we stay on 3.15.0b1 because da3df551 ddtrace cp315 SIGSEGVs on rc1.
-      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.14'
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
+      # uvloop parked: no cp315 wheel (pair, not 3.14-only).
+      # gevent is back: greenlet cp315 needs 3.15b2+; image is 3.15.0rc1.
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|gevent|exceptions|async_gen|lock|live_heap)_3\.14'
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/6c2d10971404884620ce61c85de886f14bf711cf/install.sh'
     secrets: inherit
   python_3_15:
     name: python 3.15
     uses: ./.github/workflows/test.yml
     with:
-      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.15'
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|gevent|exceptions|async_gen|lock|live_heap)_3\.15'
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/6c2d10971404884620ce61c85de886f14bf711cf/install.sh'
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
