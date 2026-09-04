@@ -62,8 +62,7 @@ jobs:
       # Gate pairs are python_3_14 / python_3_15. live_heap_3.14 is wheel-only.
       test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
     secrets: inherit
-  # Same S3 wheel on both sides so 3.14 vs 3.15 is the interpreter, not PyPI vs pin.
-  # Temporary until 3.15 natives land on main (#19936/#19269/#19270).
+  # Use the rc2 wheel on 3.14; the rc2 cp315 wheel has no profiling extensions.
   python_3_14:
     name: python 3.14
     uses: ./.github/workflows/test.yml
@@ -79,7 +78,8 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.15'
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/6c2d10971404884620ce61c85de886f14bf711cf/install.sh'
+      # da3df551 includes the profiling extensions required by the 3.15b1 gate image.
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
