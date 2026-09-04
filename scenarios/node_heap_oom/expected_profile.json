@@ -2,7 +2,7 @@
   "test_name": "node_heap_basic",
   "stacks": [
     {
-      "profile-type": "space",
+      "profile-type": "inuse_space",
       "stack-content": [
         {
           "regular_expression": "processTimers;listOnTimeout;\\(anonymous:L#13:C#30\\);foo",
