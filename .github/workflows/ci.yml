@@ -62,14 +62,11 @@ jobs:
       # Gate pairs are python_3_14 / python_3_15. live_heap_3.14 is wheel-only.
       test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
     secrets: inherit
-  # Use the rc2 wheel on 3.14; the rc2 cp315 wheel has no profiling extensions.
+  # Both gates use rc2-era pinned wheels; 3.15 uses the Python 3.15.0rc2 image.
   python_3_14:
     name: python 3.14
     uses: ./.github/workflows/test.yml
     with:
-      # uvloop parked: no cp315 wheel; sdist SIGSEGV on 3.15.0b1 (pair, not 3.14-only).
-      # gevent parked: greenlet cp315 needs _PyGC_VisitFrameStack (3.15b2+);
-      # we stay on 3.15.0b1 because da3df551 ddtrace cp315 SIGSEGVs on rc1.
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.14'
       ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/6c2d10971404884620ce61c85de886f14bf711cf/install.sh'
     secrets: inherit
