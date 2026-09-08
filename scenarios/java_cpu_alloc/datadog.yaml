@@ -1,0 +1,112 @@
+# jfr2pprof mapping for the Datadog java-profiler.
+#
+# Consumed by the vendor-neutral `jfr2pprof` tool in btraceio/jafar:
+# `jfr2pprof --config datadog.yaml --output out.pprof rec.jfr`
+#
+# IMPORTANT: the scenario that uses this mapping MUST start the profiler with
+# cpu=10ms and wall=50ms to match the `scale` constants below. If the scenario
+# changes those intervals, the `scale` values here must be updated to match
+# (jfr2pprof has no way to read jdk.ActiveSetting at runtime; scale is a fixed
+# per-mapping constant, not derived from the recording).
+
+frame:
+  format: "{class}.{method}"
+  includeLineNumbers: false
+
+profiles:
+  - type: cpu-time
+    event: datadog.ExecutionSample
+    stackField: stackTrace
+    values:
+      - name: cpu-samples
+        unit: count
+        field: "@count"
+      # CPU weight is always 1 (ITimer/CTimer/perf_events never set
+      # ExecutionEvent::_weight — see event.h default and itimer.cpp/
+      # ctimer_linux.cpp/perfEvents_linux.cpp, none assign _weight). One
+      # sample == one configured cpu interval of attributed CPU time.
+      - name: cpu-time
+        unit: nanoseconds
+        field: weight
+        scale: 10000000 # 10ms, must match the scenario's `cpu=` interval
+    labels:
+      - jfr: eventThread.osThreadId
+        pprof: "thread id"
+      - jfr: eventThread.javaName
+        pprof: "thread name"
+
+  - type: wall-time
+    event: datadog.MethodSample
+    stackField: stackTrace
+    values:
+      - name: wall-samples
+        unit: count
+        field: "@count"
+      # Unlike CPU, wall weight CAN exceed 1 (wallClock.cpp coalesces
+      # multiple missed intervals for blocked/waiting threads into a single
+      # recorded sample via consumeUnownedBlockedWeight()). Treating weight
+      # as a plain multiplier of the interval is an approximation of actual
+      # wall time represented, not an exact figure.
+      - name: wall-time
+        unit: nanoseconds
+        field: weight
+        scale: 50000000 # 50ms, must match the scenario's `wall=` interval
+    labels:
+      - jfr: eventThread.osThreadId
+        pprof: "thread id"
+      - jfr: eventThread.javaName
+        pprof: "thread name"
+
+  - type: allocation
+    event: datadog.ObjectSample
+    stackField: stackTrace
+    values:
+      - name: alloc-samples
+        unit: count
+        field: "@count"
+      # KNOWN LIMITATION: the true unbiased allocation-volume estimator is
+      # `size * weight`, where weight = 1 / (1 - exp(-size / interval)) is
+      # the inverse-transform Poisson-thinning correction applied in
+      # objectSampler.cpp (larger objects are sampled more often, so their
+      # contribution must be down-weighted to estimate total bytes
+      # allocated). jfr2pprof's ValueSpec only supports a single field path
+      # times a static scale constant — it cannot multiply two runtime
+      # fields together. Mapping to raw `size` here is therefore a
+      # DIRECTIONALLY-CORRECT PROXY, not a bias-corrected byte estimate; it
+      # systematically undercounts allocation volume for larger object
+      # classes relative to `size * weight`. Revisit once jfr2pprof supports
+      # a product-of-fields value spec (tracked as a follow-up, not yet
+      # filed as a sub-task).
+      - name: alloc-size
+        unit: bytes
+        field: size
+    labels:
+      - jfr: eventThread.osThreadId
+        pprof: "thread id"
+      - jfr: eventThread.javaName
+        pprof: "thread name"
+      - jfr: objectClass.name.string
+        pprof: "class"
+
+  - type: live-heap
+    event: datadog.HeapLiveObject
+    stackField: stackTrace
+    values:
+      - name: live-objects
+        unit: count
+        field: "@count"
+      # Same product-of-fields limitation as allocation above: HeapLiveObject
+      # carries its own `weight` (float, computed in flightRecorder.cpp as
+      # (alloc.weight * alloc.size + skipped) / alloc.size — an average
+      # retained-weight per survivor, not directly bytes). Mapping to raw
+      # `size` is the same directionally-correct, bias-uncorrected proxy.
+      - name: live-size
+        unit: bytes
+        field: size
+    labels:
+      - jfr: eventThread.osThreadId
+        pprof: "thread id"
+      - jfr: eventThread.javaName
+        pprof: "thread name"
+      - jfr: objectClass.name.string
+        pprof: "class"
