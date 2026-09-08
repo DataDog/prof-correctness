@@ -78,8 +78,7 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.15'
-      # da3df551 includes the profiling extensions required by the 3.15b1 gate image.
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/da3df55157081fad087d8c17e45d1639bbe0eb8a/install.sh'
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/1b27090c9ee46afa2bd5a9e2ef0cc7660125b652/install.sh'
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
