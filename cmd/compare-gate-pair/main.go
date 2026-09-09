@@ -222,11 +222,11 @@ func duplicateFamilyErr(family string, dumps []loadedCapture) error {
 		paths[i] = d.path
 	}
 	sort.Strings(paths)
-	return fmt.Errorf("%s wrote %d capture JSONs (%s). Compare needs one dump per family; park or -exclude this family, or stop multi-upload", family, len(paths), strings.Join(paths, ", "))
+	return fmt.Errorf("%s wrote %d capture JSONs (%s); one dump per family or -exclude", family, len(paths), strings.Join(paths, ", "))
 }
 
 func missingSideErr(side, dir string) error {
-	return fmt.Errorf("%s: downloads did not produce %s (check this side's artifact pattern)", side, dir)
+	return fmt.Errorf("%s: downloads did not produce %s", side, dir)
 }
 
 func collectSide(root string, skip []string) (map[string]loadedCapture, error) {
@@ -440,7 +440,7 @@ func run(cfg runConfig) error {
 	}
 	compared := families(left, right, cfg.exclude)
 	if len(compared) == 0 {
-		return fmt.Errorf("no paired families remained after excludes; check capture filenames and the -exclude list")
+		return fmt.Errorf("no paired families remained after excludes")
 	}
 	failures := compare(left, right, cfg.maxPP, cfg.scenariosDir, cfg.exclude, cfg.stdout)
 	if len(failures) == 0 {

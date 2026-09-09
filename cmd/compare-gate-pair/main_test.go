@@ -157,29 +157,16 @@ func TestCompare_Exclude(t *testing.T) {
 func TestCompare_ExcludeSkipsDuplicateDumps(t *testing.T) {
 	left, right := t.TempDir(), t.TempDir()
 	p64 := int64(64)
-	for _, side := range []struct {
-		root, folder string
-	}{
-		{left, "python_live_heap_3.14"},
-		{right, "python_live_heap_3.15"},
-	} {
-		dir := filepath.Join(side.root, side.folder)
-		writeJSON(t, dir, "profiles.7.1.json", side.folder, "heap-live-samples",
-			[]stackEntry{{RegularExpression: "^h$", Percent: &p64}})
-		writeJSON(t, dir, "profiles.7.2.json", side.folder, "heap-live-samples",
-			[]stackEntry{{RegularExpression: "^h$", Percent: &p64}})
-	}
+	stacks := []stackEntry{{RegularExpression: "^h$", Percent: &p64}}
+	writeJSON(t, filepath.Join(left, "python_live_heap_3.14"), "profiles.7.1.json", "python_live_heap_3.14", "heap-live-samples", stacks)
+	writeJSON(t, filepath.Join(left, "python_live_heap_3.14"), "profiles.7.2.json", "python_live_heap_3.14", "heap-live-samples", stacks)
+	writeJSON(t, filepath.Join(right, "python_live_heap_3.15"), "profiles.7.1.json", "python_live_heap_3.15", "heap-live-samples", stacks)
+	writeJSON(t, filepath.Join(right, "python_live_heap_3.15"), "profiles.7.2.json", "python_live_heap_3.15", "heap-live-samples", stacks)
 	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}})
 	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 21}})
 	stdout, stderr, err := cmpRun(t, left, right, "", parseExclude("python_live_heap"))
-	if err != nil {
-		t.Fatalf("excluded family with two dumps must not fail: %v\nstderr=%s", err, stderr)
-	}
-	if strings.Contains(stdout, "python_live_heap") || strings.Contains(stderr, "python_live_heap") {
-		t.Fatalf("excluded family leaked: stdout=%q stderr=%q", stdout, stderr)
-	}
-	if !strings.Contains(stdout, "cpu") {
-		t.Fatalf("compare should proceed on cpu: stdout=%q", stdout)
+	if err != nil || strings.Contains(stdout+stderr, "python_live_heap") || !strings.Contains(stdout, "cpu") {
+		t.Fatalf("excluded two-dump family must be skipped: %v stdout=%q stderr=%q", err, stdout, stderr)
 	}
 }
 
@@ -263,17 +250,14 @@ func TestCompare_DuplicateFamilyFails(t *testing.T) {
 		[]stackEntry{{RegularExpression: "^hot$", Percent: &p20}})
 	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 20}})
 	_, _, err := cmpRun(t, left, right, "", nil)
-	if err == nil {
-		t.Fatal("two dumps for the same family should fail")
+	msg := ""
+	if err != nil {
+		msg = err.Error()
 	}
-	msg := err.Error()
 	first := filepath.Join(left, "cpu_3.14", "profile.json")
 	second := filepath.Join(left, "cpu_3.14", "profiles.1.1.json")
-	if !strings.Contains(msg, "cpu wrote 2 capture JSONs") || !strings.Contains(msg, first) || !strings.Contains(msg, second) {
-		t.Fatalf("error must name family, count, and both paths: %v", err)
-	}
-	if !strings.Contains(msg, "one dump per family") || !strings.Contains(msg, "-exclude") {
-		t.Fatalf("error must say what to do: %v", err)
+	if err == nil || !strings.Contains(msg, "cpu wrote 2 capture JSONs") || !strings.Contains(msg, first) || !strings.Contains(msg, second) || !strings.Contains(msg, "-exclude") {
+		t.Fatalf("error must name family, both paths, and -exclude: %v", err)
 	}
 }
 
@@ -297,14 +281,7 @@ func TestCompare_MissingSideDir(t *testing.T) {
 	right := t.TempDir()
 	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 20}})
 	_, _, err := cmpRun(t, filepath.Join(t.TempDir(), "nope"), right, "", nil)
-	if err == nil {
-		t.Fatal("missing left dir should fail")
-	}
-	msg := err.Error()
-	if !strings.Contains(msg, "left: downloads did not produce") || !strings.Contains(msg, "artifact pattern") {
-		t.Fatalf("missing dir must mention downloads/artifact pattern: %v", err)
-	}
-	if strings.Contains(msg, "lstat") {
-		t.Fatalf("must not leak lstat: %v", err)
+	if err == nil || !strings.Contains(err.Error(), "left: downloads did not produce") || strings.Contains(err.Error(), "lstat") {
+		t.Fatalf("missing dir must say downloads without leaking lstat: %v", err)
 	}
 }
