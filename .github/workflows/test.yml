@@ -94,9 +94,13 @@ jobs:
     - name: Create unique capture artifact name
       id: capture_name
       if: success() && inputs.capture_artifact != ''
+      env:
+        CAPTURE_ARTIFACT_PREFIX: ${{ inputs.capture_artifact }}
+        MATRIX_SHARD: ${{ matrix.shard }}
       run: |
-        SAFE_SHARD=$(echo "${{ matrix.shard }}" | sed 's/[^a-zA-Z0-9]/_/g')
-        echo "name=${{ inputs.capture_artifact }}_${SAFE_SHARD}" >> "$GITHUB_OUTPUT"
+        SAFE_PREFIX=$(printf '%s' "$CAPTURE_ARTIFACT_PREFIX" | sed 's/[^a-zA-Z0-9_-]/_/g')
+        SAFE_SHARD=$(printf '%s' "$MATRIX_SHARD" | sed 's/[^a-zA-Z0-9]/_/g')
+        printf 'name=%s\n' "${SAFE_PREFIX}_${SAFE_SHARD}" >> "$GITHUB_OUTPUT"
     - name: Upload capture files
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       if: success() && inputs.capture_artifact != ''
