@@ -154,6 +154,35 @@ func TestCompare_Exclude(t *testing.T) {
 	}
 }
 
+func TestCompare_ExcludeSkipsDuplicateDumps(t *testing.T) {
+	left, right := t.TempDir(), t.TempDir()
+	p64 := int64(64)
+	for _, side := range []struct {
+		root, folder string
+	}{
+		{left, "python_live_heap_3.14"},
+		{right, "python_live_heap_3.15"},
+	} {
+		dir := filepath.Join(side.root, side.folder)
+		writeJSON(t, dir, "profiles.7.1.json", side.folder, "heap-live-samples",
+			[]stackEntry{{RegularExpression: "^h$", Percent: &p64}})
+		writeJSON(t, dir, "profiles.7.2.json", side.folder, "heap-live-samples",
+			[]stackEntry{{RegularExpression: "^h$", Percent: &p64}})
+	}
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 21}})
+	stdout, stderr, err := cmpRun(t, left, right, "", parseExclude("python_live_heap"))
+	if err != nil {
+		t.Fatalf("excluded family with two dumps must not fail: %v\nstderr=%s", err, stderr)
+	}
+	if strings.Contains(stdout, "python_live_heap") || strings.Contains(stderr, "python_live_heap") {
+		t.Fatalf("excluded family leaked: stdout=%q stderr=%q", stdout, stderr)
+	}
+	if !strings.Contains(stdout, "cpu") {
+		t.Fatalf("compare should proceed on cpu: stdout=%q", stdout)
+	}
+}
+
 func TestCompare_SameRegexDifferentLabels(t *testing.T) {
 	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
 	short := []labelSpec{{Key: "task name", Values: []string{"short_task"}}}
@@ -240,8 +269,11 @@ func TestCompare_DuplicateFamilyFails(t *testing.T) {
 	msg := err.Error()
 	first := filepath.Join(left, "cpu_3.14", "profile.json")
 	second := filepath.Join(left, "cpu_3.14", "profiles.1.1.json")
-	if !strings.Contains(msg, "cpu") || !strings.Contains(msg, first) || !strings.Contains(msg, second) {
-		t.Fatalf("error must name family and both paths: %v", err)
+	if !strings.Contains(msg, "cpu wrote 2 capture JSONs") || !strings.Contains(msg, first) || !strings.Contains(msg, second) {
+		t.Fatalf("error must name family, count, and both paths: %v", err)
+	}
+	if !strings.Contains(msg, "one dump per family") || !strings.Contains(msg, "-exclude") {
+		t.Fatalf("error must say what to do: %v", err)
 	}
 }
 
@@ -256,7 +288,23 @@ func TestCompare_ZeroFamiliesAfterExcludeFails(t *testing.T) {
 	if strings.Contains(stdout, "ok:") {
 		t.Fatalf("must not print ok: stdout=%q", stdout)
 	}
-	if !strings.Contains(err.Error(), "0 families") {
-		t.Fatalf("error should mention 0 families: %v", err)
+	if !strings.Contains(err.Error(), "no paired families remained after excludes") {
+		t.Fatalf("error should say no families remained: %v", err)
+	}
+}
+
+func TestCompare_MissingSideDir(t *testing.T) {
+	right := t.TempDir()
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 20}})
+	_, _, err := cmpRun(t, filepath.Join(t.TempDir(), "nope"), right, "", nil)
+	if err == nil {
+		t.Fatal("missing left dir should fail")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "left: downloads did not produce") || !strings.Contains(msg, "artifact pattern") {
+		t.Fatalf("missing dir must mention downloads/artifact pattern: %v", err)
+	}
+	if strings.Contains(msg, "lstat") {
+		t.Fatalf("must not leak lstat: %v", err)
 	}
 }

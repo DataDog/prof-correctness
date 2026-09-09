@@ -1,7 +1,8 @@
 // compare-gate-pair diffs 3.14 vs 3.15 capture percents on asserted
 // (profile-type, regex, labels) keys from the family's expected_profile.json.
 // Exit 1 if |Δ| > -max-pp or an asserted key is unmatched at ≥5%.
-// math.factorial and math.integer.factorial are one key. -exclude skips families.
+// math.factorial and math.integer.factorial are one key. -exclude skips families
+// before the one-dump-per-family check.
 package main
 
 import (
@@ -211,8 +212,25 @@ func loadJSON(path string) (loadedCapture, bool, error) {
 	return loadedCapture{family: family, path: path, percents: percents}, true, nil
 }
 
-func collectSide(root string) (map[string]loadedCapture, error) {
-	out := map[string]loadedCapture{}
+func skipped(skip []string, family string) bool {
+	return family != "" && slices.Contains(skip, family)
+}
+
+func duplicateFamilyErr(family string, dumps []loadedCapture) error {
+	paths := make([]string, len(dumps))
+	for i, d := range dumps {
+		paths[i] = d.path
+	}
+	sort.Strings(paths)
+	return fmt.Errorf("%s wrote %d capture JSONs (%s). Compare needs one dump per family; park or -exclude this family, or stop multi-upload", family, len(paths), strings.Join(paths, ", "))
+}
+
+func missingSideErr(side, dir string) error {
+	return fmt.Errorf("%s: downloads did not produce %s (check this side's artifact pattern)", side, dir)
+}
+
+func collectSide(root string, skip []string) (map[string]loadedCapture, error) {
+	byFamily := map[string][]loadedCapture{}
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -220,20 +238,30 @@ func collectSide(root string) (map[string]loadedCapture, error) {
 		if d.IsDir() || !captureJSON.MatchString(d.Name()) {
 			return nil
 		}
+		if skipped(skip, familyOf(path, "")) {
+			return nil
+		}
 		lc, ok, err := loadJSON(path)
 		if err != nil {
 			return err
 		}
-		if !ok {
+		if !ok || skipped(skip, lc.family) {
 			return nil
 		}
-		if prev, exists := out[lc.family]; exists {
-			return fmt.Errorf("%s: more than one capture JSON: %s and %s", lc.family, prev.path, path)
-		}
-		out[lc.family] = lc
+		byFamily[lc.family] = append(byFamily[lc.family], lc)
 		return nil
 	})
-	return out, err
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]loadedCapture{}
+	for family, dumps := range byFamily {
+		if len(dumps) > 1 {
+			return nil, duplicateFamilyErr(family, dumps)
+		}
+		out[family] = dumps[0]
+	}
+	return out, nil
 }
 
 func parseExclude(s string) []string {
@@ -390,23 +418,29 @@ func compare(left, right map[string]loadedCapture, maxPP int64, scenariosDir str
 }
 
 func run(cfg runConfig) error {
-	left, err := collectSide(cfg.leftDir)
+	if _, err := os.Stat(cfg.leftDir); err != nil {
+		if os.IsNotExist(err) {
+			return missingSideErr("left", cfg.leftDir)
+		}
+		return fmt.Errorf("left: %w", err)
+	}
+	if _, err := os.Stat(cfg.rightDir); err != nil {
+		if os.IsNotExist(err) {
+			return missingSideErr("right", cfg.rightDir)
+		}
+		return fmt.Errorf("right: %w", err)
+	}
+	left, err := collectSide(cfg.leftDir, cfg.exclude)
 	if err != nil {
 		return fmt.Errorf("left: %w", err)
 	}
-	right, err := collectSide(cfg.rightDir)
+	right, err := collectSide(cfg.rightDir, cfg.exclude)
 	if err != nil {
 		return fmt.Errorf("right: %w", err)
 	}
-	if len(left) == 0 {
-		return fmt.Errorf("no capture JSON found under %s", cfg.leftDir)
-	}
-	if len(right) == 0 {
-		return fmt.Errorf("no capture JSON found under %s", cfg.rightDir)
-	}
 	compared := families(left, right, cfg.exclude)
 	if len(compared) == 0 {
-		return fmt.Errorf("0 families to compare after excludes")
+		return fmt.Errorf("no paired families remained after excludes; check capture filenames and the -exclude list")
 	}
 	failures := compare(left, right, cfg.maxPP, cfg.scenariosDir, cfg.exclude, cfg.stdout)
 	if len(failures) == 0 {
