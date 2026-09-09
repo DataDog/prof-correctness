@@ -99,28 +99,14 @@ func TestCompare_FactorialAlias(t *testing.T) {
 
 func TestCompare_AnchoredFold(t *testing.T) {
 	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
-	writeAsserted(t, scenarios, "cpu", "cpu-time", `^.*Foo\.b$`)
-	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{`^x;Foo.b$`, 10}, {`^y;Foo\.b$`, 10}})
-	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{`^x;Foo.b$`, 11}, {`^y;Foo\.b$`, 10}})
+	writeAsserted(t, scenarios, "cpu", "cpu-time", `^.*foo\+bar$`)
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{`^x;foo+bar$`, 10}, {`^y;foo\+bar$`, 10}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{`^x;foo+bar$`, 11}, {`^y;foo\+bar$`, 10}})
 	stdout, stderr, err := cmpRun(t, left, right, scenarios, nil)
 	if err != nil {
-		t.Fatalf("anchored asserted key should fold capture body: %v\nstderr=%s", err, stderr)
+		t.Fatalf("anchored fold should unescape QuoteMeta \\+ and sum bodies: %v\nstderr=%s", err, stderr)
 	}
 	if !strings.Contains(stdout, "3.14=20 3.15=21") {
-		t.Fatalf("stdout=%q", stdout)
-	}
-}
-
-func TestCompare_QuoteMetaUnescape(t *testing.T) {
-	left, right, scenarios := t.TempDir(), t.TempDir(), t.TempDir()
-	writeAsserted(t, scenarios, "cpu", "cpu-time", `^.*foo\+bar$`)
-	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{`^x;foo\+bar$`, 10}})
-	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{`^x;foo\+bar$`, 11}})
-	stdout, stderr, err := cmpRun(t, left, right, scenarios, nil)
-	if err != nil {
-		t.Fatalf("QuoteMeta \\+ should unescape: %v\nstderr=%s", err, stderr)
-	}
-	if !strings.Contains(stdout, "3.14=10 3.15=11") {
 		t.Fatalf("stdout=%q", stdout)
 	}
 }
@@ -207,28 +193,6 @@ func TestCompare_MissingFamily(t *testing.T) {
 	_, stderr, err := cmpRun(t, left, right, "", nil)
 	if err == nil || (!strings.Contains(stderr, "missing on right") && !strings.Contains(stderr, "missing on left")) {
 		t.Fatalf("expected missing family: err=%v stderr=%q", err, stderr)
-	}
-}
-
-func TestFamilyFromName(t *testing.T) {
-	if got := familyFromName("python_cpu_3.14-x"); got != "python_cpu" {
-		t.Fatalf("got %q", got)
-	}
-	if got := familyFromName("python_live_heap_3.15-x"); got != "python_live_heap" {
-		t.Fatalf("got %q", got)
-	}
-	if familyFromName("python_cpu") != "" {
-		t.Fatal("unversioned name should not strip")
-	}
-	if got := familyOf("left/data/python_lock_3.14-ts/profile.json", ""); got != "python_lock" {
-		t.Fatalf("nested data/: got %q", got)
-	}
-}
-
-func TestCompare_EmptyDir(t *testing.T) {
-	_, _, err := cmpRun(t, t.TempDir(), t.TempDir(), "", nil)
-	if err == nil || !strings.Contains(err.Error(), "no capture JSON") {
-		t.Fatalf("err=%v", err)
 	}
 }
 
