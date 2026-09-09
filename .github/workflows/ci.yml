@@ -97,12 +97,14 @@ jobs:
           pattern: gate-3.14_*
           path: left
           merge-multiple: true
+          if-no-artifact-found: fail
       - name: Download 3.15 captures
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: gate-3.15_*
           path: right
           merge-multiple: true
+          if-no-artifact-found: fail
       - name: Compare 3.14 vs 3.15 captures
         run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_live_heap
   full_host:

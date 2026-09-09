@@ -69,6 +69,7 @@ type assertedKey struct {
 
 type loadedCapture struct {
 	family   string
+	path     string
 	percents map[stackKey]stackObs
 }
 
@@ -207,7 +208,7 @@ func loadJSON(path string) (loadedCapture, bool, error) {
 	if family == "" {
 		return loadedCapture{}, false, nil
 	}
-	return loadedCapture{family: family, percents: percents}, true, nil
+	return loadedCapture{family: family, path: path, percents: percents}, true, nil
 }
 
 func collectSide(root string) (map[string]loadedCapture, error) {
@@ -223,9 +224,13 @@ func collectSide(root string) (map[string]loadedCapture, error) {
 		if err != nil {
 			return err
 		}
-		if ok {
-			out[lc.family] = lc
+		if !ok {
+			return nil
 		}
+		if prev, exists := out[lc.family]; exists {
+			return fmt.Errorf("%s: more than one capture JSON: %s and %s", lc.family, prev.path, path)
+		}
+		out[lc.family] = lc
 		return nil
 	})
 	return out, err
@@ -399,9 +404,13 @@ func run(cfg runConfig) error {
 	if len(right) == 0 {
 		return fmt.Errorf("no capture JSON found under %s", cfg.rightDir)
 	}
+	compared := families(left, right, cfg.exclude)
+	if len(compared) == 0 {
+		return fmt.Errorf("0 families to compare after excludes")
+	}
 	failures := compare(left, right, cfg.maxPP, cfg.scenariosDir, cfg.exclude, cfg.stdout)
 	if len(failures) == 0 {
-		fmt.Fprintf(cfg.stdout, "ok: %d families within %d pp\n", len(families(left, right, cfg.exclude)), cfg.maxPP)
+		fmt.Fprintf(cfg.stdout, "ok: %d families within %d pp\n", len(compared), cfg.maxPP)
 		return nil
 	}
 	for _, f := range failures {

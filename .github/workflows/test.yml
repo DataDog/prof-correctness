@@ -98,7 +98,7 @@ jobs:
         CAPTURE_ARTIFACT_PREFIX: ${{ inputs.capture_artifact }}
         MATRIX_SHARD: ${{ matrix.shard }}
       run: |
-        SAFE_PREFIX=$(printf '%s' "$CAPTURE_ARTIFACT_PREFIX" | sed 's/[^a-zA-Z0-9_-]/_/g')
+        SAFE_PREFIX=$(printf '%s' "$CAPTURE_ARTIFACT_PREFIX" | sed 's/[^a-zA-Z0-9._-]/_/g')
         SAFE_SHARD=$(printf '%s' "$MATRIX_SHARD" | sed 's/[^a-zA-Z0-9]/_/g')
         printf 'name=%s\n' "${SAFE_PREFIX}_${SAFE_SHARD}" >> "$GITHUB_OUTPUT"
     - name: Upload capture files

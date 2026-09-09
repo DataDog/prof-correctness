@@ -225,3 +225,38 @@ func TestCompare_CorruptProfileFails(t *testing.T) {
 		t.Fatal("corrupt profile.json should fail")
 	}
 }
+
+func TestCompare_DuplicateFamilyFails(t *testing.T) {
+	left, right := t.TempDir(), t.TempDir()
+	p20 := int64(20)
+	writeCapture(t, left, "cpu_3.14", "cpu-time", []testStack{{"^hot$", 20}})
+	writeJSON(t, filepath.Join(left, "cpu_3.14"), "profiles.1.1.json", "cpu_3.14", "cpu-time",
+		[]stackEntry{{RegularExpression: "^hot$", Percent: &p20}})
+	writeCapture(t, right, "cpu_3.15", "cpu-time", []testStack{{"^hot$", 20}})
+	_, _, err := cmpRun(t, left, right, "", nil)
+	if err == nil {
+		t.Fatal("two dumps for the same family should fail")
+	}
+	msg := err.Error()
+	first := filepath.Join(left, "cpu_3.14", "profile.json")
+	second := filepath.Join(left, "cpu_3.14", "profiles.1.1.json")
+	if !strings.Contains(msg, "cpu") || !strings.Contains(msg, first) || !strings.Contains(msg, second) {
+		t.Fatalf("error must name family and both paths: %v", err)
+	}
+}
+
+func TestCompare_ZeroFamiliesAfterExcludeFails(t *testing.T) {
+	left, right := t.TempDir(), t.TempDir()
+	writeCapture(t, left, "python_live_heap_3.14", "heap-live-samples", []testStack{{"^h$", 64}})
+	writeCapture(t, right, "python_live_heap_3.15", "heap-live-samples", []testStack{{"^h$", 64}})
+	stdout, _, err := cmpRun(t, left, right, "", parseExclude("python_live_heap"))
+	if err == nil {
+		t.Fatal("0 compared families after excludes should fail")
+	}
+	if strings.Contains(stdout, "ok:") {
+		t.Fatalf("must not print ok: stdout=%q", stdout)
+	}
+	if !strings.Contains(err.Error(), "0 families") {
+		t.Fatalf("error should mention 0 families: %v", err)
+	}
+}
