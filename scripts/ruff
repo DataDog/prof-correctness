@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Python lint/format for scenario workloads. Uses the ruff pinned in requirements-dev.txt.
+#
+#   scripts/ruff check   [paths...]   # what CI runs (see .github/workflows/ci.yml)
+#   scripts/ruff fix     [paths...]   # auto-fix lint + format in place
+#
+# With no paths, runs on the whole repo (".").
+set -euo pipefail
+
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if ! command -v ruff >/dev/null 2>&1; then
+  echo "ruff not found; install with: pip install -r requirements-dev.txt" >&2
+  exit 1
+fi
+
+mode="${1:-check}"
+[ $# -gt 0 ] && shift
+targets=("$@")
+[ ${#targets[@]} -eq 0 ] && targets=(".")
+
+case "$mode" in
+  check)
+    ruff format --check "${targets[@]}"
+    ruff check "${targets[@]}"
+    ;;
+  fix)
+    # `ruff check --fix` exits non-zero when unfixable lints remain; `|| true` keeps
+    # `set -e` from aborting before we format. Fix first, format last, so output converges.
+    ruff check --fix "${targets[@]}" || true
+    ruff format "${targets[@]}"
+    ;;
+  *)
+    echo "usage: scripts/ruff {check|fix} [paths...]" >&2
+    exit 2
+    ;;
+esac

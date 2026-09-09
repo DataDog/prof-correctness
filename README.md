@@ -19,11 +19,11 @@ pip install -r requirements-dev.txt
 ```
 
 ```sh
-./scripts/lint          # check (matches the ci.yml ruff job)
-./scripts/format        # auto-fix formatting and lint
+./scripts/ruff check    # what CI runs (format --check + lint)
+./scripts/ruff fix      # auto-fix formatting and lint in place
 ```
 
-Optional git hooks (skip on Datadog laptops that use global `core.hooksPath` — run `./scripts/lint` manually instead):
+Optional git hooks (skip on Datadog laptops that use global `core.hooksPath` — run `./scripts/ruff check` manually instead):
 
 ```sh
 pip install pre-commit
