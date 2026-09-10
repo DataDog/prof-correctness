@@ -1,0 +1,63 @@
+# Path-filtered Python matrix. Nightly cron matches former ci.yml.
+# test.yml is not in paths: listing it here (or on every runtime workflow)
+# would start only this language — or every language. Treat a test.yml edit
+# as shared (run all): touch each runtime workflow file, or wait for nightly.
+name: python
+on:
+  push:
+    paths:
+      - "scenarios/python*/**"
+      - ".github/workflows/python.yml"
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  python:
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: 'python.*'
+      # Gate pairs are python_3_14 / python_3_15. live_heap_3.14 is wheel-only.
+      test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
+    secrets: inherit
+  # Both gates use rc2-era pinned wheels; 3.15 uses the Python 3.15.0rc2 image.
+  python_3_14:
+    name: python 3.14
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.14'
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/6c2d10971404884620ce61c85de886f14bf711cf/install.sh'
+      capture_artifact: gate-3.14
+    secrets: inherit
+  python_3_15:
+    name: python 3.15
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.15'
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/1b27090c9ee46afa2bd5a9e2ef0cc7660125b652/install.sh'
+      capture_artifact: gate-3.15
+    secrets: inherit
+  compare:
+    name: compare 3.14 vs 3.15
+    needs: [python_3_14, python_3_15]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 1.25.1
+      - name: Download 3.14 captures
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gate-3.14_*
+          path: left
+          merge-multiple: true
+          if-no-artifact-found: fail
+      - name: Download 3.15 captures
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gate-3.15_*
+          path: right
+          merge-multiple: true
+          if-no-artifact-found: fail
+      - name: Compare 3.14 vs 3.15 captures
+        run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_live_heap
