@@ -46,7 +46,6 @@ int main(int argc, char** argv) {
             exit(1);
         }
     }
-    printf("Executable %s starting for %d seconds\n", argv[0], test_duration);
 
 #ifdef THREADED_TEST
     const int num_threads = 10;
