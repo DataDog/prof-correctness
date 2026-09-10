@@ -33,7 +33,6 @@ Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.
 
 - `python` — old (non-gate) Python scenarios, PyPI ddtrace
 - `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel (temporary until natives are on main)
-- There is no job yet that diffs 3.14 vs 3.15 captures and fails on drift; each side only asserts the shared `profile.json`
 
 ## Local run
 
