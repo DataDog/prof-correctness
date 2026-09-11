@@ -106,7 +106,7 @@ jobs:
           merge-multiple: true
           if-no-artifact-found: fail
       - name: Compare 3.14 vs 3.15 captures
-        run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_live_heap
+        run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_live_heap -max-pp 3
   full_host:
     uses: ./.github/workflows/test.yml
     with:
