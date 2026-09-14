@@ -1,0 +1,97 @@
+{
+  "test_name": "python_cpu_sleep_asyncio_3.12",
+  "scale_by_duration": true,
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*",
+          "value": 667000000,
+          "error_margin": 25
+        },
+        {
+          "regular_expression": ".*cpu_burst.*",
+          "percent": 80,
+          "error_margin": 10
+        },
+        {
+          "regular_expression": ".*",
+          "percent": 25,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "Task-2"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": ".*",
+          "percent": 25,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "Task-3"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": ".*",
+          "percent": 25,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "Task-4"
+              ]
+            }
+          ]
+        },
+        {
+          "regular_expression": ".*",
+          "percent": 25,
+          "error_margin": 15,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "MainThread"
+              ]
+            },
+            {
+              "key": "task name",
+              "values": [
+                "Task-5"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
