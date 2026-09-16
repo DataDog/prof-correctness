@@ -50,7 +50,23 @@ jobs:
           TEST_SCENARIOS_PATTERN: ${{ inputs.test_scenarios }}
           TEST_SCENARIOS_EXCLUDE: ${{ inputs.test_scenarios_exclude }}
         run: |
-          matrix=$(go run ./cmd/list-scenarios -pattern "$TEST_SCENARIOS_PATTERN" -exclude "$TEST_SCENARIOS_EXCLUDE" -chunk-size 3)
+          set +e
+          errfile="$(mktemp)"
+          matrix="$(go run ./cmd/list-scenarios -pattern "$TEST_SCENARIOS_PATTERN" -exclude "$TEST_SCENARIOS_EXCLUDE" -chunk-size 3 2>"$errfile")"
+          rc=$?
+          cat "$errfile" >&2
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            if grep -q 'no scenarios matched' "$errfile"; then
+              reason="no scenarios matched pattern '$TEST_SCENARIOS_PATTERN'"
+            elif grep -qE 'invalid -pattern|invalid -exclude' "$errfile"; then
+              reason="bad regexp (pattern='$TEST_SCENARIOS_PATTERN' exclude='$TEST_SCENARIOS_EXCLUDE')"
+            else
+              reason="go list-scenarios crashed (exit $rc)"
+            fi
+            echo "::error::Compute matrix: $reason"
+            exit 1
+          fi
           echo "scenarios=$matrix" >> "$GITHUB_OUTPUT"
 
   docker-scenarios:
