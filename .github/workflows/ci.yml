@@ -69,7 +69,7 @@ jobs:
     name: python 3.14
     uses: ./.github/workflows/test.yml
     with:
-      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.14'
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.14'
       ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/6c2d10971404884620ce61c85de886f14bf711cf/install.sh'
       capture_artifact: gate-3.14
     secrets: inherit
@@ -77,7 +77,7 @@ jobs:
     name: python 3.15
     uses: ./.github/workflows/test.yml
     with:
-      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.15'
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.15'
       ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/1b27090c9ee46afa2bd5a9e2ef0cc7660125b652/install.sh'
       capture_artifact: gate-3.15
     secrets: inherit
