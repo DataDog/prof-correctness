@@ -348,6 +348,16 @@ func TestResolveBaseImageFromFolder(t *testing.T) {
 			dockerfilePath: "scenarios/python_live_heap/Dockerfile",
 			want:           "prof-python-3.15",
 		},
+		{
+			folder:         "scenarios/python_mem_domain_3.14",
+			dockerfilePath: "scenarios/python_mem_domain/Dockerfile",
+			want:           "prof-python-3.14",
+		},
+		{
+			folder:         "scenarios/python_mem_domain_3.15",
+			dockerfilePath: "scenarios/python_mem_domain/Dockerfile",
+			want:           "prof-python-3.15",
+		},
 	}
 
 	for _, tc := range tests {

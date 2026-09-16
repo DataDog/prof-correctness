@@ -1,6 +1,6 @@
 # Python downstream gate (dd-trace-py)
 
-Twenty scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI. The uvloop pair is parked: no cp315 wheel. The gevent pair is parked: greenlet cp315 needs `_PyGC_VisitFrameStack` (3.15b2+), and we stay on `python:3.15.0b1` because the pinned ddtrace cp315 wheel SIGSEGVs on rc1.
+Twenty-two scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI. The uvloop pair is parked: no cp315 wheel. The gevent pair is parked: greenlet cp315 needs `_PyGC_VisitFrameStack` (3.15b2+), and we stay on `python:3.15.0b1` because the pinned ddtrace cp315 wheel SIGSEGVs on rc1.
 
 | Family | 3.14 | 3.15 | Asserts |
 |--------|------|------|---------|
@@ -16,13 +16,12 @@ Twenty scenarios (**3.14 baseline** / **3.15 candidate**) are the default set wh
 | async-gen | `python_async_gen_3.14` | `python_async_gen_3.15` | wall-time |
 | lock | `python_lock_3.14` | `python_lock_3.15` | lock-acquire/release |
 | live-heap | `python_live_heap_3.14` | `python_live_heap_3.15` | heap-space + heap-live-samples (wheel-only) |
-
-Feature-specific pairs (mem_domain) land in follow-up PRs.
+| mem-domain | `python_mem_domain_3.14` | `python_mem_domain_3.15` | heap-space on retained 16 MiB bytearray (wheel-only; default-on) |
 
 ## Default regexp
 
 ```
-python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.(14|15)
+python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap|mem_domain)_3\.(14|15)
 ```
 
 Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml`](../../.github/workflows/downstream-python.yml).
@@ -38,7 +37,7 @@ Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.
 
 ```sh
 export DDTRACE_INSTALL_URL="https://dd-trace-py-builds.s3.amazonaws.com/<commit-sha>/install.sh"
-TEST_SCENARIOS='python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap)_3\.(14|15)' go test -v -run TestScenarios
+TEST_SCENARIOS='python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|exceptions|async_gen|lock|live_heap|mem_domain)_3\.(14|15)' go test -v -run TestScenarios
 ```
 
 See [README](../../README.md#downstream-from-dd-trace-py).

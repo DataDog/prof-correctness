@@ -1,0 +1,18 @@
+{
+  "test_name": "python_mem_domain",
+  "note": "Closed form: retained bytearray(BUFFER_SIZE) is PYMEM_DOMAIN_MEM on 3.13+. heap-space on allocate_mem_domain_buffer is BUFFER_SIZE (16777216). Weight can include unsampled bytes from the same Poisson window (tcmalloc-style C), so the stack can read slightly above 16 MiB. error_margin 20 is conservative and not sized from a capture. Default mem_domain (Dockerfile does not pin DD_PROFILING_MEMORY_MEM_DOMAIN_ENABLED). Combined upload profile (profiles.*.pprof). Single dump at shutdown so compare-gate-pair can include this family (live_heap is excluded because UPLOAD_INTERVAL produces multiple dumps).",
+  "pprof-regex": "profiles\\..*\\.pprof",
+  "scale_by_duration": false,
+  "stacks": [
+    {
+      "profile-type": "heap-space",
+      "stack-content": [
+        {
+          "regular_expression": "^<module>;.*allocate_mem_domain_buffer.*$",
+          "value": 16777216,
+          "error_margin": 20
+        }
+      ]
+    }
+  ]
+}
