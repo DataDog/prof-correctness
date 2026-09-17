@@ -1,12 +1,11 @@
 # Node.js Allocation Profiling Test
 
 This test validates Node.js allocation profiling by reusing the same controlled
-allocation pattern as `node_heap`, with `DD_PROFILING_ALLOCATION_ENABLED=1` and
-`@datadog/pprof` pinned to `5.15.1`.
+allocation pattern as `node_heap`, with `DD_PROFILING_ALLOCATION_ENABLED=1`.
 
 The scenario runs on Node.js 26 because Node allocation profiling is only
 available there. The `@datadog/pprof` package must therefore provide a native
-prebuild for Node ABI 147.
+prebuild for Node ABI 147, which the `dev` tag used by all node scenarios does.
 
 ## Test Behavior
 
