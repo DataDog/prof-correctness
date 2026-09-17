@@ -18,5 +18,7 @@ ENV DD_REMOTE_CONFIGURATION_ENABLED=0
 # objects that dominate the heap snapshot and skew percentage assertions.
 ENV DD_INSTRUMENTATION_TELEMETRY_ENABLED=false
 ENV DD_PROFILING_PROFILERS=space
+# Keep this heap-profile scenario independent from OOM profiling.
+ENV DD_PROFILING_EXPERIMENTAL_OOM_MONITORING_ENABLED=false
 ENV DD_TRACE_DEBUG=1
 CMD node --expose-gc -r dd-trace/init main.js
