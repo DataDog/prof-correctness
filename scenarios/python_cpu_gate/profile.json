@@ -1,5 +1,6 @@
 {
   "test_name": "python_cpu",
+  "note": "2:1 iteration counts → 66/33. One dump is ~100 cpu-samples / ~1e9 ns; CI share noise reached |Δ|=8pp (73/25 vs 66/33, job 104032067953). ±10 matches asyncio's 1:2 band. Keep percent: absolute cpu-time is the dump window, not EXECUTION_TIME_SEC.",
   "stacks": [
     {
       "profile-type": "cpu-time",
@@ -7,7 +8,7 @@
         {
           "regular_expression": "^<module>;.*CPUBurner\\.main;CPUBurner\\.b$",
           "percent": 66,
-          "error_margin": 5,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",
@@ -20,7 +21,7 @@
         {
           "regular_expression": "^<module>;.*CPUBurner\\.main;CPUBurner\\.a$",
           "percent": 33,
-          "error_margin": 5,
+          "error_margin": 10,
           "labels": [
             {
               "key": "thread name",

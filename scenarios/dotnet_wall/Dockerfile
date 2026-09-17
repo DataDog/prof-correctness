@@ -1,5 +1,5 @@
 # Use the official .NET SDK image to build and run the application
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -11,7 +11,7 @@ COPY ./scenarios/dotnet_wall .
 RUN dotnet publish -c Release -o out
 
 # Use the official .NET runtime image to run the application
-FROM mcr.microsoft.com/dotnet/runtime:7.0
+FROM mcr.microsoft.com/dotnet/runtime:10.0
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -51,4 +51,4 @@ ENV DD_TRACE_DEBUG=TRUE
 # Set the entry point for the container
 # ENTRYPOINT ["dotnet", "WorkloadScheduler.dll"]
 # ENTRYPOINT [ "bash" ]
-CMD dotnet WorkloadScheduler.dll
+CMD ["dotnet", "WorkloadScheduler.dll"]
