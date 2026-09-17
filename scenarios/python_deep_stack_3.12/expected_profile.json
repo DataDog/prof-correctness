@@ -5,7 +5,7 @@
       "profile-type": "cpu-time",
       "stack-content": [
         {
-          "regular_expression": "[0-9]+ frames omitted\u003e;(recurse;){50,}burn",
+          "regular_expression": "[0-9]+ frames? omitted\u003e;(recurse;){50,}burn",
           "percent": 100,
           "error_margin": 10
         }
