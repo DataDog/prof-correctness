@@ -13,8 +13,8 @@ All coroutines are gathered in a single `asyncio.run` call.
 
 ## Expected behavior
 
-- **Task reservoir**: at most 50 leaf tasks are sampled per cycle. The explicit cap keeps
-  the expectation independent of changes to the profiler's default configuration.
+- **Task reservoir**: by default, the profiler samples at most 50 leaf tasks per cycle.
+  This scenario intentionally exercises that default behavior.
 - **wall-samples**: the total number of raw stack samples captured over the run is checked
   against a reference value (`value-matching-sum` = 4000) with a wide error margin (20%).
   Reservoir sampling reduces the prior count by approximately `50 / 500`; host scheduling

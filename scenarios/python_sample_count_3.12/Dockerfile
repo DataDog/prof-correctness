@@ -16,9 +16,6 @@ ENV DD_PROFILING_ENABLED="true"
 
 ENV _DD_PROFILING_STACK_ADAPTIVE_SAMPLING_ENABLED="false"
 
-# Pin the task reservoir size used by the raw sample-count expectation.
-ENV _DD_PROFILING_STACK_MAX_TASKS="50"
-
 # Enable fast memory copying
 ENV _DD_PROFILING_STACK_FAST_COPY="true"
 
