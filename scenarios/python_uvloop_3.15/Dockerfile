@@ -3,6 +3,7 @@ FROM $BASE_IMAGE
 
 # ddtrace stays the S3 pin from the base image. Do not pip-install
 # requirements.txt (it includes ddtrace). No cp315 wheel; build from sdist.
+# TODO: drop --no-binary :all: once uvloop publishes cp315 wheels (track MagicStack/uvloop#758).
 RUN pip install --no-binary :all: uvloop
 
 COPY ./scenarios/python_uvloop/main.py /app/main.py
