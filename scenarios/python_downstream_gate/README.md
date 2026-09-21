@@ -1,6 +1,6 @@
 # Python downstream gate (dd-trace-py)
 
-Twenty-two scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI. The gevent pair is parked: greenlet cp315 needs `_PyGC_VisitFrameStack` (3.15b2+), and we stay on `python:3.15.0b1` because the pinned ddtrace cp315 wheel SIGSEGVs on rc1.
+Twenty-two scenarios (**3.14 baseline** / **3.15 candidate**) are the default set when dd-trace-py triggers downstream CI. The gevent pair is parked: greenlet cp315 needs `_PyGC_VisitFrameStack` (3.15b2+). The 3.15 image is `python:3.15.0rc2`.
 
 | Family | 3.14 | 3.15 | Asserts |
 |--------|------|------|---------|
