@@ -44,4 +44,7 @@ func TestWorkflow_CaptureArtifactNameContract(t *testing.T) {
 	if strings.Count(ci, "if-no-artifact-found: fail") < 2 {
 		t.Fatal("both compare downloads must set if-no-artifact-found: fail")
 	}
+	if !strings.Contains(ci, "-max-pp 3") {
+		t.Fatal("compare must pin -max-pp 3")
+	}
 }
