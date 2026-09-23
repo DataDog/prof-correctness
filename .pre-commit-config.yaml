@@ -1,11 +1,11 @@
-# Optional git hooks for Python scenario files (same checks as CI — see scripts/lint).
+# Optional git hooks for Python scenario files (same checks as CI — see scripts/ruff).
 # Setup: pip install -r requirements-dev.txt pre-commit && pre-commit install
-# On Datadog laptops with global core.hooksPath, use ./scripts/lint instead of pre-commit install.
+# On Datadog laptops with global core.hooksPath, run ./scripts/ruff check manually instead.
 repos:
   - repo: local
     hooks:
       - id: ruff
-        name: ruff (scripts/lint)
-        entry: scripts/lint
+        name: ruff (scripts/ruff check)
+        entry: scripts/ruff check
         language: system
         types: [python]
