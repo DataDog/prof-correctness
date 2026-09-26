@@ -13,11 +13,16 @@ on:
         required: false
         type: string
         default: 'python.*'
+      ddtrace_install_url:
+        description: 'S3 install script URL (defaults to unsuffixed install.sh for this SHA)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   python:
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: ${{ inputs.test_scenarios }}
-      ddtrace_install_url: "https://dd-trace-py-builds.s3.amazonaws.com/${{ inputs.dd_trace_py_commit_sha }}/install.sh"
+      ddtrace_install_url: ${{ inputs.ddtrace_install_url != '' && inputs.ddtrace_install_url || format('https://dd-trace-py-builds.s3.amazonaws.com/{0}/install.sh', inputs.dd_trace_py_commit_sha) }}
     secrets: inherit
