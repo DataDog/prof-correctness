@@ -77,6 +77,7 @@ GitLab uses [dd-octo-sts](https://github.com/DataDog/dd-octo-sts-action) ([`dd-t
 
 - `dd_trace_py_commit_sha` — commit to test (required)
 - `test_scenarios` — regexp passed to `TEST_SCENARIOS` (dd-trace-py passes the [22-scenario 3.14/3.15 migration gate](scenarios/python_downstream_gate/README.md); the downstream workflow default alone is `python.*`)
+- `ddtrace_install_url` — optional S3 install script URL; empty defaults to unsuffixed `install.sh` for the given SHA
 
 ## Creating new tests 
 
