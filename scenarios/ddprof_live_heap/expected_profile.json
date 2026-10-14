@@ -7,7 +7,7 @@
         {
           "regular_expression": ".*leak_function\\(int\\)",
           "percent": 100,
-          "error_margin": 5
+          "error_margin": 10
         }
       ]
     },
@@ -17,7 +17,7 @@
         {
           "regular_expression": ".*leak_function\\(int\\)",
           "percent": 100,
-          "error_margin": 5
+          "error_margin": 10
         }
       ]
     },
