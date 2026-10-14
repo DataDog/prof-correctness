@@ -1,0 +1,20 @@
+{
+  "test_name": "full_host_otlp_cpu",
+  "note": "Full-host CPU profiling via the datadog-agent host-profiler, exported as OTLP and captured to .otlp by the otlp_dump sidecar. OTLP-vs-pprof difference: profile-type is 'samples' (a count, unit 'count'), NOT 'cpu-time' (nanoseconds). Like the pprof full_host scenario we assert a load-independent RATE: the workload pins one core, so at the eBPF sampler frequency (~20 Hz) it accounts for ~20 samples/sec regardless of what else runs on the host (value-matching-sum with scale_by_duration:true). Frames are mapping basenames (no symbol upload), so we match the workload binary by regex.",
+  "pprof-regex": ".*\\.otlp$",
+  "allow_first_profile_failure": true,
+  "scale_by_duration": true,
+  "stacks": [
+    {
+      "profile-type": "samples",
+      "stack-content": [
+        {
+          "regular_expression": ".*cpu_workload.*",
+          "error_margin": 10
+        }
+      ],
+      "value-matching-sum": 20,
+      "error-margin": 30
+    }
+  ]
+}
