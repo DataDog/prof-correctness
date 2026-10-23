@@ -4,10 +4,32 @@
 #
 # Timing matters for a rate assertion: every report we assert on must see the
 # workload fully on-CPU. So we run the workload LONGER than the profiling window
-# and stop the profiler while the workload is still busy — this avoids an
+# and stop the profiler while the workload is still busy. This avoids an
 # idle "cool-down" tail report. The first report still straddles profiler
 # start-up (partial), which is why the scenario sets allow_first_profile_failure.
-set -u
+set -eu
+
+cleanup() {
+    local pid
+    for pid in "${APP_PID:-}" "${PROFILER_PID:-}" "${SINK_PID:-}"; do
+        if [[ -n "${pid}" ]]; then
+            kill "${pid}" 2>/dev/null || true
+        fi
+    done
+    for pid in "${APP_PID:-}" "${PROFILER_PID:-}" "${SINK_PID:-}"; do
+        if [[ -n "${pid}" ]]; then
+            wait "${pid}" 2>/dev/null || true
+        fi
+    done
+}
+trap cleanup EXIT
+
+check_running() {
+    if ! kill -0 "$2" 2>/dev/null; then
+        echo "${1} exited before profiling completed" >&2
+        exit 1
+    fi
+}
 
 DATA_DIR=/app/data
 mkdir -p "${DATA_DIR}"
@@ -19,6 +41,7 @@ echo "=== starting otlp_dump (captures OTLP export to .otlp) ==="
 SINK_OUT_DIR="${DATA_DIR}" SINK_ADDR="127.0.0.1:4318" /usr/local/bin/otlp_dump &
 SINK_PID=$!
 sleep 1
+check_running otlp_dump "${SINK_PID}"
 
 echo "=== starting host-profiler (standalone) ==="
 # Needs privileges (the harness runs full_host* scenarios with --privileged
@@ -26,24 +49,35 @@ echo "=== starting host-profiler (standalone) ==="
 /opt/datadog-agent/embedded/bin/host-profiler run --config /app/host-profiler-config.yaml &
 PROFILER_PID=$!
 sleep 3
+check_running otlp_dump "${SINK_PID}"
+check_running host-profiler "${PROFILER_PID}"
 
 echo "=== running cpu_workload for ${WORKLOAD_SECS}s (profiling for ${PROFILE_SECS}s) ==="
-DD_SERVICE=cpu_workload_test timeout "${WORKLOAD_SECS}"s /app/cpu_workload &
+EXECUTION_TIME_SEC="${WORKLOAD_SECS}" DD_SERVICE=cpu_workload_test timeout "${WORKLOAD_SECS}"s /app/cpu_workload &
 APP_PID=$!
 
 # Collect reports while the workload is busy, then stop the profiler *before*
 # the workload ends so the final flushed report is still fully on-CPU.
-sleep "${PROFILE_SECS}"
+for (( elapsed=0; elapsed<PROFILE_SECS; elapsed++ )); do
+    sleep 1
+    check_running otlp_dump "${SINK_PID}"
+    check_running host-profiler "${PROFILER_PID}"
+    check_running cpu_workload "${APP_PID}"
+done
 
 echo "=== stopping profiler (workload still running) ==="
-kill "${PROFILER_PID}" 2>/dev/null || true
-wait "${PROFILER_PID}" 2>/dev/null || true
-
-kill "${APP_PID}" 2>/dev/null || true
-wait "${APP_PID}" 2>/dev/null || true
+kill "${PROFILER_PID}"
+PROFILER_STATUS=0
+wait "${PROFILER_PID}" || PROFILER_STATUS=$?
+PROFILER_PID=
+# A process without a SIGTERM handler exits with status 128 + SIGTERM.
+if (( PROFILER_STATUS != 0 && PROFILER_STATUS != 143 )); then
+    echo "host-profiler failed during shutdown: ${PROFILER_STATUS}" >&2
+    exit 1
+fi
+check_running cpu_workload "${APP_PID}"
 sleep 1
-kill "${SINK_PID}" 2>/dev/null || true
-wait "${SINK_PID}" 2>/dev/null || true
+check_running otlp_dump "${SINK_PID}"
 
 echo "=== output files ==="
 ls -la "${DATA_DIR}"
