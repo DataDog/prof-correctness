@@ -14,6 +14,8 @@ jobs:
           go-version: 1.25.1
       - name: Run schema validation tests
         run: go test -v -run TestSchemaValidation
+      - name: Run scenario orchestration tests
+        run: go test -v -run '^TestFullHostOTLPStart$'
       - name: Run analyzer public API tests
         run: go test -v ./analysis/...
       - name: Run prof-analyze CLI tests

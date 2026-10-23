@@ -1,0 +1,18 @@
+# Base image for full-host profiling scenarios that capture OTLP locally.
+#
+# It is the standalone Datadog full-host profiler (the host-profiler as an
+# OpenTelemetry Collector distribution) with the generic otlp_dump capture
+# sidecar (tools/otlp-dump) baked in. Scenarios add only their workload, config
+# and start script.
+#
+# Built by the test harness as image `prof-fullhost-otlp` (see
+# base_images / docker_helpers_test.go), context = repo root.
+#
+# The moving devtest-latest tag is intentional, to surface upstream drift.
+
+FROM golang:1.25 AS sink
+ADD ./tools/otlp-dump/ /src
+RUN cd /src && CGO_ENABLED=0 go build -o /out/otlp_dump .
+
+FROM registry.datadoghq.com/ddot-ebpf-dev:devtest-latest
+COPY --from=sink /out/otlp_dump /usr/local/bin/otlp_dump
