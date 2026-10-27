@@ -64,9 +64,7 @@ jobs:
       # Gate pairs are python_3_14 / python_3_15. live_heap_3.14 is wheel-only.
       test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
     secrets: inherit
-  # Both gates install the latest dd-trace-py main build. Per-SHA S3 builds expire
-  # after about 45 days; main/ is overwritten on every main build, so it stays.
-  # 3.15 uses the Python 3.15.0rc2 image.
+  # Both gates use the latest dd-trace-py main build; 3.15 uses the Python 3.15.0rc2 image.
   python_3_14:
     name: python 3.14
     uses: ./.github/workflows/test.yml
