@@ -57,29 +57,46 @@ jobs:
     with:
       test_scenarios: node.*
     secrets: inherit
+  # Resolve dd-trace-py main/ to one commit so every Python job and shard installs the same build.
+  ddtrace_main:
+    runs-on: ubuntu-latest
+    outputs:
+      install_url: ${{ steps.resolve.outputs.install_url }}
+    steps:
+      - id: resolve
+        run: |
+          sha=$(curl -fsSL https://dd-trace-py-builds.s3.amazonaws.com/main/metadata.txt | sed -n 's/^commit_sha=//p')
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "bad commit_sha: '$sha'"; exit 1; }
+          url="https://dd-trace-py-builds.s3.amazonaws.com/${sha}/install.sh"
+          curl -fsSI "$url" > /dev/null
+          echo "dd-trace-py main is ${sha}"
+          echo "install_url=${url}" >> "$GITHUB_OUTPUT"
   python:
+    needs: ddtrace_main
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python.*'
       # Gate pairs are python_3_14 / python_3_15. live_heap_3.14 is wheel-only.
       test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/main/install.sh'
+      ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
     secrets: inherit
-  # Both gates use the latest dd-trace-py main build; 3.15 uses the Python 3.15.0rc2 image.
+  # 3.15 uses the Python 3.15.0rc2 image.
   python_3_14:
     name: python 3.14
+    needs: ddtrace_main
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.14'
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/main/install.sh'
+      ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
       capture_artifact: gate-3.14
     secrets: inherit
   python_3_15:
     name: python 3.15
+    needs: ddtrace_main
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.15'
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/main/install.sh'
+      ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
       capture_artifact: gate-3.15
     secrets: inherit
   compare:
