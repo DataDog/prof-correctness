@@ -64,13 +64,16 @@ jobs:
       # Gate pairs are python_3_14 / python_3_15. live_heap_3.14 is wheel-only.
       test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
     secrets: inherit
-  # Both gates use rc2-era pinned wheels; 3.15 uses the Python 3.15.0rc2 image.
+  # Both gates use the same dd-trace-py main build (b72a2f5, 4.17.0rc1) so the
+  # compare job isolates the Python version. 3.15 uses the Python 3.15.0rc2 image.
+  # dd-trace-py-builds S3 objects expire after about 45 days: when the base image
+  # build fails with `curl: (22) ... 404`, re-pin both URLs to a recent main SHA.
   python_3_14:
     name: python 3.14
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.14'
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/6c2d10971404884620ce61c85de886f14bf711cf/install.sh'
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/b72a2f5ba528a818828b6a5c5d9e8a32e4ac0641/install.sh'
       capture_artifact: gate-3.14
     secrets: inherit
   python_3_15:
@@ -78,7 +81,7 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.15'
-      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/1b27090c9ee46afa2bd5a9e2ef0cc7660125b652/install.sh'
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/b72a2f5ba528a818828b6a5c5d9e8a32e4ac0641/install.sh'
       capture_artifact: gate-3.15
     secrets: inherit
   compare:
