@@ -63,6 +63,7 @@ jobs:
       test_scenarios: 'python.*'
       # Gate pairs are python_3_14 / python_3_15. live_heap_3.14 is wheel-only.
       test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
+      ddtrace_install_url: 'https://dd-trace-py-builds.s3.amazonaws.com/main/install.sh'
     secrets: inherit
   # Both gates use the latest dd-trace-py main build; 3.15 uses the Python 3.15.0rc2 image.
   python_3_14:
