@@ -32,7 +32,7 @@ Override via `workflow_dispatch` → `test_scenarios` on [`downstream-python.yml
 Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.python-wheel) with `DDTRACE_INSTALL_URL` (S3 wheel from downstream CI).
 
 - `python` — old (non-gate) Python scenarios, PyPI ddtrace
-- `python_3_14` / `python_3_15` — gate pairs, same pinned S3 wheel (temporary until natives are on main)
+- `python_3_14` / `python_3_15` — gate pairs, both on the latest dd-trace-py `main` S3 build (`main/install.sh`)
 
 ## Local run
 
