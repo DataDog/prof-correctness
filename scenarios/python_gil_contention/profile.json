@@ -1,0 +1,45 @@
+{
+  "test_name": "python_gil_contention",
+  "note": "cpu-time 1e9 ns/s is one core. wall-time 8e9 ns/s is NUM_THREADS × 1e9. spin-0 1.25e8 ns/s is fair share 1e9/NUM_THREADS; error_margin 32 is GIL scheduling unfairness (old 12±4 percent band), not profiler error.",
+  "stacks": [
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*spin",
+          "value": 1000000000,
+          "error_margin": 8
+        }
+      ]
+    },
+    {
+      "profile-type": "cpu-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*spin",
+          "value": 125000000,
+          "error_margin": 32,
+          "labels": [
+            {
+              "key": "thread name",
+              "values": [
+                "spin-0"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "stack-content": [
+        {
+          "regular_expression": ".*spin",
+          "value": 8000000000,
+          "error_margin": 8
+        }
+      ]
+    }
+  ],
+  "scale_by_duration": true
+}

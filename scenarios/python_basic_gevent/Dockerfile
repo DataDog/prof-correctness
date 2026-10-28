@@ -1,4 +1,4 @@
-ARG BASE_IMAGE="prof-python-3.10"
+ARG BASE_IMAGE="prof-python-3.12"
 FROM $BASE_IMAGE
 
 ENV EXECUTION_TIME_SEC="2"

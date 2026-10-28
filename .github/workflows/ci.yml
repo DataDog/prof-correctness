@@ -22,6 +22,8 @@ jobs:
         run: go test -v ./cmd/prof-analyze/...
       - name: Run list-scenarios CLI tests
         run: go test -v ./cmd/list-scenarios/...
+      - name: Run compare-gate-pair CLI tests
+        run: go test -v ./cmd/compare-gate-pair/...
   ruff:
     runs-on: ubuntu-latest
     steps:
@@ -57,11 +59,74 @@ jobs:
     with:
       test_scenarios: node.*
     secrets: inherit
+  # Resolve dd-trace-py main/ to one commit so every Python job and shard installs the same build.
+  ddtrace_main:
+    runs-on: ubuntu-latest
+    outputs:
+      install_url: ${{ steps.resolve.outputs.install_url }}
+    steps:
+      - id: resolve
+        run: |
+          sha=$(curl -fsSL https://dd-trace-py-builds.s3.amazonaws.com/main/metadata.txt | sed -n 's/^commit_sha=//p')
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "bad commit_sha: '$sha'"; exit 1; }
+          url="https://dd-trace-py-builds.s3.amazonaws.com/${sha}/install.sh"
+          curl -fsSI "$url" > /dev/null
+          echo "dd-trace-py main is ${sha}"
+          echo "install_url=${url}" >> "$GITHUB_OUTPUT"
   python:
+    needs: ddtrace_main
     uses: ./.github/workflows/test.yml
     with:
-      test_scenarios: python.*
+      test_scenarios: 'python.*'
+      # Gate pairs are python_3_14 / python_3_15. live_heap_3.14 is wheel-only.
+      test_scenarios_exclude: '_3\.(14|15)$|^python_downstream_gate$'
+      ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
     secrets: inherit
+  # 3.15 uses the Python 3.15.0rc2 image.
+  python_3_14:
+    name: python 3.14
+    needs: ddtrace_main
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.14'
+      ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
+      capture_artifact: gate-3.14
+    secrets: inherit
+  python_3_15:
+    name: python 3.15
+    needs: ddtrace_main
+    uses: ./.github/workflows/test.yml
+    with:
+      test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.15'
+      ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
+      capture_artifact: gate-3.15
+    secrets: inherit
+  compare:
+    name: compare 3.14 vs 3.15
+    needs: [python_3_14, python_3_15]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 1.25.1
+      - name: Download 3.14 captures
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gate-3.14_*
+          path: left
+          merge-multiple: true
+          if-no-artifact-found: fail
+      - name: Download 3.15 captures
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: gate-3.15_*
+          path: right
+          merge-multiple: true
+          if-no-artifact-found: fail
+      - name: Compare 3.14 vs 3.15 captures
+        run: go run ./cmd/compare-gate-pair -left left -right right -exclude python_live_heap -max-pp 3
   full_host:
     uses: ./.github/workflows/test.yml
     with:

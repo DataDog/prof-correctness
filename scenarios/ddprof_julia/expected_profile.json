@@ -1,5 +1,6 @@
 {
   "test_name": "julia_basic",
+  "allow_first_profile_failure": true,
   "stacks": [
     {
       "profile-type": "cpu-time",

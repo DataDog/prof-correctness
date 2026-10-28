@@ -1,14 +1,9 @@
 # Policy for: .gitlab-ci.yml prof-correctness job in DataDog/apm-reliability/dd-trace-py
-# Allows dd-trace-py GitLab CI to trigger prof-correctness GitHub Actions workflows
-# when profiling code changes, to run correctness tests against just-built wheels.
+# Same federation surface as dd-trace-py gitlab.github-access.read (issuer +
+# subject). Extra claim_pattern 403'd nightly main/4.14 (~06:00Z) while later
+# same-day main pushes minted; that job runs on every main pipeline source.
 issuer: https://gitlab.ddbuild.io
-subject_pattern: project_path:DataDog/apm-reliability/dd-trace-py:ref_type:(branch|tag):ref:.*
-
-claim_pattern:
-  ci_config_ref_uri: gitlab\.ddbuild\.io/DataDog/apm-reliability/dd-trace-py//\.gitlab-ci\.yml@refs/(heads|tags)/.*
-  pipeline_source: (push|schedule|web)
-  project_path: DataDog/apm-reliability/dd-trace-py
-  ref_path: refs/(heads|tags)/.*
+subject_pattern: "project_path:DataDog/apm-reliability/dd-trace-py:ref_type:(branch|tag):ref:.*"
 
 permissions:
   actions: write

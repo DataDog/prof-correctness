@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -29,15 +30,15 @@ func mkScenarios(t *testing.T, names []string) string {
 func TestRun_ChunksAlphabetically(t *testing.T) {
 	root := mkScenarios(t, []string{
 		// Intentionally unsorted to verify run() sorts before chunking.
-		"python_basic_idle_3.11",
-		"python_asyncio_3.11",
-		"python_basic_idle_3.10",
+		"python_basic_idle_3.12",
+		"python_asyncio_3.12",
+		"python_basic_memory_3.12",
 		"python_cpu",
-		"python_deep_stack_3.11",
+		"python_deep_stack_3.12",
 		"node_heap", // must be filtered out by the pattern
 	})
 
-	got, err := run("python.*", root, 3)
+	got, err := run("python.*", "", root, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,13 +46,13 @@ func TestRun_ChunksAlphabetically(t *testing.T) {
 	want := []matrixEntry{
 		{
 			Shard: "1/2",
-			Regex: "(^|/)(python_asyncio_3.11|python_basic_idle_3.10|python_basic_idle_3.11)$",
-			Names: "python_asyncio_3.11, python_basic_idle_3.10, python_basic_idle_3.11",
+			Regex: "(^|/)(python_asyncio_3.12|python_basic_idle_3.12|python_basic_memory_3.12)$",
+			Names: "python_asyncio_3.12, python_basic_idle_3.12, python_basic_memory_3.12",
 		},
 		{
 			Shard: "2/2",
-			Regex: "(^|/)(python_cpu|python_deep_stack_3.11)$",
-			Names: "python_cpu, python_deep_stack_3.11",
+			Regex: "(^|/)(python_cpu|python_deep_stack_3.12)$",
+			Names: "python_cpu, python_deep_stack_3.12",
 		},
 	}
 	if !reflect.DeepEqual(got, want) {
@@ -62,7 +63,7 @@ func TestRun_ChunksAlphabetically(t *testing.T) {
 func TestRun_SingleChunkWhenSmall(t *testing.T) {
 	root := mkScenarios(t, []string{"dotnet_wall", "dotnet_alloc"})
 
-	got, err := run("dotnet.*", root, 3)
+	got, err := run("dotnet.*", "", root, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +88,7 @@ func TestRun_AnchoringRejectsSubstringMatches(t *testing.T) {
 		"python_cpu_sleep_sync_3.12",
 	})
 
-	got, err := run("python_cpu", root, 3)
+	got, err := run("python_cpu", "", root, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +102,7 @@ func TestRun_ExactChunkSizeBoundary(t *testing.T) {
 	root := mkScenarios(t, []string{
 		"a", "b", "c", "d", "e", "f",
 	})
-	got, err := run(".*", root, 3)
+	got, err := run(".*", "", root, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,10 +114,42 @@ func TestRun_ExactChunkSizeBoundary(t *testing.T) {
 	}
 }
 
+func TestRun_ExcludeDropsMatchedNames(t *testing.T) {
+	// Mirrors ci.yml python job: exclude gate pairs and the index directory.
+	root := mkScenarios(t, []string{
+		"python_cpu",
+		"python_lock_3.14",
+		"python_lock_3.15",
+		"python_downstream_gate",
+	})
+
+	got, err := run("python.*", `_3\.(14|15)$|^python_downstream_gate$`, root, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var names []string
+	for _, e := range got {
+		names = append(names, e.Names)
+	}
+	joined := strings.Join(names, ", ")
+	want := "python_cpu"
+	if joined != want {
+		t.Fatalf("excluded set wrong:\n got %q\nwant %q", joined, want)
+	}
+}
+
+func TestRun_InvalidExcludeIsError(t *testing.T) {
+	root := mkScenarios(t, []string{"python_cpu"})
+	if _, err := run("python.*", "[invalid", root, 3); err == nil {
+		t.Fatal("expected error on invalid exclude regex")
+	}
+}
+
 func TestRun_NoMatchIsError(t *testing.T) {
 	root := mkScenarios(t, []string{"python_cpu"})
 
-	_, err := run("ruby.*", root, 3)
+	_, err := run("ruby.*", "", root, 3)
 	if err == nil {
 		t.Fatal("expected error when no scenarios match")
 	}
@@ -125,7 +158,7 @@ func TestRun_NoMatchIsError(t *testing.T) {
 func TestRun_InvalidPatternIsError(t *testing.T) {
 	root := mkScenarios(t, []string{"python_cpu"})
 
-	if _, err := run("[invalid", root, 3); err == nil {
+	if _, err := run("[invalid", "", root, 3); err == nil {
 		t.Fatal("expected error on invalid regex")
 	}
 }
@@ -138,9 +171,9 @@ func TestRun_RegexMatchesIntendedDirAndOnlyThat(t *testing.T) {
 	root := mkScenarios(t, []string{
 		"python_cpu",
 		"python_cpu_sleep_sync_3.12",
-		"python_basic_idle_3.11",
+		"python_basic_idle_3.12",
 	})
-	got, err := run("python.*", root, 3)
+	got, err := run("python.*", "", root, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -155,7 +188,7 @@ func TestRun_RegexMatchesIntendedDirAndOnlyThat(t *testing.T) {
 	}{
 		{"scenarios/python_cpu", true},
 		{"scenarios/python_cpu_sleep_sync_3.12", true},
-		{"scenarios/python_basic_idle_3.11", true},
+		{"scenarios/python_basic_idle_3.12", true},
 		// substring within another name must NOT match
 		{"scenarios/python_cpu_something_else", false},
 		// completely unrelated
@@ -175,7 +208,7 @@ func TestRun_RegexMatchesIntendedDirAndOnlyThat(t *testing.T) {
 // verifies it round-trips to the expected shape.
 func TestRun_OutputIsValidJSON(t *testing.T) {
 	root := mkScenarios(t, []string{"a", "b", "c", "d"})
-	got, err := run(".*", root, 3)
+	got, err := run(".*", "", root, 3)
 	if err != nil {
 		t.Fatal(err)
 	}

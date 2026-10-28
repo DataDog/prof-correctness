@@ -9,8 +9,18 @@ on:
         required: false
         type: string
         default: '.*'
+      test_scenarios_exclude:
+        description: 'A regexp dropping scenarios matched by test_scenarios'
+        required: false
+        type: string
+        default: ''
       ddtrace_install_url:
         description: 'URL to a ddtrace install script (e.g. from S3 builds)'
+        required: false
+        type: string
+        default: ''
+      capture_artifact:
+        description: 'If set, upload data/ on success as <value>_<shard> (v4 unique names)'
         required: false
         type: string
         default: ''
@@ -34,8 +44,29 @@ jobs:
         #   - fewer runner-provisioning hits (paid once per chunk, not per scenario)
         #   - free local-daemon layer caching: buildBaseImages runs once per chunk,
         #     and the chunk's scenarios reuse the built base image.
+        # Pass patterns via env vars (not inline ${{ inputs.* }}) so shell metacharacters
+        # in regexps are not reinterpreted by the runner shell.
+        env:
+          TEST_SCENARIOS_PATTERN: ${{ inputs.test_scenarios }}
+          TEST_SCENARIOS_EXCLUDE: ${{ inputs.test_scenarios_exclude }}
         run: |
-          matrix=$(go run ./cmd/list-scenarios -pattern '${{ inputs.test_scenarios }}' -chunk-size 3)
+          set +e
+          errfile="$(mktemp)"
+          matrix="$(go run ./cmd/list-scenarios -pattern "$TEST_SCENARIOS_PATTERN" -exclude "$TEST_SCENARIOS_EXCLUDE" -chunk-size 3 2>"$errfile")"
+          rc=$?
+          cat "$errfile" >&2
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            if grep -q 'no scenarios matched' "$errfile"; then
+              reason="no scenarios matched pattern '$TEST_SCENARIOS_PATTERN'"
+            elif grep -qE 'invalid -pattern|invalid -exclude' "$errfile"; then
+              reason="bad regexp (pattern='$TEST_SCENARIOS_PATTERN' exclude='$TEST_SCENARIOS_EXCLUDE')"
+            else
+              reason="go list-scenarios crashed (exit $rc)"
+            fi
+            echo "::error::Compute matrix: $reason"
+            exit 1
+          fi
           echo "scenarios=$matrix" >> "$GITHUB_OUTPUT"
 
   docker-scenarios:
@@ -51,6 +82,16 @@ jobs:
     runs-on: ubuntu-8-core-latest
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    - name: Log in to Docker Hub
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      run: |
+        if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+          echo "::warning::Docker Hub credentials are unavailable; pulls may be rate limited"
+          exit 0
+        fi
+        echo "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
     - name: Set up Go
       uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
       with:
@@ -75,6 +116,22 @@ jobs:
       if: failure()
       with:
         name: ${{ steps.artifact_name.outputs.name }}
+        path: data
+    - name: Create unique capture artifact name
+      id: capture_name
+      if: success() && inputs.capture_artifact != ''
+      env:
+        CAPTURE_ARTIFACT_PREFIX: ${{ inputs.capture_artifact }}
+        MATRIX_SHARD: ${{ matrix.shard }}
+      run: |
+        SAFE_PREFIX=$(printf '%s' "$CAPTURE_ARTIFACT_PREFIX" | sed 's/[^a-zA-Z0-9._-]/_/g')
+        SAFE_SHARD=$(printf '%s' "$MATRIX_SHARD" | sed 's/[^a-zA-Z0-9]/_/g')
+        printf 'name=%s\n' "${SAFE_PREFIX}_${SAFE_SHARD}" >> "$GITHUB_OUTPUT"
+    - name: Upload capture files
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      if: success() && inputs.capture_artifact != ''
+      with:
+        name: ${{ steps.capture_name.outputs.name }}
         path: data
     - name: Notify Slack
       if: failure() && github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'

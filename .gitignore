@@ -6,8 +6,12 @@ data/*
 __pycache__/
 
 .idea
+.vscode/
 gems.locked
 
 .DS_Store
 *.pyc
+
+# Local-only notes (not for PRs)
+.local/
 

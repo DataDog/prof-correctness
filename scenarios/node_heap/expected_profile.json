@@ -2,7 +2,7 @@
   "test_name": "node_heap_basic",
   "stacks": [
     {
-      "profile-type": "objects",
+      "profile-type": "inuse_objects",
       "stack-content": [
         {
           "regular_expression": "processTimers;listOnTimeout;work;b;slice",
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "profile-type": "space",
+      "profile-type": "inuse_space",
       "stack-content": [
         {
           "regular_expression": "processTimers;listOnTimeout;work;b;slice",

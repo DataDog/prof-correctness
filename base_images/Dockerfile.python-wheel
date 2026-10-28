@@ -1,0 +1,12 @@
+ARG PYTHON_IMAGE=python:3.14
+FROM ${PYTHON_IMAGE} AS base
+
+# When set, download and run this install script to pre-install ddtrace.
+# Used by upstream dd-trace-py CI to test with just-built wheels from S3.
+COPY base_images/install-ddtrace.sh /tmp/install-ddtrace.sh
+ARG DDTRACE_INSTALL_URL=""
+RUN DDTRACE_INSTALL_URL="$DDTRACE_INSTALL_URL" sh /tmp/install-ddtrace.sh
+
+ENV DD_PROFILING_ENABLED=true
+ENV DD_TRACE_ENABLED=false
+ENV DD_PROFILING_OUTPUT_PPROF="/app/data/profiles"

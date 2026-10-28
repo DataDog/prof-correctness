@@ -59,7 +59,15 @@ look_in_s3() {
 
 download_from_github() {
     # Download the latest release candidate and store it in the current directory
-    ddprof_name="ddprof-amd64-linux.tar.xz"
+    # Detect architecture: x86_64 -> amd64, aarch64 -> arm64
+    local arch
+    case "$(uname -m)" in
+        x86_64)   arch="amd64" ;;
+        aarch64)  arch="arm64" ;;
+        *)        arch="amd64" ;; # Default to amd64 for unknown architectures
+    esac
+    
+    ddprof_name="ddprof-${arch}-linux.tar.xz"
     url_release_candidate="https://github.com/DataDog/ddprof/releases/download/latest-rc/${ddprof_name}"
 
     echo "Downloading from ${url_release_candidate}..."

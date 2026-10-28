@@ -1,0 +1,44 @@
+{
+  "test_name": "python_gevent",
+  "note": "Worker wall-time is 10 × EXECUTION_TIME_SEC/2 = 10e9 ns (sum over Greenlet-N). Hub is EXECUTION_TIME_SEC = 2e9 ns. scale_by_duration must stay false: pprof duration includes post-join dump time the workers do not fill. TODO(PROF-15860): assert each Greenlet-N independently — https://datadoghq.atlassian.net/browse/PROF-15860",
+  "scale_by_duration": false,
+  "pprof-regex": "",
+  "stacks": [
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^Hub\\.run;gevent\\.libev\\.corecext\\.loop\\.run$",
+          "value": 2000000000,
+          "error_margin": 12,
+          "labels": [
+            {
+              "key": "task name",
+              "values": [
+                "Hub"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "wall-time",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": ".*target.*",
+          "value": 10000000000,
+          "error_margin": 12,
+          "labels": [
+            {
+              "key": "task name",
+              "values_regex": "^Greenlet-[0-9]+$"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

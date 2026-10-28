@@ -1,0 +1,12 @@
+# Policy for: .github/workflows/prof-correctness.yml in DataDog/dd-trace-py
+# Allows that GHA job to gh workflow run downstream-python.yml.
+issuer: https://token.actions.githubusercontent.com
+subject_pattern: repo:DataDog/dd-trace-py:(pull_request|ref:refs/heads/.+)
+
+claim_pattern:
+  event_name: (pull_request|workflow_dispatch)
+  job_workflow_ref: DataDog/dd-trace-py/\.github/workflows/prof-correctness\.yml@.+
+  repository: DataDog/dd-trace-py
+
+permissions:
+  actions: write

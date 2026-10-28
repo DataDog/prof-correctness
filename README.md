@@ -58,6 +58,27 @@ a step to analyze your results and match it against your expectation:
 You need to provide a JSON file with your expectations and a path to where to
 find the pprof files.
 
+## Downstream from dd-trace-py
+
+dd-trace-py triggers this repo after building wheels for a commit. The
+[`downstream-python.yml`](.github/workflows/downstream-python.yml) workflow
+installs ddtrace from the S3 wheel for that SHA (`DDTRACE_INSTALL_URL`) and
+runs selected Python scenarios.
+
+**Trigger (non-blocking):**
+
+| Source | When | Where to see results |
+|--------|------|----------------------|
+| **GitLab** [`prof-correctness` job](https://github.com/DataDog/dd-trace-py/blob/main/.gitlab-ci.yml#L575-L605) | After `upload all`; profiling path changes on `main` or MR | [prof-correctness Actions](https://github.com/DataDog/prof-correctness/actions/workflows/downstream-python.yml) — filter by commit SHA |
+
+GitLab uses [dd-octo-sts](https://github.com/DataDog/dd-octo-sts-action) ([`dd-trace-py.gitlab.trigger-ci`](.github/chainguard/dd-trace-py.gitlab.trigger-ci.sts.yaml)) to call `gh workflow run downstream-python.yml`. You can also trigger [`downstream-python.yml`](.github/workflows/downstream-python.yml) manually via `workflow_dispatch`.
+
+**Inputs:**
+
+- `dd_trace_py_commit_sha` — commit to test (required)
+- `test_scenarios` — regexp passed to `TEST_SCENARIOS` (dd-trace-py passes the [22-scenario 3.14/3.15 migration gate](scenarios/python_downstream_gate/README.md); the downstream workflow default alone is `python.*`)
+- `ddtrace_install_url` — optional S3 install script URL; empty defaults to unsuffixed `install.sh` for the given SHA
+
 ## Creating new tests 
 
 ### Define the dockerfile 
@@ -82,7 +103,32 @@ The `./profilers` folder contains helpers.
 
 ### Describe the expected output
 
-Describe what you expect in a json file within the same folder. *This data is captured at every run in the matching folder*, so you can use it as a reference to adjust your test. Here is an example of a json file
+Expected values should be derived from what the workload is **designed** to produce
+(equal time slices, known byte ratios, N threads × duration, and so on). Capture the
+observed profile (`captureProfData` writes a JSON dump next to each pprof under
+`./data/`) to **verify** that derivation and to **size the error margin** from
+run-to-run spread — not to supply the expected value itself.
+
+Widen the margin where measurement is genuinely noisy (scheduler fairness, nested
+asyncio frames). Do not move the anchor onto a single CI sample: at `±5` an
+anchor of 20 accepts `[15, 25]` and an anchor of 19 accepts `[14, 24]`, so a 1pp
+harvest tweak is arithmetically inert.
+
+When a closed form is unavailable, document why in the profile's `note` field and
+set the anchor from a **distribution** (see `TestFlakiness` / `FLAKINESS_RUNS`;
+inspect the captured JSON dumps under `./data/`).
+
+`TEST_RUN_SECS` overrides the Dockerfile `EXECUTION_TIME_SEC` at `docker run`.
+Encode the expectation so that override still makes sense:
+
+- `percent` — share of the profile; independent of run duration.
+- `value` with `scale_by_duration: true` — a **rate** (per second). The analyzer
+  multiplies by profile duration, so `TEST_RUN_SECS` still works
+  (`python_gil_contention` is the example).
+- `value` with `scale_by_duration: false` — an absolute total, **tied** to the
+  Dockerfile `EXECUTION_TIME_SEC`.
+
+Example:
 
 ```
 {
@@ -94,12 +140,12 @@ Describe what you expect in a json file within the same folder. *This data is ca
       [
         {
           "regular_expression":";_start;__libc_start_main.*;main;a$",
-          "value": 33,
+          "percent": 33,
           "error_margin": 5
         },
         {
           "regular_expression":";_start;__libc_start_main.*;main;b$",
-          "value": 66,
+          "percent": 66,
           "error_margin": 5
         }
       ]
