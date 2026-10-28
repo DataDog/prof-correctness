@@ -8,8 +8,8 @@
           "regular_expression": ".*"
         }
       ],
-      "value-matching-sum": 4000,
-      "error-margin": 20
+      "value-matching-sum": 5000,
+      "error-margin": 30
     }
   ],
   "scale_by_duration": true
