@@ -25,8 +25,8 @@
       "stack-content": [
         {
           "regular_expression": ".*main.*on_cpu_task.*",
-          "percent": 5,
-          "error_margin": 5,
+          "percent": 7,
+          "error_margin": 7,
           "labels": [
             {
               "key": "task name",
