@@ -7,16 +7,13 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_1.*$",
-          "percent": 35,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_1$",
+          "percent": 44,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
-              "values": [
-                "MainThread"
-              ],
-              "values_regex": ""
+              "values_regex": "^[0-9]+$"
             }
           ]
         }
@@ -27,16 +24,13 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_2.*$",
-          "percent": 45,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_2$",
+          "percent": 39,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
-              "values": [
-                "MainThread"
-              ],
-              "values_regex": ""
+              "values_regex": "^[0-9]+$"
             }
           ]
         }
@@ -47,16 +41,13 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^.*__init__;.*grow_list.*$",
-          "percent": 19,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.__init__;Target\\.grow_list$",
+          "percent": 16,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
-              "values": [
-                "MainThread"
-              ],
-              "values_regex": ""
+              "values_regex": "^[0-9]+$"
             }
           ]
         }
@@ -67,16 +58,13 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_1.*$",
+          "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_1$",
           "percent": 25,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
-              "values": [
-                "MainThread"
-              ],
-              "values_regex": ""
+              "values_regex": "^[0-9]+$"
             }
           ]
         }
@@ -87,16 +75,13 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_2.*$",
-          "percent": 75,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_2$",
+          "percent": 71,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
-              "values": [
-                "MainThread"
-              ],
-              "values_regex": ""
+              "values_regex": "^[0-9]+$"
             }
           ]
         }
@@ -107,16 +92,13 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^.*grow_list.*$",
-          "percent": 3,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.__init__;Target\\.grow_list$",
+          "percent": 5,
           "error_margin": 3,
           "labels": [
             {
               "key": "thread name",
-              "values": [
-                "MainThread"
-              ],
-              "values_regex": ""
+              "values_regex": "^[0-9]+$"
             }
           ]
         }
