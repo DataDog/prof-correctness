@@ -10,20 +10,36 @@ This test validates that the Datadog Python profiler correctly profiles memory a
 
 ## Expected Profile
 
-### Samples
+The expected shares are the exact allocation counts and bytes of this workload, not values copied
+from past profiles. They were measured on CPython 3.12 with a small C allocator hook that counts every
+`PYMEM_DOMAIN_OBJ` and `PYMEM_DOMAIN_MEM` call (malloc, calloc and realloc), without the profiler:
 
-Those represent the number of times the function called the allocator. This is hard to estimate manually
-because of how the sampling logic works
-(see [here](https://github.com/datadog/dd-trace-py/blob/9af78604497d1993826c59c351e1a4e53f817783/ddtrace/profiling/collector/_memalloc_tb.cpp#L329-L360)),
-but the numbers are stable.
+| Function | Domain | Allocations | Bytes |
+|---|---|---|---|
+| `allocate_memory_1` | obj | 1,499,872 (33.3%) | 556 MB (24.6%) |
+| `allocate_memory_2` | obj | 1,999,872 (44.4%) | 1,596 MB (70.6%) |
+| `grow_list` | obj | 999,747 (22.2%) | 32 MB (1.4%) |
+| `grow_list` | mem | 86 (0.0%) | 76 MB (3.4%) |
 
-- `^<module>;run;allocate_memory_1$` should be present and should account for 25% of the samples.
-- `^<module>;run;allocate_memory_2$` should be present and should account for 45% of the samples.
-- `^<module>;__init__;grow_list$` should be present and should account for 20% of the samples.
+- `allocate_memory_1` makes 3 allocations per call: the `bytearray` object, its 1024-byte buffer,
+  and the int for `self.index + 1`.
+- `allocate_memory_2` makes 4: the same 3, plus the int for `3 * size`.
+- `grow_list` allocates one int per `range` item (obj) and grows the list buffer with
+  `PyMem_Realloc` (mem).
 
-### Space
+Each expectation matches the `allocator domain` label (`obj` or `mem`). Memory samples carry the
+numeric thread ID as `thread name` (dd-trace-py 4.5.0 and later read it without calling Python code),
+so the check only requires a numeric value. Frames use qualified names such as `Target.run`.
 
-- `^<module>;run;allocate_memory_1$` should be present and should account for 25% of the space (1024 bytes)
-- `^<module>;run;allocate_memory_2$` should be present and should account for 75% of the space (3 \* 1024 bytes)
-- `^<module>;__init__;grow_list$` should be present and should account for 3% of the space
-  (list container, noise compared to the other allocations)
+### Samples (`alloc-samples`)
+
+- `allocate_memory_1`, obj: 33% +/- 5%
+- `allocate_memory_2`, obj: 44% +/- 5%
+- `grow_list`, obj: 22% +/- 5%
+
+### Space (`alloc-space`)
+
+- `allocate_memory_1`, obj: 25% +/- 5%
+- `allocate_memory_2`, obj: 71% +/- 5%
+- `grow_list`, obj: 1% +/- 1%
+- `grow_list`, mem: 3% +/- 2%
