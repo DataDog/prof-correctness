@@ -13,6 +13,9 @@ COPY ./scenarios/python_basic_memory_3.12/main.py /app/main.py
 WORKDIR /app
 
 ENV DD_TRACE_DEBUG=false
+# Allocation counts are driven by samples on small objects. At the default 1 MiB interval,
+# this run gets about 130 of them and count shares vary by 5+ points. 64 KiB gives 16x more.
+ENV DD_PROFILING_HEAP_SAMPLE_SIZE=65536
 
 # Run the program when the container starts
 CMD python main.py

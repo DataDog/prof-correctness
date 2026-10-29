@@ -7,14 +7,18 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_1.*$",
-          "percent": 35,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_1$",
+          "percent": 33,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
+              "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
               "values": [
-                "MainThread"
+                "obj"
               ],
               "values_regex": ""
             }
@@ -27,14 +31,18 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_2.*$",
-          "percent": 45,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_2$",
+          "percent": 44,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
+              "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
               "values": [
-                "MainThread"
+                "obj"
               ],
               "values_regex": ""
             }
@@ -47,14 +55,18 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^.*__init__;.*grow_list.*$",
-          "percent": 19,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.__init__;Target\\.grow_list$",
+          "percent": 22,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
+              "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
               "values": [
-                "MainThread"
+                "obj"
               ],
               "values_regex": ""
             }
@@ -67,14 +79,18 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_1.*$",
+          "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_1$",
           "percent": 25,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
+              "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
               "values": [
-                "MainThread"
+                "obj"
               ],
               "values_regex": ""
             }
@@ -87,14 +103,18 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^\u003cmodule\u003e;run;allocate_memory_2.*$",
-          "percent": 75,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_2$",
+          "percent": 71,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
+              "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
               "values": [
-                "MainThread"
+                "obj"
               ],
               "values_regex": ""
             }
@@ -107,14 +127,42 @@
       "pprof-regex": "",
       "stack-content": [
         {
-          "regular_expression": "^.*grow_list.*$",
-          "percent": 3,
-          "error_margin": 3,
+          "regular_expression": "^\u003cmodule\u003e;Target\\.__init__;Target\\.grow_list$",
+          "percent": 1,
+          "error_margin": 1,
           "labels": [
             {
               "key": "thread name",
+              "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
               "values": [
-                "MainThread"
+                "obj"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-space",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;Target\\.__init__;Target\\.grow_list$",
+          "percent": 3,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
+              "values": [
+                "mem"
               ],
               "values_regex": ""
             }
