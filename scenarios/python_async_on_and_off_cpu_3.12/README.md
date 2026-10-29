@@ -17,9 +17,9 @@ All tasks run concurrently via `asyncio.gather` on a single thread:
 
 - **wall-time**: dominated by `off_cpu_task` (~99%), since the 50 sleeping tasks
   accumulate far more wall-clock time than the single CPU-bound task
-- **cpu-time**: `on_cpu_task` contributes a small share (7% +/- 7%),
-  verifying that CPU-time is attributed to asyncio task names.
-  Without the profiler, `on_cpu_task` uses about 10% of the process CPU time.
-  The profile only has a few dozen CPU samples (adaptive sampling), so the measured share
-  moves in steps of several points: x86_64 CI measured 4% to 12%, and Docker for Mac
-  (arm64) measured 1% to 3%.
+- **cpu-time**: `on_cpu_task` gets 10% +/- 6%, verifying that CPU-time is attributed to
+  asyncio task names. Without the profiler, `on_cpu_task` uses about 17 ms of the 155-190 ms
+  of CPU in `asyncio.run()`, 9-11% (CPython 3.12, `time.thread_time()`). The rest is event loop
+  overhead from the sleeping tasks. The profiler samples every 10 ms and gives each sample the
+  CPU time since the previous one, so the 17 ms block can be off by about one interval, or
+  6 points.
