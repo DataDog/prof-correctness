@@ -10,20 +10,41 @@ This test validates that the Datadog Python profiler correctly profiles memory a
 
 ## Expected Profile
 
-Frames use qualified names (`Target.run`). Memory samples carry the numeric thread ID as `thread name`,
-so the label check only requires a number.
+The expected shares are the exact allocation counts and bytes of this workload, not values copied
+from past profiles. They were measured on CPython 3.12 with a small C allocator hook that counts every
+`PYMEM_DOMAIN_OBJ` and `PYMEM_DOMAIN_MEM` call (malloc, calloc and realloc), without the profiler:
 
-### Samples
+| Function | Domain | Allocations | Bytes |
+|---|---|---|---|
+| `allocate_memory_1` | obj | 1,499,872 (33.3%) | 556 MB (24.6%) |
+| `allocate_memory_2` | obj | 1,999,872 (44.4%) | 1,596 MB (70.6%) |
+| `grow_list` | obj | 999,747 (22.2%) | 32 MB (1.4%) |
+| `grow_list` | mem | 86 (0.0%) | 76 MB (3.4%) |
 
-Those represent the number of times the function called the allocator. The values below are what
-dd-trace-py `main` reports today, not the exact counts (33% / 44% / 22%). See https://github.com/DataDog/prof-correctness/pull/230.
+- `allocate_memory_1` makes 3 allocations per call: the `bytearray` object, its 1024-byte buffer,
+  and the int for `self.index + 1`.
+- `allocate_memory_2` makes 4: the same 3, plus the int for `3 * size`.
+- `grow_list` allocates one int per `range` item (obj) and grows the list buffer with
+  `PyMem_Realloc` (mem).
 
-- `^<module>;Target\.run;Target\.allocate_memory_1$`: 44% +/- 5% of the samples.
-- `^<module>;Target\.run;Target\.allocate_memory_2$`: 39% +/- 5% of the samples.
-- `^<module>;Target\.__init__;Target\.grow_list$`: 16% +/- 5% of the samples.
+The scenario sets `DD_PROFILING_HEAP_SAMPLE_SIZE=65536`. Allocation counts come mostly from samples
+on small objects (ints, `bytearray` headers), and at the default 1 MiB interval this run gets only about
+130 of them, so count shares vary by 5 points or more between sample seeds. At 64 KiB they stay within
+about 2 points of the exact values.
 
-### Space
+Each expectation matches the `allocator domain` label (`obj` or `mem`). Memory samples carry the
+numeric thread ID as `thread name` (dd-trace-py 4.5.0 and later read it without calling Python code),
+so the check only requires a numeric value. Frames use qualified names such as `Target.run`.
 
-- `^<module>;Target\.run;Target\.allocate_memory_1$`: 25% +/- 5% of the space (1024 bytes)
-- `^<module>;Target\.run;Target\.allocate_memory_2$`: 71% +/- 5% of the space (3 \* 1024 bytes)
-- `^<module>;Target\.__init__;Target\.grow_list$`: 5% +/- 3% of the space (ints and the list buffer)
+### Samples (`alloc-samples`)
+
+- `allocate_memory_1`, obj: 33% +/- 5%
+- `allocate_memory_2`, obj: 44% +/- 5%
+- `grow_list`, obj: 22% +/- 5%
+
+### Space (`alloc-space`)
+
+- `allocate_memory_1`, obj: 25% +/- 5%
+- `allocate_memory_2`, obj: 71% +/- 5%
+- `grow_list`, obj: 1% +/- 1%
+- `grow_list`, mem: 3% +/- 2%

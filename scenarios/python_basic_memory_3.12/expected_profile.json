@@ -8,12 +8,19 @@
       "stack-content": [
         {
           "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_1$",
-          "percent": 44,
+          "percent": 33,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
               "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
+              "values": [
+                "obj"
+              ],
+              "values_regex": ""
             }
           ]
         }
@@ -25,12 +32,19 @@
       "stack-content": [
         {
           "regular_expression": "^\u003cmodule\u003e;Target\\.run;Target\\.allocate_memory_2$",
-          "percent": 39,
+          "percent": 44,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
               "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
+              "values": [
+                "obj"
+              ],
+              "values_regex": ""
             }
           ]
         }
@@ -42,12 +56,19 @@
       "stack-content": [
         {
           "regular_expression": "^\u003cmodule\u003e;Target\\.__init__;Target\\.grow_list$",
-          "percent": 16,
+          "percent": 22,
           "error_margin": 5,
           "labels": [
             {
               "key": "thread name",
               "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
+              "values": [
+                "obj"
+              ],
+              "values_regex": ""
             }
           ]
         }
@@ -65,6 +86,13 @@
             {
               "key": "thread name",
               "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
+              "values": [
+                "obj"
+              ],
+              "values_regex": ""
             }
           ]
         }
@@ -82,6 +110,13 @@
             {
               "key": "thread name",
               "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
+              "values": [
+                "obj"
+              ],
+              "values_regex": ""
             }
           ]
         }
@@ -93,12 +128,43 @@
       "stack-content": [
         {
           "regular_expression": "^\u003cmodule\u003e;Target\\.__init__;Target\\.grow_list$",
-          "percent": 5,
-          "error_margin": 3,
+          "percent": 1,
+          "error_margin": 1,
           "labels": [
             {
               "key": "thread name",
               "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
+              "values": [
+                "obj"
+              ],
+              "values_regex": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile-type": "alloc-space",
+      "pprof-regex": "",
+      "stack-content": [
+        {
+          "regular_expression": "^\u003cmodule\u003e;Target\\.__init__;Target\\.grow_list$",
+          "percent": 3,
+          "error_margin": 2,
+          "labels": [
+            {
+              "key": "thread name",
+              "values_regex": "^[0-9]+$"
+            },
+            {
+              "key": "allocator domain",
+              "values": [
+                "mem"
+              ],
+              "values_regex": ""
             }
           ]
         }
