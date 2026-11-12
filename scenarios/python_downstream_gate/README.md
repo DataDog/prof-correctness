@@ -42,7 +42,7 @@ Builds use [`base_images/Dockerfile.python-wheel`](../../base_images/Dockerfile.
 with `DDTRACE_INSTALL_URL` (S3 wheel from downstream CI).
 
 - `python` — older (non-3.14/3.15) Python scenarios, latest dd-trace-py `main` S3 build
-- `python_3_14` / `python_3_15` — 3.14/3.15 suites, latest dd-trace-py `main` S3 build (soft / `continue-on-error` for now)
+- `python_3_14` / `python_3_15` — 3.14/3.15 suites, latest dd-trace-py `main` S3 build (soft via `continue_on_error` on `test.yml` for now)
 
 ## Local run
 

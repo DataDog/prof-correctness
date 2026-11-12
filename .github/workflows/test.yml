@@ -24,10 +24,16 @@ on:
         required: false
         type: string
         default: ''
+      continue_on_error:
+        description: 'If true, list-scenarios and docker-scenarios keep running and do not fail the caller'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   list-scenarios:
     runs-on: ubuntu-latest
+    continue-on-error: ${{ inputs.continue_on_error }}
     outputs:
       scenarios: ${{ steps.list.outputs.scenarios }}
     steps:
@@ -72,6 +78,7 @@ jobs:
   docker-scenarios:
     needs: list-scenarios
     name: scenarios ${{ matrix.shard }}
+    continue-on-error: ${{ inputs.continue_on_error }}
     strategy:
       fail-fast: false
       max-parallel: 10

@@ -81,25 +81,26 @@ jobs:
       ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
     secrets: inherit
   # Soft for now: keep the 3.14/3.15 correctness suites visible on every push
-  # without failing the workflow. Promote to required in a later PR.
-  # 3.15 uses the Python 3.15.0rc2 image.
+  # without failing the workflow. GitHub rejects continue-on-error on jobs that
+  # call a reusable workflow, so soft-fail is an input on test.yml instead.
+  # Promote to required in a later PR. 3.15 uses the Python 3.15.0rc2 image.
   python_3_14:
     name: python 3.14
     needs: ddtrace_main
-    continue-on-error: true
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.14'
       ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
+      continue_on_error: true
     secrets: inherit
   python_3_15:
     name: python 3.15
     needs: ddtrace_main
-    continue-on-error: true
     uses: ./.github/workflows/test.yml
     with:
       test_scenarios: 'python_(cpu|alloc|asyncio|native_cpu|deep_stack|gil_contention|uvloop|exceptions|async_gen|lock|live_heap)_3\.15'
       ddtrace_install_url: ${{ needs.ddtrace_main.outputs.install_url }}
+      continue_on_error: true
     secrets: inherit
   full_host:
     uses: ./.github/workflows/test.yml
