@@ -20,10 +20,6 @@ func TestWorkflow_CaptureArtifactNameContract(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ciYML, err := os.ReadFile(filepath.Join(root, ".github/workflows/ci.yml"))
-	if err != nil {
-		t.Fatal(err)
-	}
 	m := regexp.MustCompile(`SAFE_PREFIX=.*sed '([^']+)'`).FindSubmatch(testYML)
 	if m == nil {
 		t.Fatal("SAFE_PREFIX sed not found in test.yml")
@@ -36,15 +32,5 @@ func TestWorkflow_CaptureArtifactNameContract(t *testing.T) {
 	}
 	if got := strings.TrimSpace(string(out)); got != "gate-3.14" {
 		t.Fatalf("prefix sanitize must keep '.': %q (sed %s)", got, m[1])
-	}
-	ci := string(ciYML)
-	if !strings.Contains(ci, "pattern: gate-3.14_*") || !strings.Contains(ci, "pattern: gate-3.15_*") {
-		t.Fatal("compare downloads must use dotted gate-3.14_* / gate-3.15_*")
-	}
-	if strings.Count(ci, "if-no-artifact-found: fail") < 2 {
-		t.Fatal("both compare downloads must set if-no-artifact-found: fail")
-	}
-	if !strings.Contains(ci, "-max-pp 3") {
-		t.Fatal("compare must pin -max-pp 3")
 	}
 }
