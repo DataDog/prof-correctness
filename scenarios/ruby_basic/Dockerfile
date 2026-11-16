@@ -5,6 +5,8 @@ FROM ruby:2.7
 RUN gem update --system 3.4.22
 
 ENV DD_PROFILING_FORCE_ENABLE_NEW true
+# Keep stack names compatible with expected_profile.json (dd-trace-rb#6537).
+ENV DD_PROFILING_EXPERIMENTAL_SHOW_CLASSES_ENABLED=false
 ENV DD_TRACE_DEBUG true
 ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
 
