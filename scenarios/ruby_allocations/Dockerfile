@@ -1,6 +1,8 @@
 FROM ruby:3.3
 
 ENV DD_PROFILING_ALLOCATION_ENABLED true
+# Keep stack names compatible with expected_profile.json (dd-trace-rb#6537).
+ENV DD_PROFILING_EXPERIMENTAL_SHOW_CLASSES_ENABLED=false
 ENV DD_TRACE_DEBUG true
 ENV DD_PROFILING_PPROF_PREFIX="/app/data/profiles_"
 
