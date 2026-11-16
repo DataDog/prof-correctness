@@ -706,8 +706,8 @@ func AnalyzeResults(r Reporter, jsonFilePath string, pprofFolder string) {
 					processedProfilesMap[file] = true
 				}
 
-				// Allow failure for the first profile if the setting is enabled
-				allowFailure := stackTestData.AllowFirstProfileFailure && i == 0
+				// Only waive the first report if another report will be checked strictly.
+				allowFailure := stackTestData.AllowFirstProfileFailure && i == 0 && len(matchingFiles) > 1
 				if allowFailure {
 					r.Logf("Analyzing first profile with failure tolerance enabled: %s", filepath.Base(file))
 				}

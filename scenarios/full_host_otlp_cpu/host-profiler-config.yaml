@@ -1,0 +1,34 @@
+# host-profiler config for the full_host_otlp_cpu scenario (CPU only).
+#
+# Runs against the standalone ddot-ebpf-dev image. Profiles are exported over
+# OTLP to the local otlp_dump sidecar, which writes them as .otlp files the
+# analyzer reads natively. No backend, no ebpf-profiler PR #96 (CPU only).
+receivers:
+  profiling:
+    # Short reporting interval so a short run yields several reports.
+    reporter_interval: 5s
+    reporter_jitter: 0.05
+    # No backend: don't upload symbols (frames will be mapping basenames).
+    symbol_uploader:
+      enabled: false
+
+exporters:
+  # The image's Datadog-flavored otlp_http exporter requires a dd-api-key
+  # header even when pointed at a local endpoint; the value is unused because
+  # otlp_dump ignores it and just persists the request body.
+  otlp_http/local:
+    profiles_endpoint: http://127.0.0.1:4318/v1development/profiles
+    headers:
+      dd-api-key: "local-capture-no-backend"
+    compression: none
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    logs:
+      level: info
+  pipelines:
+    profiles:
+      receivers: [profiling]
+      exporters: [otlp_http/local]
